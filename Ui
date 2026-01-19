@@ -47,7 +47,6 @@ local redzlib = {
 			["Color Dark Text"] = Color3.fromRGB(180, 180, 180)
 		},
 		
-		-- Новые темы
 		Red = {
 			["Color Hub 1"] = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(30, 20, 20)),
