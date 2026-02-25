@@ -2334,7 +2334,7 @@ function redzlib:MakeWindow(Configs)
 				end
 				WaitToggle = false
 			end
-			task.spawn(SetToggle, Default)
+			task.defer(SetToggle, Default)
 
 			Button.Activated:Connect(function()
 				SetToggle(not Default)
