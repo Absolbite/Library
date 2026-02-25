@@ -1508,9 +1508,9 @@ end
 
 local Theme = redzlib.Themes[redzlib.Save.Theme]
 
--- Текущая прозрачность главного окна
+-- Ð¢ÐµÐºÑÑÐ°Ñ Ð¿ÑÐ¾Ð·ÑÐ°ÑÐ½Ð¾ÑÑÑ Ð³Ð»Ð°Ð²Ð½Ð¾Ð³Ð¾ Ð¾ÐºÐ½Ð°
 local CurrentTransparency = redzlib.Save.Transparency or 0.03
--- Ссылка на MainFrame, заполняется в MakeWindow
+-- Ð¡ÑÑÐ»ÐºÐ° Ð½Ð° MainFrame, Ð·Ð°Ð¿Ð¾Ð»Ð½ÑÐµÑÑÑ Ð² MakeWindow
 local _MainFrame = nil
 
 local function AddEle(Name, Func)
@@ -1711,7 +1711,7 @@ function redzlib:SetTheme(NewTheme)
 	end)
 end
 
--- Установить прозрачность главного окна (0 = непрозрачный, 1 = полностью прозрачный)
+-- Ð£ÑÑÐ°Ð½Ð¾Ð²Ð¸ÑÑ Ð¿ÑÐ¾Ð·ÑÐ°ÑÐ½Ð¾ÑÑÑ Ð³Ð»Ð°Ð²Ð½Ð¾Ð³Ð¾ Ð¾ÐºÐ½Ð° (0 = Ð½ÐµÐ¿ÑÐ¾Ð·ÑÐ°ÑÐ½ÑÐ¹, 1 = Ð¿Ð¾Ð»Ð½Ð¾ÑÑÑÑ Ð¿ÑÐ¾Ð·ÑÐ°ÑÐ½ÑÐ¹)
 function redzlib:SetTransparency(value)
 	value = math.clamp(tonumber(value) or 0, 0, 0.95)
 	CurrentTransparency = value
@@ -1755,7 +1755,7 @@ function redzlib:MakeWindow(Configs)
 		Name = "Hub"
 	}), "Main")
 
-	-- Сохраняем ссылку для SetTransparency
+	-- Ð¡Ð¾ÑÑÐ°Ð½ÑÐµÐ¼ ÑÑÑÐ»ÐºÑ Ð´Ð»Ñ SetTransparency
 	_MainFrame = MainFrame
 
 	Make("Gradient", MainFrame, { Rotation = 45 })
@@ -2059,12 +2059,12 @@ function redzlib:MakeWindow(Configs)
 		end
 	end
 
-	-- SetTransparency доступна через Window
+	-- SetTransparency Ð´Ð¾ÑÑÑÐ¿Ð½Ð° ÑÐµÑÐµÐ· Window
 	function Window:SetTransparency(value)
 		redzlib:SetTransparency(value)
 	end
 
-	-- SetTheme доступна через Window
+	-- SetTheme Ð´Ð¾ÑÑÑÐ¿Ð½Ð° ÑÐµÑÐµÐ· Window
 	function Window:SetTheme(name)
 		redzlib:SetTheme(name)
 	end
@@ -2362,7 +2362,7 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		-- ================================================================
-		-- AddDropdown — с поисковой строкой + исправленное сохранение MultiSelect
+		-- AddDropdown â Ñ Ð¿Ð¾Ð¸ÑÐºÐ¾Ð²Ð¾Ð¹ ÑÑÑÐ¾ÐºÐ¾Ð¹ + Ð¸ÑÐ¿ÑÐ°Ð²Ð»ÐµÐ½Ð½Ð¾Ðµ ÑÐ¾ÑÑÐ°Ð½ÐµÐ½Ð¸Ðµ MultiSelect
 		-- ================================================================
 		function Tab:AddDropdown(Configs)
 			local DName = Configs[1] or Configs.Name or Configs.Title or "Dropdown"
@@ -2423,7 +2423,7 @@ function redzlib:MakeWindow(Configs)
 			Make("Stroke", DropFrame)
 			Make("Gradient", DropFrame, {Rotation = 60})
 
-			-- Поисковая строка
+			-- ÐÐ¾Ð¸ÑÐºÐ¾Ð²Ð°Ñ ÑÑÑÐ¾ÐºÐ°
 			local SearchHolder = InsertTheme(Create("Frame", DropFrame, {
 				Size = UDim2.new(1, -10, 0, 22),
 				Position = UDim2.new(0, 5, 0, 4),
@@ -2538,18 +2538,18 @@ function redzlib:MakeWindow(Configs)
 				CreateTween({DropFrame, "Position", NewPos, 0.1})
 			end
 
-			-- --- Внутренняя логика выбора и сохранения ---
+			-- --- ÐÐ½ÑÑÑÐµÐ½Ð½ÑÑ Ð»Ð¾Ð³Ð¸ÐºÐ° Ð²ÑÐ±Ð¾ÑÐ° Ð¸ ÑÐ¾ÑÑÐ°Ð½ÐµÐ½Ð¸Ñ ---
 			local AddNewOptions, GetOptions, AddOption, RemoveOption, Selected do
-				-- Загружаем сохранённые значения флага
+				-- ÐÐ°Ð³ÑÑÐ¶Ð°ÐµÐ¼ ÑÐ¾ÑÑÐ°Ð½ÑÐ½Ð½ÑÐµ Ð·Ð½Ð°ÑÐµÐ½Ð¸Ñ ÑÐ»Ð°Ð³Ð°
 				local savedFlag = CheckFlag(Flag) and GetFlag(Flag) or nil
 				local Default = type(OpDefault) ~= "table" and {OpDefault} or OpDefault
 				local MultiSelect = DMultiSelect
 				local Options = {}
 
-				-- Selected: для MultiSelect — таблица {name=bool}, для Single — строка
+				-- Selected: Ð´Ð»Ñ MultiSelect â ÑÐ°Ð±Ð»Ð¸ÑÐ° {name=bool}, Ð´Ð»Ñ Single â ÑÑÑÐ¾ÐºÐ°
 				if MultiSelect then
 					Selected = {}
-					-- Загружаем из флага (массив строк) или из Default
+					-- ÐÐ°Ð³ÑÑÐ¶Ð°ÐµÐ¼ Ð¸Ð· ÑÐ»Ð°Ð³Ð° (Ð¼Ð°ÑÑÐ¸Ð² ÑÑÑÐ¾Ðº) Ð¸Ð»Ð¸ Ð¸Ð· Default
 					local source = savedFlag or Default
 					if type(source) == "table" then
 						for _, v in ipairs(source) do
@@ -2559,7 +2559,7 @@ function redzlib:MakeWindow(Configs)
 						end
 					end
 				else
-					-- Для Single: флаг — строка
+					-- ÐÐ»Ñ Single: ÑÐ»Ð°Ð³ â ÑÑÑÐ¾ÐºÐ°
 					if type(savedFlag) == "string" then
 						Selected = savedFlag
 					else
@@ -2567,7 +2567,7 @@ function redzlib:MakeWindow(Configs)
 					end
 				end
 
-				-- SelectedValues для MultiSelect — упорядоченный массив выбранных имён
+				-- SelectedValues Ð´Ð»Ñ MultiSelect â ÑÐ¿Ð¾ÑÑÐ´Ð¾ÑÐµÐ½Ð½ÑÐ¹ Ð¼Ð°ÑÑÐ¸Ð² Ð²ÑÐ±ÑÐ°Ð½Ð½ÑÑ Ð¸Ð¼ÑÐ½
 				local SelectedValues = {}
 				if MultiSelect then
 					for k, v in pairs(Selected) do
@@ -2577,7 +2577,7 @@ function redzlib:MakeWindow(Configs)
 
 				local function CallbackSelected()
 					if MultiSelect then
-						-- Сохраняем как массив строк
+						-- Ð¡Ð¾ÑÑÐ°Ð½ÑÐµÐ¼ ÐºÐ°Ðº Ð¼Ð°ÑÑÐ¸Ð² ÑÑÑÐ¾Ðº
 						SetFlag(Flag, SelectedValues)
 						Funcs:FireCallback(Callback, SelectedValues)
 					else
@@ -2646,7 +2646,7 @@ function redzlib:MakeWindow(Configs)
 
 					if MultiSelect then
 						if Selected[Name] == nil then Selected[Name] = false end
-						-- Если флаг говорит что выбрано, отражаем
+						-- ÐÑÐ»Ð¸ ÑÐ»Ð°Ð³ Ð³Ð¾Ð²Ð¾ÑÐ¸Ñ ÑÑÐ¾ Ð²ÑÐ±ÑÐ°Ð½Ð¾, Ð¾ÑÑÐ°Ð¶Ð°ÐµÐ¼
 						local on = Selected[Name]
 						if on and not table.find(SelectedValues, Name) then
 							table.insert(SelectedValues, Name)
@@ -2721,7 +2721,7 @@ function redzlib:MakeWindow(Configs)
 				CallbackSelected()
 				UpdateSelected()
 
-				-- Фильтрация поиска
+				-- Ð¤Ð¸Ð»ÑÑÑÐ°ÑÐ¸Ñ Ð¿Ð¾Ð¸ÑÐºÐ°
 				SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
 					local query = SearchBox.Text:lower()
 					for Name, Opt in pairs(Options) do
@@ -2813,7 +2813,7 @@ function redzlib:MakeWindow(Configs)
 						end
 					end
 				end
-				-- Обновляем без вызова CallbackSelected чтобы не было двойного срабатывания
+				-- ÐÐ±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ Ð±ÐµÐ· Ð²ÑÐ·Ð¾Ð²Ð° CallbackSelected ÑÑÐ¾Ð±Ñ Ð½Ðµ Ð±ÑÐ»Ð¾ Ð´Ð²Ð¾Ð¹Ð½Ð¾Ð³Ð¾ ÑÑÐ°Ð±Ð°ÑÑÐ²Ð°Ð½Ð¸Ñ
 				local Options2 = GetOptions()
 				if not DMultiSelect then
 					for _, v in pairs(Options2) do
@@ -2852,7 +2852,7 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		-- ================================================================
-		-- AddSlider — исправлен конфликт между слайдерами, поле ввода работает
+		-- AddSlider â Ð¸ÑÐ¿ÑÐ°Ð²Ð»ÐµÐ½ ÐºÐ¾Ð½ÑÐ»Ð¸ÐºÑ Ð¼ÐµÐ¶Ð´Ñ ÑÐ»Ð°Ð¹Ð´ÐµÑÐ°Ð¼Ð¸, Ð¿Ð¾Ð»Ðµ Ð²Ð²Ð¾Ð´Ð° ÑÐ°Ð±Ð¾ÑÐ°ÐµÑ
 		-- ================================================================
 		function Tab:AddSlider(Configs)
 			local SName = Configs[1] or Configs.Name or Configs.Title or "Slider!"
@@ -2868,7 +2868,7 @@ function redzlib:MakeWindow(Configs)
 
 			local Button, LabelFunc = ButtonFrame(Container, SName, SDesc, UDim2.new(1, -180))
 
-			-- SliderHolder — область захвата мыши
+			-- SliderHolder â Ð¾Ð±Ð»Ð°ÑÑÑ Ð·Ð°ÑÐ²Ð°ÑÐ° Ð¼ÑÑÐ¸
 			local SliderHolder = Create("TextButton", Button, {
 				Size = UDim2.new(0, 110, 1, 0),
 				Position = UDim2.new(1, -10, 0, 0),
@@ -2902,7 +2902,7 @@ function redzlib:MakeWindow(Configs)
 			})
 			Make("Corner", SliderIcon)
 
-			-- Поле ввода
+			-- ÐÐ¾Ð»Ðµ Ð²Ð²Ð¾Ð´Ð°
 			local InputHolder = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 38, 0, 18),
 				Position = UDim2.new(1, -125, 0.5),
@@ -2924,31 +2924,31 @@ function redzlib:MakeWindow(Configs)
 				TextXAlignment = "Center"
 			}), "Text")
 
-			-- Локальные переменные только для этого слайдера
+			-- ÐÐ¾ÐºÐ°Ð»ÑÐ½ÑÐµ Ð¿ÐµÑÐµÐ¼ÐµÐ½Ð½ÑÐµ ÑÐ¾Ð»ÑÐºÐ¾ Ð´Ð»Ñ ÑÑÐ¾Ð³Ð¾ ÑÐ»Ð°Ð¹Ð´ÐµÑÐ°
 			local currentValue = Default
 			local isFocused = false
 
-			-- Конвертация значение -> шкала [0..1]
+			-- ÐÐ¾Ð½Ð²ÐµÑÑÐ°ÑÐ¸Ñ Ð·Ð½Ð°ÑÐµÐ½Ð¸Ðµ -> ÑÐºÐ°Ð»Ð° [0..1]
 			local function ValueToScale(v)
 				if Max == Min then return 0 end
 				return (v - Min) / (Max - Min)
 			end
 
-			-- Конвертация шкала [0..1] -> значение с шагом
+			-- ÐÐ¾Ð½Ð²ÐµÑÑÐ°ÑÐ¸Ñ ÑÐºÐ°Ð»Ð° [0..1] -> Ð·Ð½Ð°ÑÐµÐ½Ð¸Ðµ Ñ ÑÐ°Ð³Ð¾Ð¼
 			local function ScaleToValue(s)
 				local raw = s * (Max - Min) + Min
 				local stepped = math.floor(raw / Increase + 0.5) * Increase
 				return math.clamp(stepped, Min, Max)
 			end
 
-			-- Обновить визуал (без signal, без tween конфликтов)
+			-- ÐÐ±Ð½Ð¾Ð²Ð¸ÑÑ Ð²Ð¸Ð·ÑÐ°Ð» (Ð±ÐµÐ· signal, Ð±ÐµÐ· tween ÐºÐ¾Ð½ÑÐ»Ð¸ÐºÑÐ¾Ð²)
 			local function ApplyVisual(scale)
 				local c = math.clamp(scale, 0, 1)
 				SliderIcon.Position = UDim2.new(c, 0, 0.5, 0)
 				Indicator.Size = UDim2.fromScale(c, 1)
 			end
 
-			-- Главная функция установки значения
+			-- ÐÐ»Ð°Ð²Ð½Ð°Ñ ÑÑÐ½ÐºÑÐ¸Ñ ÑÑÑÐ°Ð½Ð¾Ð²ÐºÐ¸ Ð·Ð½Ð°ÑÐµÐ½Ð¸Ñ
 			local function SetSlider(newVal, skipCallback)
 				if type(newVal) ~= "number" then return end
 				newVal = math.clamp(newVal, Min, Max)
@@ -2964,20 +2964,14 @@ function redzlib:MakeWindow(Configs)
 				end
 			end
 
-			-- Перетаскивание мышью
+			-- ÐÐµÑÐµÑÐ°ÑÐºÐ¸Ð²Ð°Ð½Ð¸Ðµ Ð¼ÑÑÑÑ
 			local function ControlPos()
 				local mouseX = Player:GetMouse().X
 				local barLeft = SliderBar.AbsolutePosition.X
 				local barWidth = SliderBar.AbsoluteSize.X
 				local scale = math.clamp((mouseX - barLeft) / barWidth, 0, 1)
 				local newVal = ScaleToValue(scale)
-				currentValue = newVal
-				ApplyVisual(ValueToScale(newVal))
-				if not isFocused then
-					ValueInput.Text = tostring(newVal)
-				end
-				SetFlag(Flag, newVal)
-				Funcs:FireCallback(Callback, newVal)
+				SetSlider(newVal)
 			end
 
 			SliderHolder.MouseButton1Down:Connect(function()
@@ -2989,7 +2983,7 @@ function redzlib:MakeWindow(Configs)
 				Container.ScrollingEnabled = true
 			end)
 
-			-- Поле ввода: чистим нелетальные символы
+			-- ÐÐ¾Ð»Ðµ Ð²Ð²Ð¾Ð´Ð°: ÑÐ¸ÑÑÐ¸Ð¼ Ð½ÐµÐ»ÐµÑÐ°Ð»ÑÐ½ÑÐµ ÑÐ¸Ð¼Ð²Ð¾Ð»Ñ
 			ValueInput:GetPropertyChangedSignal("Text"):Connect(function()
 				local clean = ValueInput.Text:gsub("[^%d%.%-]", "")
 				if clean ~= ValueInput.Text then
@@ -3013,8 +3007,9 @@ function redzlib:MakeWindow(Configs)
 				end
 			end)
 
-			-- Инициализация
-			SetSlider(Default, true)
+			-- ÐÐ½Ð¸ÑÐ¸Ð°Ð»Ð¸Ð·Ð°ÑÐ¸Ñ
+			local loadedFromFlag = CheckFlag(Flag)
+			SetSlider(Default, not loadedFromFlag)
 			ValueInput.Text = tostring(Default)
 			SetFlag(Flag, Default)
 
