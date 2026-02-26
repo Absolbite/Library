@@ -719,7 +719,6 @@ local redzlib = {
 			["Color Text"] = Color3.fromRGB(255, 225, 250),
 			["Color Dark Text"] = Color3.fromRGB(215, 160, 205)
 		},
-		-- ===== NEW 40 THEMES (total 100) =====
 		Titan = {
 			["Color Hub 1"] = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(12, 12, 18)),
@@ -2788,19 +2787,319 @@ function redzlib:MakeWindow(Configs)
 		MainFrame.Visible = not MainFrame.Visible
 	end
 	function Window:AddMinimizeButton(Cfg)
+		Cfg = Cfg or {}
+		local BtnSize    = (Cfg.Size and Cfg.Size) or 40
+		local BtnTrans   = (Cfg.Transparency ~= nil and Cfg.Transparency) or 0
+		local BtnImage   = Cfg.Image or "rbxassetid://10734895698"
+		local BtnFlag    = Cfg.Flag or false
+
+		-- ÐÐ°Ð³ÑÑÐ¶Ð°ÐµÐ¼ ÑÐ¾ÑÑÐ°Ð½ÑÐ½Ð½ÑÐµ Ð¿Ð°ÑÐ°Ð¼ÐµÑÑÑ
+		if CheckFlag(BtnFlag .. "_size")  then BtnSize  = GetFlag(BtnFlag .. "_size")  end
+		if CheckFlag(BtnFlag .. "_trans") then BtnTrans = GetFlag(BtnFlag .. "_trans") end
+		if CheckFlag(BtnFlag .. "_image") then BtnImage = GetFlag(BtnFlag .. "_image") end
+
+		-- ÐÑÐ½Ð¾Ð²Ð½Ð°Ñ ÐºÐ½Ð¾Ð¿ÐºÐ° (Ð¿ÐµÑÐµÑÐ°ÑÐºÐ¸Ð²Ð°ÐµÐ¼Ð°Ñ)
 		local Button = MakeDrag(Create("ImageButton", ScreenGui, {
-			Size = UDim2.fromOffset(35, 35),
-			Position = UDim2.fromScale(0.15, 0.15),
-			BackgroundTransparency = 1,
+			Size         = UDim2.fromOffset(BtnSize, BtnSize),
+			Position     = UDim2.fromScale(0.05, 0.5),
 			BackgroundColor3 = Theme["Color Hub 2"],
-			AutoButtonColor = false
+			BackgroundTransparency = BtnTrans,
+			Image        = BtnImage,
+			ImageColor3  = Theme["Color Theme"],
+			AutoButtonColor = false,
+			ZIndex       = 10,
+			Name         = "MinimizeFloatBtn"
 		}))
-		local Stroke, Corner
-		if Cfg.Corner then Corner = Make("Corner", Button); SetProps(Corner, Cfg.Corner) end
-		if Cfg.Stroke then Stroke = Make("Stroke", Button); SetProps(Stroke, Cfg.Corner) end
-		SetProps(Button, Cfg.Button)
+		Make("Corner", Button, UDim.new(0.2, 0))
+		local BtnStroke = Make("Stroke", Button)
+
+		-- Hover-ÑÑÑÐµÐºÑ
+		Button.MouseEnter:Connect(function()
+			CreateTween({Button, "ImageColor3", Color3.fromRGB(255,255,255), 0.18})
+			CreateTween({Button, "BackgroundTransparency", math.max(BtnTrans - 0.15, 0), 0.18})
+		end)
+		Button.MouseLeave:Connect(function()
+			CreateTween({Button, "ImageColor3", Theme["Color Theme"], 0.18})
+			CreateTween({Button, "BackgroundTransparency", BtnTrans, 0.18})
+		end)
+
+		-- ÐÐ»Ð¸Ðº â Ð¿Ð¾ÐºÐ°Ð·Ð°ÑÑ/ÑÐºÑÑÑÑ Ð³Ð»Ð°Ð²Ð½ÑÐ¹ ÑÑÐµÐ¹Ð¼
 		Button.Activated:Connect(Window.Minimize)
-		return { Stroke = Stroke, Corner = Corner, Button = Button }
+
+		-- =================================================================
+		-- ÐÐ°Ð½ÐµÐ»Ñ Ð½Ð°ÑÑÑÐ¾ÐµÐº (Ð¿Ð¾ÑÐ²Ð»ÑÐµÑÑÑ Ð¿Ð¾ Ð¿ÑÐ°Ð²Ð¾Ð¹ ÐºÐ½Ð¾Ð¿ÐºÐµ Ð¼ÑÑÐ¸)
+		-- =================================================================
+		local PanelOpen = false
+		local Panel = Create("Frame", ScreenGui, {
+			Size   = UDim2.fromOffset(220, 0),
+			BackgroundColor3 = Theme["Color Hub 2"],
+			BackgroundTransparency = 0,
+			ClipsDescendants = true,
+			Visible = false,
+			ZIndex  = 20,
+			Name    = "MinimizeBtnPanel"
+		}, {
+			Make("Corner", nil, UDim.new(0, 8)),
+			Create("UIStroke", { Color = Theme["Color Stroke"], Thickness = 1 }),
+			Create("UIPadding", {
+				PaddingLeft   = UDim.new(0, 10),
+				PaddingRight  = UDim.new(0, 10),
+				PaddingTop    = UDim.new(0, 8),
+				PaddingBottom = UDim.new(0, 8)
+			}),
+			Create("UIListLayout", { Padding = UDim.new(0, 7), SortOrder = "LayoutOrder" })
+		})
+
+		local function MakePanelLabel(parent, text, order)
+			return Create("TextLabel", parent, {
+				Size = UDim2.new(1, 0, 0, 14),
+				BackgroundTransparency = 1,
+				Font = Enum.Font.GothamBold,
+				TextSize = 9,
+				TextColor3 = Theme["Color Dark Text"],
+				TextXAlignment = "Left",
+				Text = text,
+				LayoutOrder = order
+			})
+		end
+
+		local function MakePanelInput(parent, placeholder, order)
+			local holder = Create("Frame", parent, {
+				Size = UDim2.new(1, 0, 0, 22),
+				BackgroundColor3 = Theme["Color Stroke"],
+				LayoutOrder = order
+			})
+			Make("Corner", holder, UDim.new(0, 4))
+			local box = Create("TextBox", holder, {
+				Size = UDim2.new(1, -10, 1, 0),
+				Position = UDim2.new(0, 5, 0, 0),
+				BackgroundTransparency = 1,
+				Font = Enum.Font.Gotham,
+				TextSize = 9,
+				TextColor3 = Theme["Color Text"],
+				PlaceholderText = placeholder,
+				ClearTextOnFocus = false,
+				Text = ""
+			})
+			return holder, box
+		end
+
+		local function MakePanelSlider(parent, order)
+			local track = Create("Frame", parent, {
+				Size = UDim2.new(1, 0, 0, 14),
+				BackgroundColor3 = Theme["Color Stroke"],
+				LayoutOrder = order
+			})
+			Make("Corner", track, UDim.new(0.5, 0))
+			local fill = Create("Frame", track, {
+				Size = UDim2.new(0, 0, 1, 0),
+				BackgroundColor3 = Theme["Color Theme"]
+			})
+			Make("Corner", fill, UDim.new(0.5, 0))
+			local knob = Create("Frame", track, {
+				Size = UDim2.new(0, 12, 0, 12),
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.new(0, 0, 0.5, 0),
+				BackgroundColor3 = Color3.fromRGB(255,255,255)
+			})
+			Make("Corner", knob, UDim.new(0.5, 0))
+			return track, fill, knob
+		end
+
+		-- --- Image ---
+		MakePanelLabel(Panel, "ð¼  IMAGE (rbxassetid / url)", 1)
+		local _, ImageInput = MakePanelInput(Panel, "rbxassetid://... or https://...", 2)
+
+		-- --- Ð Ð°Ð·Ð¼ÐµÑ ---
+		MakePanelLabel(Panel, "ð  SIZE", 3)
+		local SizeTrack, SizeFill, SizeKnob = MakePanelSlider(Panel, 4)
+		local _, SizeInput = MakePanelInput(Panel, "20 â 120", 5)
+
+		-- --- ÐÑÐ¾Ð·ÑÐ°ÑÐ½Ð¾ÑÑÑ ---
+		MakePanelLabel(Panel, "ð§  TRANSPARENCY", 6)
+		local TransTrack, TransFill, TransKnob = MakePanelSlider(Panel, 7)
+		local _, TransInput = MakePanelInput(Panel, "0.0 â 1.0", 8)
+
+		-- ÐÐ°ÐºÑÑÑÑ-ÐºÑÐµÑÑÐ¸Ðº
+		local ClosePanel = Create("TextButton", Panel, {
+			Size = UDim2.fromOffset(14, 14),
+			Position = UDim2.new(1, -4, 0, 4),
+			AnchorPoint = Vector2.new(1, 0),
+			BackgroundTransparency = 1,
+			Font = Enum.Font.GothamBold,
+			TextSize = 12,
+			TextColor3 = Theme["Color Dark Text"],
+			Text = "â",
+			ZIndex = 25,
+			LayoutOrder = 0
+		})
+
+		-- Ð¡ÑÐ°Ð²Ð¸Ð¼ Ð¿Ð°Ð½ÐµÐ»Ñ ÑÑÐ´Ð¾Ð¼ Ñ ÐºÐ½Ð¾Ð¿ÐºÐ¾Ð¹
+		local function RepositionPanel()
+			local bpos = Button.AbsolutePosition
+			local bsz  = Button.AbsoluteSize
+			local px = bpos.X + bsz.X + 6
+			local py = bpos.Y
+			-- Ð½Ðµ Ð²ÑÑÐ¾Ð´Ð¸ÑÑ Ð·Ð° Ð¿ÑÐ°Ð²ÑÐ¹ ÐºÑÐ°Ð¹
+			if px + 220 > workspace.CurrentCamera.ViewportSize.X then
+				px = bpos.X - 226
+			end
+			Panel.Position = UDim2.fromOffset(px, py)
+		end
+
+		-- ÐÐµÑÐµÑÑÑÑ Ð²ÑÑÐ¾ÑÑ Ð¿Ð°Ð½ÐµÐ»Ð¸
+		local PanelList = Panel:FindFirstChildOfClass("UIListLayout")
+		local function UpdatePanelHeight()
+			local pad = 16
+			Panel.Size = UDim2.fromOffset(220, PanelList.AbsoluteContentSize.Y + pad)
+		end
+		PanelList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdatePanelHeight)
+
+		local function OpenPanel()
+			RepositionPanel()
+			Panel.Visible = true
+			PanelOpen = true
+			UpdatePanelHeight()
+			-- ÐÐ°Ð¿Ð¾Ð»Ð½ÑÐµÐ¼ ÑÐµÐºÑÑÐ¸Ðµ Ð·Ð½Ð°ÑÐµÐ½Ð¸Ñ
+			SizeInput.Text  = tostring(math.round(Button.Size.X.Offset))
+			TransInput.Text = tostring(math.round(BtnTrans * 100) / 100)
+			ImageInput.Text = Button.Image
+
+			-- Ð£ÑÑÐ°Ð½Ð°Ð²Ð»Ð¸Ð²Ð°ÐµÐ¼ Ð¿Ð¾Ð·Ð¸ÑÐ¸Ð¸ ÑÐ»Ð°Ð¹Ð´ÐµÑÐ¾Ð²
+			local sizeScale  = math.clamp((BtnSize - 20) / 100, 0, 1)
+			local transScale = math.clamp(BtnTrans, 0, 1)
+			SizeFill.Size  = UDim2.new(sizeScale, 0, 1, 0)
+			SizeKnob.Position = UDim2.new(sizeScale, 0, 0.5, 0)
+			TransFill.Size = UDim2.new(transScale, 0, 1, 0)
+			TransKnob.Position = UDim2.new(transScale, 0, 0.5, 0)
+		end
+
+		local function CloseP()
+			Panel.Visible = false
+			PanelOpen = false
+		end
+
+		ClosePanel.Activated:Connect(CloseP)
+
+		-- ÐÐÐ = Ð¾ÑÐºÑÑÑÑ/Ð·Ð°ÐºÑÑÑÑ Ð¿Ð°Ð½ÐµÐ»Ñ
+		Button.MouseButton2Down:Connect(function()
+			if PanelOpen then CloseP() else OpenPanel() end
+		end)
+
+		-- ÐÑÐ¸Ð¼ÐµÐ½Ð¸ÑÑ Image
+		local function ApplyImage(raw)
+			raw = raw:gsub("^%s+", ""):gsub("%s+$", "")
+			if raw == "" then return end
+			local id
+			if raw:match("^%d+$") then
+				id = "rbxassetid://" .. raw
+			elseif raw:match("^rbxassetid://") then
+				id = raw
+			elseif raw:match("^https?://") then
+				id = raw  -- Roblox Ð¿ÑÐ¸Ð½Ð¸Ð¼Ð°ÐµÑ http-ÑÑÑÐ»ÐºÐ¸ Ð´Ð»Ñ Image
+			else
+				id = "rbxassetid://" .. raw
+			end
+			Button.Image = id
+			BtnImage = id
+			SetFlag(BtnFlag .. "_image", id)
+			SaveJson("redz library V5.json", redzlib.Save)
+		end
+
+		ImageInput.FocusLost:Connect(function()
+			ApplyImage(ImageInput.Text)
+		end)
+
+		-- ÐÑÐ¸Ð¼ÐµÐ½Ð¸ÑÑ Ð Ð°Ð·Ð¼ÐµÑ
+		local function ApplySize(val)
+			val = math.clamp(math.floor(val + 0.5), 20, 120)
+			BtnSize = val
+			Button.Size = UDim2.fromOffset(val, val)
+			SizeInput.Text = tostring(val)
+			local sc = (val - 20) / 100
+			SizeFill.Size = UDim2.new(sc, 0, 1, 0)
+			SizeKnob.Position = UDim2.new(sc, 0, 0.5, 0)
+			SetFlag(BtnFlag .. "_size", val)
+			SaveJson("redz library V5.json", redzlib.Save)
+		end
+
+		SizeInput.FocusLost:Connect(function()
+			local n = tonumber(SizeInput.Text)
+			if n then ApplySize(n) end
+		end)
+
+		-- ÐÑÐ¸Ð¼ÐµÐ½Ð¸ÑÑ ÐÑÐ¾Ð·ÑÐ°ÑÐ½Ð¾ÑÑÑ
+		local function ApplyTrans(val)
+			val = math.clamp(math.floor(val * 100 + 0.5) / 100, 0, 1)
+			BtnTrans = val
+			Button.BackgroundTransparency = val
+			TransInput.Text = tostring(val)
+			TransFill.Size = UDim2.new(val, 0, 1, 0)
+			TransKnob.Position = UDim2.new(val, 0, 0.5, 0)
+			SetFlag(BtnFlag .. "_trans", val)
+			SaveJson("redz library V5.json", redzlib.Save)
+		end
+
+		TransInput.FocusLost:Connect(function()
+			local n = tonumber(TransInput.Text)
+			if n then ApplyTrans(n) end
+		end)
+
+		-- Ð¡Ð»Ð°Ð¹Ð´ÐµÑ-Ð»Ð¾Ð³Ð¸ÐºÐ° (Size)
+		local function SliderDrag(track, fill, knob, onValue, minV, maxV)
+			local dragging = false
+			local function Update(input)
+				local rel = (input.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X
+				rel = math.clamp(rel, 0, 1)
+				fill.Size = UDim2.new(rel, 0, 1, 0)
+				knob.Position = UDim2.new(rel, 0, 0.5, 0)
+				onValue(minV + rel * (maxV - minV))
+			end
+			track.InputBegan:Connect(function(inp)
+				if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+					dragging = true
+					Update(inp)
+					while UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+						RunService.Heartbeat:Wait()
+						local m = UserInputService:GetMouseLocation()
+						Update({Position = Vector3.new(m.X, m.Y, 0)})
+					end
+					dragging = false
+				end
+			end)
+		end
+
+		SliderDrag(SizeTrack, SizeFill, SizeKnob, function(v) ApplySize(v) end, 20, 120)
+		SliderDrag(TransTrack, TransFill, TransKnob, function(v) ApplyTrans(v) end, 0, 1)
+
+		-- ÐÐ°Ð¶Ð°ÑÐ¸Ðµ Ð²Ð½Ðµ Ð¿Ð°Ð½ÐµÐ»Ð¸ â Ð·Ð°ÐºÑÑÑÑ
+		UserInputService.InputBegan:Connect(function(inp)
+			if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+				if PanelOpen then
+					local mp = UserInputService:GetMouseLocation()
+					local pp = Panel.AbsolutePosition
+					local ps = Panel.AbsoluteSize
+					local bp = Button.AbsolutePosition
+					local bs = Button.AbsoluteSize
+					local inPanel  = mp.X >= pp.X and mp.X <= pp.X + ps.X and mp.Y >= pp.Y and mp.Y <= pp.Y + ps.Y
+					local inButton = mp.X >= bp.X and mp.X <= bp.X + bs.X and mp.Y >= bp.Y and mp.Y <= bp.Y + bs.Y
+					if not inPanel and not inButton then CloseP() end
+				end
+			end
+		end)
+
+		if Cfg.Corner then Make("Corner", Button, Cfg.Corner) end
+		if Cfg.Button  then SetProps(Button, Cfg.Button) end
+
+		return {
+			Button = Button,
+			Panel  = Panel,
+			SetImage = function(_, img) ApplyImage(img) end,
+			SetSize  = function(_, sz)  ApplySize(sz)  end,
+			SetTrans = function(_, tr)  ApplyTrans(tr) end,
+			OpenSettings = OpenPanel,
+			CloseSettings = CloseP
+		}
 	end
 	function Window:Set(Val1, Val2)
 		if type(Val1) == "string" and type(Val2) == "string" then
