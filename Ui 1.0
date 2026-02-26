@@ -370,6 +370,7 @@ local redzlib = {
 			["Color Text"] = Color3.fromRGB(210, 200, 255),
 			["Color Dark Text"] = Color3.fromRGB(140, 125, 200)
 		},
+		-- ===== NEW 30 THEMES =====
 		Mint = {
 			["Color Hub 1"] = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(8, 28, 22)),
@@ -718,7 +719,6 @@ local redzlib = {
 			["Color Text"] = Color3.fromRGB(255, 225, 250),
 			["Color Dark Text"] = Color3.fromRGB(215, 160, 205)
 		},
-		-- ===== NEW 40 THEMES (total 100) =====
 		Titan = {
 			["Color Hub 1"] = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(12, 12, 18)),
@@ -1220,7 +1220,8 @@ local redzlib = {
 		UISize = {550, 380},
 		TabSize = 160,
 		Theme = "Darker",
-		Transparency = 0.03
+		Transparency = 0.03,
+		MinimizeButtons = {}
 	},
 	Settings = {},
 	Connection = {},
@@ -2113,6 +2114,7 @@ local SetProps, SetChildren, InsertTheme, Create do
 				if rawget(decode, "TabSize") then redzlib.Save["TabSize"] = decode["TabSize"] end
 				if rawget(decode, "Theme") and VerifyTheme(decode["Theme"]) then redzlib.Save["Theme"] = decode["Theme"] end
 				if rawget(decode, "Transparency") then redzlib.Save["Transparency"] = decode["Transparency"] end
+				if rawget(decode, "MinimizeButtons") then redzlib.Save["MinimizeButtons"] = decode["MinimizeButtons"] end
 			end
 		end
 	end
@@ -2788,36 +2790,47 @@ function redzlib:MakeWindow(Configs)
 	end
 	function Window:AddMinimizeButton(Cfg)
 		Cfg = Cfg or {}
-		local BtnSize    = (Cfg.Size and Cfg.Size) or 40
-		local BtnTrans   = (Cfg.Transparency ~= nil and Cfg.Transparency) or 0
-		local BtnImage   = Cfg.Image or "rbxassetid://10734895698"
-		local BtnFlag    = Cfg.Flag or false
-		local BtnCorner  = (Cfg.Corner and Cfg.Corner.CornerRadius) or UDim.new(0.2, 0)
-		local BtnPos     = Cfg.Position or UDim2.fromScale(0.05, 0.5)
+		local BtnId     = Cfg.Flag or Cfg.Id or "default"
+		local BtnCorner = (Cfg.Corner and Cfg.Corner.CornerRadius) or UDim.new(0.2, 0)
+		local BtnPos    = Cfg.Position or UDim2.fromScale(0.05, 0.5)
 
-		-- ÐÐ°Ð³ÑÑÐ¶Ð°ÐµÐ¼ ÑÐ¾ÑÑÐ°Ð½ÑÐ½Ð½ÑÐµ Ð¿Ð°ÑÐ°Ð¼ÐµÑÑÑ
-		if CheckFlag(BtnFlag .. "_size")  then BtnSize  = GetFlag(BtnFlag .. "_size")  end
-		if CheckFlag(BtnFlag .. "_trans") then BtnTrans = GetFlag(BtnFlag .. "_trans") end
-		if CheckFlag(BtnFlag .. "_image") then BtnImage = GetFlag(BtnFlag .. "_image") end
-		if CheckFlag(BtnFlag .. "_pos") then
-			local p = GetFlag(BtnFlag .. "_pos")
-			if type(p) == "table" then BtnPos = UDim2.fromOffset(p[1], p[2]) end
+		-- ÐÐ°Ð³ÑÑÐ¶Ð°ÐµÐ¼ ÑÐ¾ÑÑÐ°Ð½ÑÐ½Ð½ÑÐµ Ð¿Ð°ÑÐ°Ð¼ÐµÑÑÑ Ð¸Ð· redzlib.Save.MinimizeButtons
+		if not redzlib.Save.MinimizeButtons then redzlib.Save.MinimizeButtons = {} end
+		local Saved = redzlib.Save.MinimizeButtons[BtnId] or {}
+
+		local BtnSize  = Saved.size  or Cfg.Size  or 40
+		local BtnTrans = Saved.trans ~= nil and Saved.trans or (Cfg.Transparency ~= nil and Cfg.Transparency or 0)
+		local BtnImage = Saved.image or Cfg.Image or "rbxassetid://10734895698"
+		if Saved.posX and Saved.posY then
+			BtnPos = UDim2.fromOffset(Saved.posX, Saved.posY)
+		end
+
+		-- Ð¤ÑÐ½ÐºÑÐ¸Ñ ÑÐ¾ÑÑÐ°Ð½ÐµÐ½Ð¸Ñ Ð¿Ð°ÑÐ°Ð¼ÐµÑÑÐ¾Ð²
+		local function SaveBtn()
+			redzlib.Save.MinimizeButtons[BtnId] = {
+				size  = BtnSize,
+				trans = BtnTrans,
+				image = BtnImage,
+				posX  = Button and Button.Position.X.Offset or nil,
+				posY  = Button and Button.Position.Y.Offset or nil,
+			}
+			SaveJson("redz library V5.json", redzlib.Save)
 		end
 
 		-- ÐÑÐ½Ð¾Ð²Ð½Ð°Ñ ÐºÐ½Ð¾Ð¿ÐºÐ° (Ð¿ÐµÑÐµÑÐ°ÑÐºÐ¸Ð²Ð°ÐµÐ¼Ð°Ñ)
 		local Button = MakeDrag(Create("ImageButton", ScreenGui, {
-			Size         = UDim2.fromOffset(BtnSize, BtnSize),
-			Position     = BtnPos,
+			Size             = UDim2.fromOffset(BtnSize, BtnSize),
+			Position         = BtnPos,
 			BackgroundColor3 = Theme["Color Hub 2"],
 			BackgroundTransparency = BtnTrans,
-			Image        = BtnImage,
-			ImageColor3  = Theme["Color Theme"],
-			AutoButtonColor = false,
-			ZIndex       = 10,
-			Name         = "MinimizeFloatBtn"
+			Image            = BtnImage,
+			ImageColor3      = Theme["Color Theme"],
+			AutoButtonColor  = false,
+			ZIndex           = 10,
+			Name             = "MinimizeFloatBtn_" .. BtnId
 		}))
 		local BtnCornerInst = Make("Corner", Button, BtnCorner)
-		local BtnStroke = Make("Stroke", Button)
+		Make("Stroke", Button)
 
 		-- Hover-ÑÑÑÐµÐºÑ
 		Button.MouseEnter:Connect(function()
@@ -2832,8 +2845,23 @@ function redzlib:MakeWindow(Configs)
 		-- ÐÐ»Ð¸Ðº â Ð¿Ð¾ÐºÐ°Ð·Ð°ÑÑ/ÑÐºÑÑÑÑ Ð³Ð»Ð°Ð²Ð½ÑÐ¹ ÑÑÐµÐ¹Ð¼
 		Button.Activated:Connect(Window.Minimize)
 
+		-- Ð¡Ð¾ÑÑÐ°Ð½ÐµÐ½Ð¸Ðµ Ð¿Ð¾Ð·Ð¸ÑÐ¸Ð¸ Ð¿Ð¾ÑÐ»Ðµ Ð¿ÐµÑÐµÑÐ°ÑÐºÐ¸Ð²Ð°Ð½Ð¸Ñ
+		local savePosDebounce = false
+		Button:GetPropertyChangedSignal("Position"):Connect(function()
+			if savePosDebounce then return end
+			savePosDebounce = true
+			task.delay(0.3, function()
+				savePosDebounce = false
+				local p = Button.Position
+				redzlib.Save.MinimizeButtons[BtnId] = redzlib.Save.MinimizeButtons[BtnId] or {}
+				redzlib.Save.MinimizeButtons[BtnId].posX = p.X.Offset
+				redzlib.Save.MinimizeButtons[BtnId].posY = p.Y.Offset
+				SaveJson("redz library V5.json", redzlib.Save)
+			end)
+		end)
+
 		-- =================================================================
-		-- ÐÐ°Ð½ÐµÐ»Ñ Ð½Ð°ÑÑÑÐ¾ÐµÐº (Ð¿Ð¾ÑÐ²Ð»ÑÐµÑÑÑ Ð¿Ð¾ Ð¿ÑÐ°Ð²Ð¾Ð¹ ÐºÐ½Ð¾Ð¿ÐºÐµ Ð¼ÑÑÐ¸)
+		-- ÐÐ°Ð½ÐµÐ»Ñ Ð½Ð°ÑÑÑÐ¾ÐµÐº (Ð¾ÑÐºÑÑÐ²Ð°ÐµÑÑÑ Ð¿Ð¾ ÐÐÐ)
 		-- =================================================================
 		local PanelOpen = false
 		local Panel = Create("Frame", ScreenGui, {
@@ -2843,7 +2871,7 @@ function redzlib:MakeWindow(Configs)
 			ClipsDescendants = true,
 			Visible = false,
 			ZIndex  = 20,
-			Name    = "MinimizeBtnPanel"
+			Name    = "MinimizeBtnPanel_" .. BtnId
 		}, {
 			Make("Corner", nil, UDim.new(0, 8)),
 			Create("UIStroke", { Color = Theme["Color Stroke"], Thickness = 1 }),
@@ -2856,8 +2884,8 @@ function redzlib:MakeWindow(Configs)
 			Create("UIListLayout", { Padding = UDim.new(0, 7), SortOrder = "LayoutOrder" })
 		})
 
-		local function MakePanelLabel(parent, text, order)
-			return Create("TextLabel", parent, {
+		local function MkLabel(text, order)
+			return Create("TextLabel", Panel, {
 				Size = UDim2.new(1, 0, 0, 14),
 				BackgroundTransparency = 1,
 				Font = Enum.Font.GothamBold,
@@ -2869,14 +2897,14 @@ function redzlib:MakeWindow(Configs)
 			})
 		end
 
-		local function MakePanelInput(parent, placeholder, order)
-			local holder = Create("Frame", parent, {
+		local function MkInput(placeholder, order)
+			local h = Create("Frame", Panel, {
 				Size = UDim2.new(1, 0, 0, 22),
 				BackgroundColor3 = Theme["Color Stroke"],
 				LayoutOrder = order
 			})
-			Make("Corner", holder, UDim.new(0, 4))
-			local box = Create("TextBox", holder, {
+			Make("Corner", h, UDim.new(0, 4))
+			local box = Create("TextBox", h, {
 				Size = UDim2.new(1, -10, 1, 0),
 				Position = UDim2.new(0, 5, 0, 0),
 				BackgroundTransparency = 1,
@@ -2887,11 +2915,11 @@ function redzlib:MakeWindow(Configs)
 				ClearTextOnFocus = false,
 				Text = ""
 			})
-			return holder, box
+			return h, box
 		end
 
-		local function MakePanelSlider(parent, order)
-			local track = Create("Frame", parent, {
+		local function MkSlider(order)
+			local track = Create("Frame", Panel, {
 				Size = UDim2.new(1, 0, 0, 14),
 				BackgroundColor3 = Theme["Color Stroke"],
 				LayoutOrder = order
@@ -2912,21 +2940,15 @@ function redzlib:MakeWindow(Configs)
 			return track, fill, knob
 		end
 
-		-- --- Image ---
-		MakePanelLabel(Panel, "ð¼  IMAGE (rbxassetid / url)", 1)
-		local _, ImageInput = MakePanelInput(Panel, "rbxassetid://... or https://...", 2)
+		MkLabel("ð¼  IMAGE (rbxassetid / url)", 1)
+		local _, ImageInput = MkInput("rbxassetid://... or https://...", 2)
+		MkLabel("ð  SIZE  (20 â 120)", 3)
+		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
+		local _, SizeInput = MkInput("20 â 120", 5)
+		MkLabel("ð§  TRANSPARENCY  (0.0 â 1.0)", 6)
+		local TransTrack, TransFill, TransKnob = MkSlider(7)
+		local _, TransInput = MkInput("0.0 â 1.0", 8)
 
-		-- --- Ð Ð°Ð·Ð¼ÐµÑ ---
-		MakePanelLabel(Panel, "ð  SIZE", 3)
-		local SizeTrack, SizeFill, SizeKnob = MakePanelSlider(Panel, 4)
-		local _, SizeInput = MakePanelInput(Panel, "20 â 120", 5)
-
-		-- --- ÐÑÐ¾Ð·ÑÐ°ÑÐ½Ð¾ÑÑÑ ---
-		MakePanelLabel(Panel, "ð§  TRANSPARENCY", 6)
-		local TransTrack, TransFill, TransKnob = MakePanelSlider(Panel, 7)
-		local _, TransInput = MakePanelInput(Panel, "0.0 â 1.0", 8)
-
-		-- ÐÐ°ÐºÑÑÑÑ-ÐºÑÐµÑÑÐ¸Ðº
 		local ClosePanel = Create("TextButton", Panel, {
 			Size = UDim2.fromOffset(14, 14),
 			Position = UDim2.new(1, -4, 0, 4),
@@ -2936,87 +2958,65 @@ function redzlib:MakeWindow(Configs)
 			TextSize = 12,
 			TextColor3 = Theme["Color Dark Text"],
 			Text = "â",
-			ZIndex = 25,
-			LayoutOrder = 0
+			ZIndex = 25
 		})
 
-		-- Ð¡ÑÐ°Ð²Ð¸Ð¼ Ð¿Ð°Ð½ÐµÐ»Ñ ÑÑÐ´Ð¾Ð¼ Ñ ÐºÐ½Ð¾Ð¿ÐºÐ¾Ð¹
-		local function RepositionPanel()
-			local bpos = Button.AbsolutePosition
-			local bsz  = Button.AbsoluteSize
-			local px = bpos.X + bsz.X + 6
-			local py = bpos.Y
-			-- Ð½Ðµ Ð²ÑÑÐ¾Ð´Ð¸ÑÑ Ð·Ð° Ð¿ÑÐ°Ð²ÑÐ¹ ÐºÑÐ°Ð¹
-			if px + 220 > workspace.CurrentCamera.ViewportSize.X then
-				px = bpos.X - 226
-			end
-			Panel.Position = UDim2.fromOffset(px, py)
-		end
-
-		-- ÐÐµÑÐµÑÑÑÑ Ð²ÑÑÐ¾ÑÑ Ð¿Ð°Ð½ÐµÐ»Ð¸
 		local PanelList = Panel:FindFirstChildOfClass("UIListLayout")
 		local function UpdatePanelHeight()
-			local pad = 16
-			Panel.Size = UDim2.fromOffset(220, PanelList.AbsoluteContentSize.Y + pad)
+			Panel.Size = UDim2.fromOffset(220, PanelList.AbsoluteContentSize.Y + 16)
 		end
 		PanelList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdatePanelHeight)
-
-		local function OpenPanel()
-			RepositionPanel()
-			Panel.Visible = true
-			PanelOpen = true
-			UpdatePanelHeight()
-			-- ÐÐ°Ð¿Ð¾Ð»Ð½ÑÐµÐ¼ ÑÐµÐºÑÑÐ¸Ðµ Ð·Ð½Ð°ÑÐµÐ½Ð¸Ñ
-			SizeInput.Text  = tostring(math.round(Button.Size.X.Offset))
-			TransInput.Text = tostring(math.round(BtnTrans * 100) / 100)
-			ImageInput.Text = Button.Image
-
-			-- Ð£ÑÑÐ°Ð½Ð°Ð²Ð»Ð¸Ð²Ð°ÐµÐ¼ Ð¿Ð¾Ð·Ð¸ÑÐ¸Ð¸ ÑÐ»Ð°Ð¹Ð´ÐµÑÐ¾Ð²
-			local sizeScale  = math.clamp((BtnSize - 20) / 100, 0, 1)
-			local transScale = math.clamp(BtnTrans, 0, 1)
-			SizeFill.Size  = UDim2.new(sizeScale, 0, 1, 0)
-			SizeKnob.Position = UDim2.new(sizeScale, 0, 0.5, 0)
-			TransFill.Size = UDim2.new(transScale, 0, 1, 0)
-			TransKnob.Position = UDim2.new(transScale, 0, 0.5, 0)
-		end
 
 		local function CloseP()
 			Panel.Visible = false
 			PanelOpen = false
 		end
 
-		ClosePanel.Activated:Connect(CloseP)
+		local function RepositionPanel()
+			local vp  = workspace.CurrentCamera.ViewportSize
+			local bp  = Button.AbsolutePosition
+			local bs  = Button.AbsoluteSize
+			local px  = bp.X + bs.X + 6
+			local py  = bp.Y
+			if px + 220 > vp.X then px = bp.X - 226 end
+			if py + Panel.Size.Y.Offset > vp.Y then py = vp.Y - Panel.Size.Y.Offset - 4 end
+			Panel.Position = UDim2.fromOffset(px, py)
+		end
 
-		-- ÐÐÐ = Ð¾ÑÐºÑÑÑÑ/Ð·Ð°ÐºÑÑÑÑ Ð¿Ð°Ð½ÐµÐ»Ñ
+		local function OpenPanel()
+			UpdatePanelHeight()
+			RepositionPanel()
+			Panel.Visible = true
+			PanelOpen = true
+			SizeInput.Text  = tostring(BtnSize)
+			TransInput.Text = tostring(BtnTrans)
+			ImageInput.Text = BtnImage
+			local sc = math.clamp((BtnSize - 20) / 100, 0, 1)
+			SizeFill.Size  = UDim2.new(sc, 0, 1, 0)
+			SizeKnob.Position = UDim2.new(sc, 0, 0.5, 0)
+			local tc = math.clamp(BtnTrans, 0, 1)
+			TransFill.Size = UDim2.new(tc, 0, 1, 0)
+			TransKnob.Position = UDim2.new(tc, 0, 0.5, 0)
+		end
+
+		ClosePanel.Activated:Connect(CloseP)
 		Button.MouseButton2Down:Connect(function()
 			if PanelOpen then CloseP() else OpenPanel() end
 		end)
 
-		-- ÐÑÐ¸Ð¼ÐµÐ½Ð¸ÑÑ Image
+		-- ÐÑÐ¸Ð¼ÐµÐ½Ð¸ÑÑ ÑÑÐ½ÐºÑÐ¸Ð¸
 		local function ApplyImage(raw)
-			raw = raw:gsub("^%s+", ""):gsub("%s+$", "")
+			raw = tostring(raw):gsub("^%s+",""):gsub("%s+$","")
 			if raw == "" then return end
-			local id
-			if raw:match("^%d+$") then
-				id = "rbxassetid://" .. raw
-			elseif raw:match("^rbxassetid://") then
-				id = raw
-			elseif raw:match("^https?://") then
-				id = raw  -- Roblox Ð¿ÑÐ¸Ð½Ð¸Ð¼Ð°ÐµÑ http-ÑÑÑÐ»ÐºÐ¸ Ð´Ð»Ñ Image
-			else
-				id = "rbxassetid://" .. raw
-			end
+			local id = raw:match("^%d+$") and ("rbxassetid://"..raw)
+				or raw:match("^rbxassetid://") and raw
+				or raw:match("^https?://") and raw
+				or ("rbxassetid://"..raw)
 			Button.Image = id
 			BtnImage = id
-			SetFlag(BtnFlag .. "_image", id)
-			SaveJson("redz library V5.json", redzlib.Save)
+			SaveBtn()
 		end
 
-		ImageInput.FocusLost:Connect(function()
-			ApplyImage(ImageInput.Text)
-		end)
-
-		-- ÐÑÐ¸Ð¼ÐµÐ½Ð¸ÑÑ Ð Ð°Ð·Ð¼ÐµÑ
 		local function ApplySize(val)
 			val = math.clamp(math.floor(val + 0.5), 20, 120)
 			BtnSize = val
@@ -3025,16 +3025,9 @@ function redzlib:MakeWindow(Configs)
 			local sc = (val - 20) / 100
 			SizeFill.Size = UDim2.new(sc, 0, 1, 0)
 			SizeKnob.Position = UDim2.new(sc, 0, 0.5, 0)
-			SetFlag(BtnFlag .. "_size", val)
-			SaveJson("redz library V5.json", redzlib.Save)
+			SaveBtn()
 		end
 
-		SizeInput.FocusLost:Connect(function()
-			local n = tonumber(SizeInput.Text)
-			if n then ApplySize(n) end
-		end)
-
-		-- ÐÑÐ¸Ð¼ÐµÐ½Ð¸ÑÑ ÐÑÐ¾Ð·ÑÐ°ÑÐ½Ð¾ÑÑÑ
 		local function ApplyTrans(val)
 			val = math.clamp(math.floor(val * 100 + 0.5) / 100, 0, 1)
 			BtnTrans = val
@@ -3042,84 +3035,81 @@ function redzlib:MakeWindow(Configs)
 			TransInput.Text = tostring(val)
 			TransFill.Size = UDim2.new(val, 0, 1, 0)
 			TransKnob.Position = UDim2.new(val, 0, 0.5, 0)
-			SetFlag(BtnFlag .. "_trans", val)
-			SaveJson("redz library V5.json", redzlib.Save)
+			SaveBtn()
 		end
 
+		ImageInput.FocusLost:Connect(function() ApplyImage(ImageInput.Text) end)
+		SizeInput.FocusLost:Connect(function()
+			local n = tonumber(SizeInput.Text)
+			if n then ApplySize(n) end
+		end)
 		TransInput.FocusLost:Connect(function()
 			local n = tonumber(TransInput.Text)
 			if n then ApplyTrans(n) end
 		end)
 
-		-- Ð¡Ð»Ð°Ð¹Ð´ÐµÑ-Ð»Ð¾Ð³Ð¸ÐºÐ° (Size)
+		-- Ð¡Ð»Ð°Ð¹Ð´ÐµÑ-Ð»Ð¾Ð³Ð¸ÐºÐ°
 		local function SliderDrag(track, fill, knob, onValue, minV, maxV)
-			local dragging = false
-			local function Update(input)
-				local rel = (input.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X
-				rel = math.clamp(rel, 0, 1)
-				fill.Size = UDim2.new(rel, 0, 1, 0)
-				knob.Position = UDim2.new(rel, 0, 0.5, 0)
-				onValue(minV + rel * (maxV - minV))
-			end
 			track.InputBegan:Connect(function(inp)
 				if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
-					dragging = true
-					Update(inp)
 					while UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
 						RunService.Heartbeat:Wait()
 						local m = UserInputService:GetMouseLocation()
-						Update({Position = Vector3.new(m.X, m.Y, 0)})
+						local rel = math.clamp((m.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
+						fill.Size = UDim2.new(rel, 0, 1, 0)
+						knob.Position = UDim2.new(rel, 0, 0.5, 0)
+						onValue(minV + rel * (maxV - minV))
 					end
-					dragging = false
 				end
 			end)
 		end
 
-		SliderDrag(SizeTrack, SizeFill, SizeKnob, function(v) ApplySize(v) end, 20, 120)
-		SliderDrag(TransTrack, TransFill, TransKnob, function(v) ApplyTrans(v) end, 0, 1)
+		SliderDrag(SizeTrack, SizeFill, SizeKnob, ApplySize, 20, 120)
+		SliderDrag(TransTrack, TransFill, TransKnob, ApplyTrans, 0, 1)
 
-		-- ÐÐ°Ð¶Ð°ÑÐ¸Ðµ Ð²Ð½Ðµ Ð¿Ð°Ð½ÐµÐ»Ð¸ â Ð·Ð°ÐºÑÑÑÑ
+		-- ÐÐ°ÐºÑÑÑÑ Ð¿Ð°Ð½ÐµÐ»Ñ Ð¿ÑÐ¸ ÐºÐ»Ð¸ÐºÐµ Ð²Ð½Ðµ
 		UserInputService.InputBegan:Connect(function(inp)
-			if inp.UserInputType == Enum.UserInputType.MouseButton1 then
-				if PanelOpen then
-					local mp = UserInputService:GetMouseLocation()
-					local pp = Panel.AbsolutePosition
-					local ps = Panel.AbsoluteSize
-					local bp = Button.AbsolutePosition
-					local bs = Button.AbsoluteSize
-					local inPanel  = mp.X >= pp.X and mp.X <= pp.X + ps.X and mp.Y >= pp.Y and mp.Y <= pp.Y + ps.Y
-					local inButton = mp.X >= bp.X and mp.X <= bp.X + bs.X and mp.Y >= bp.Y and mp.Y <= bp.Y + bs.Y
-					if not inPanel and not inButton then CloseP() end
-				end
+			if inp.UserInputType == Enum.UserInputType.MouseButton1 and PanelOpen then
+				local m  = UserInputService:GetMouseLocation()
+				local pp = Panel.AbsolutePosition
+				local ps = Panel.AbsoluteSize
+				local bp = Button.AbsolutePosition
+				local bs = Button.AbsoluteSize
+				local inPanel  = m.X >= pp.X and m.X <= pp.X+ps.X and m.Y >= pp.Y and m.Y <= pp.Y+ps.Y
+				local inButton = m.X >= bp.X and m.X <= bp.X+bs.X and m.Y >= bp.Y and m.Y <= bp.Y+bs.Y
+				if not inPanel and not inButton then CloseP() end
 			end
 		end)
 
-		-- ÐÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ Ð´Ð¾Ð¿Ð¾Ð»Ð½Ð¸ÑÐµÐ»ÑÐ½ÑÐµ Ð¿ÑÐ¾Ð¿ÑÑ Ð¸Ð· Cfg.Button ÐµÑÐ»Ð¸ ÐµÑÑÑ
 		if Cfg.Button then SetProps(Button, Cfg.Button) end
 
-		-- Ð¡Ð¾ÑÑÐ°Ð½ÑÐµÐ¼ Ð¿Ð¾Ð·Ð¸ÑÐ¸Ñ Ð¿Ð¾ÑÐ»Ðµ Ð¿ÐµÑÐµÑÐ°ÑÐºÐ¸Ð²Ð°Ð½Ð¸Ñ
-		Button:GetPropertyChangedSignal("Position"):Connect(function()
-			if not PanelOpen then
-				local p = Button.Position
-				SetFlag(BtnFlag .. "_pos", {p.X.Offset, p.Y.Offset})
-				SaveJson("redz library V5.json", redzlib.Save)
-			end
-		end)
-
-		-- ÐÐµÑÐ¾Ð´ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ ÑÐ°Ð´Ð¸ÑÑÐ° ÑÐºÑÑÐ³Ð»ÐµÐ½Ð¸Ñ
-		local function ApplyCorner(udim)
-			BtnCornerInst.CornerRadius = udim
+		-- ÐÐ½Ð¸ÑÐ¸Ð°Ð»Ð¸Ð·Ð°ÑÐ¸Ñ SaveBtn Ð¿Ð¾ÑÐ»Ðµ ÑÐ¾Ð·Ð´Ð°Ð½Ð¸Ñ Button
+		SaveBtn = function()
+			local p = Button.Position
+			redzlib.Save.MinimizeButtons[BtnId] = {
+				size  = BtnSize,
+				trans = BtnTrans,
+				image = BtnImage,
+				posX  = p.X.Offset ~= 0 and p.X.Offset or nil,
+				posY  = p.Y.Offset ~= 0 and p.Y.Offset or nil,
+			}
+			SaveJson("redz library V5.json", redzlib.Save)
 		end
 
 		return {
-			Button = Button,
-			Panel  = Panel,
-			SetImage = function(_, img) ApplyImage(img) end,
-			SetSize  = function(_, sz)  ApplySize(sz)  end,
-			SetTrans = function(_, tr)  ApplyTrans(tr) end,
-			OpenSettings = OpenPanel,
+			Button        = Button,
+			Panel         = Panel,
+			SetImage      = function(_, img)  ApplyImage(img)         end,
+			SetSize       = function(_, sz)   ApplySize(sz)           end,
+			SetTrans      = function(_, tr)   ApplyTrans(tr)          end,
+			SetCorner     = function(_, udim) BtnCornerInst.CornerRadius = udim end,
+			OpenSettings  = OpenPanel,
 			CloseSettings = CloseP,
-			SetCorner = function(_, udim) ApplyCorner(udim) end
+			Destroy       = function(_)
+				CloseP()
+				Button:Destroy()
+				Panel:Destroy()
+			end
 		}
 	end
 	function Window:Set(Val1, Val2)
@@ -3316,7 +3306,6 @@ function redzlib:MakeWindow(Configs)
 			Create("UIListLayout", { Padding = UDim.new(0, 5) })
 		}), "ScrollBar")
 
-		local RootContainer = Container  -- ÑÐ¾ÑÑÐ°Ð½ÑÐµÐ¼ ÐºÐ¾ÑÐ½ÐµÐ²Ð¾Ð¹ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ ÑÐ°Ð±Ð°
 		table.insert(ContainerList, Container)
 		if not FirstTab then Container.Parent = Containers end
 
@@ -3367,9 +3356,6 @@ function redzlib:MakeWindow(Configs)
 		function Tab:AddSection(Configs)
 			local SectionName = type(Configs) == "string" and Configs or Configs[1] or Configs.Name or Configs.Title or Configs.Section
 
-			-- Ð¡Ð±ÑÐ°ÑÑÐ²Ð°ÐµÐ¼ Container ÐµÑÐ»Ð¸ Ð±ÑÐ» Ð² DropdownSection
-			Container = RootContainer
-
 			local SectionFrame = Create("Frame", Container, {
 				Size = UDim2.new(1, 0, 0, 20),
 				BackgroundTransparency = 1,
@@ -3401,184 +3387,6 @@ function redzlib:MakeWindow(Configs)
 			return Section
 		end
 
-		-- ================================================================
-		-- AddDropdownSection â Ð°ÐºÐºÐ¾ÑÐ´ÐµÐ¾Ð½-ÑÐµÐºÑÐ¸Ñ (Ð²ÑÐµ ÑÐ»ÐµÐ¼ÐµÐ½ÑÑ Ð½Ð¸Ð¶Ðµ Ð´Ð¾
-		-- ÑÐ»ÐµÐ´ÑÑÑÐµÐ¹ ÑÐµÐºÑÐ¸Ð¸ Ð°Ð²ÑÐ¾Ð¼Ð°ÑÐ¸ÑÐµÑÐºÐ¸ Ð¿Ð¾Ð¼ÐµÑÐ°ÑÑÑÑ Ð²Ð½ÑÑÑÑ)
-		-- ================================================================
-		function Tab:AddDropdownSection(Configs)
-			local SectionName = type(Configs) == "string" and Configs or Configs[1] or Configs.Name or Configs.Title or Configs.Section
-			local Flag = (type(Configs) == "table" and (Configs.Flag or Configs[2])) or false
-			local DefaultOpen = (type(Configs) == "table" and Configs.DefaultOpen) or false
-
-			-- Ð¡Ð±ÑÐ°ÑÑÐ²Ð°ÐµÐ¼ Container ÐµÑÐ»Ð¸ Ð±ÑÐ» Ð² Ð¿ÑÐµÐ´ÑÐ´ÑÑÐµÐ¹ DropdownSection
-			Container = RootContainer
-
-			-- ÐÐ°Ð³ÑÑÐ¶Ð°ÐµÐ¼ ÑÐ¾ÑÑÐ°Ð½ÑÐ½Ð½Ð¾Ðµ ÑÐ¾ÑÑÐ¾ÑÐ½Ð¸Ðµ (Ð¾ÑÐºÑÑÑ/Ð·Ð°ÐºÑÑÑ)
-			local isOpen = DefaultOpen
-			if CheckFlag(Flag) then
-				local saved = GetFlag(Flag)
-				if type(saved) == "boolean" then isOpen = saved end
-			end
-
-			-- Ð¨Ð°Ð¿ÐºÐ° ÑÐµÐºÑÐ¸Ð¸ (ÐºÐ»Ð¸ÐºÐ°Ð±ÐµÐ»ÑÐ½Ð°Ñ) â Ð´Ð¾Ð±Ð°Ð²Ð»ÑÐµÑÑÑ Ð² Ð¾ÑÐ½Ð¾Ð²Ð½Ð¾Ð¹ Container ÑÐ°Ð±Ð°
-			local HeaderFrame = Create("Frame", Container, {
-				Size = UDim2.new(1, 0, 0, 26),
-				BackgroundTransparency = 1,
-				Name = "Option"
-			})
-
-			local HeaderBtn = InsertTheme(Create("TextButton", HeaderFrame, {
-				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundColor3 = Theme["Color Hub 2"],
-				AutoButtonColor = false,
-				Text = "",
-				Name = "SectionHeader"
-			}), "Frame")
-			Make("Corner", HeaderBtn, UDim.new(0, 6))
-			Make("Stroke", HeaderBtn)
-
-			local SectionLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
-				Font = Enum.Font.GothamBold,
-				Text = SectionName,
-				TextColor3 = Theme["Color Text"],
-				Size = UDim2.new(1, -38, 1, 0),
-				Position = UDim2.new(0, 10),
-				BackgroundTransparency = 1,
-				TextTruncate = "AtEnd",
-				TextSize = 10,
-				TextXAlignment = "Left"
-			}), "Text")
-
-			local ArrowIcon = InsertTheme(Create("ImageLabel", HeaderBtn, {
-				Size = UDim2.new(0, 12, 0, 12),
-				Position = UDim2.new(1, -10, 0.5),
-				AnchorPoint = Vector2.new(1, 0.5),
-				BackgroundTransparency = 1,
-				Image = "rbxassetid://10709791523",
-				ImageColor3 = Theme["Color Dark Text"]
-			}), "DarkText")
-
-			-- ÐÐ±ÑÑÑÐºÐ°-ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ: ClipsDescendants Ð´Ð»Ñ Ð°Ð½Ð¸Ð¼Ð°ÑÐ¸Ð¸ ÑÐºÑÑÑÐ¸Ñ
-			-- ÐÐ½ÑÑÑÐ¸ â ScrollingFrame ÑÑÐ¾Ð±Ñ ÐºÐ¾Ð½ÑÐµÐ½Ñ ÑÐºÑÐ¾Ð»Ð»Ð¸Ð»ÑÑ ÐµÑÐ»Ð¸ Ð±Ð¾Ð»ÑÑÐ¾Ð¹
-			local WrapFrame = Create("Frame", Container, {
-				Size = UDim2.new(1, 0, 0, 0),
-				BackgroundTransparency = 1,
-				ClipsDescendants = true,
-				Name = "Option"
-			})
-
-			-- ÐÐ½ÑÑÑÐµÐ½Ð½Ð¸Ð¹ Frame ÐºÐ¾ÑÐ¾ÑÑÐ¹ ÑÐµÐ°Ð»ÑÐ½Ð¾ ÑÑÐ°Ð½Ð¸Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÑ
-			local ChildContainer = Create("Frame", WrapFrame, {
-				Size = UDim2.new(1, 0, 0, 0),
-				AutomaticSize = "Y",
-				BackgroundTransparency = 1,
-				Name = "ChildContent"
-			}, {
-				Create("UIPadding", {
-					PaddingLeft = UDim.new(0, 10),
-					PaddingRight = UDim.new(0, 0),
-					PaddingTop = UDim.new(0, 5),
-					PaddingBottom = UDim.new(0, 5)
-				}),
-				Create("UIListLayout", {
-					Padding = UDim.new(0, 5),
-					SortOrder = "LayoutOrder"
-				})
-			})
-
-			-- ÐÐµÑÑÐ¸ÐºÐ°Ð»ÑÐ½Ð°Ñ Ð»Ð¸Ð½Ð¸Ñ-Ð°ÐºÑÐµÐ½Ñ ÑÐ»ÐµÐ²Ð°
-			local SideLine = InsertTheme(Create("Frame", WrapFrame, {
-				Size = UDim2.new(0, 2, 1, 0),
-				Position = UDim2.new(0, 2, 0, 0),
-				BackgroundColor3 = Theme["Color Theme"],
-				BorderSizePixel = 0,
-				ZIndex = 2
-			}), "Theme")
-			Make("Corner", SideLine, UDim.new(0.5, 0))
-
-			local ChildList = ChildContainer:FindFirstChildOfClass("UIListLayout")
-
-			-- ÐÐµÑÐµÑÑÑÑ Ð²ÑÑÐ¾ÑÑ WrapFrame Ð¿Ð¾ ÑÐµÐ°Ð»ÑÐ½Ð¾Ð¼Ñ ÐºÐ¾Ð½ÑÐµÐ½ÑÑ
-			local function RecalcWrap()
-				if isOpen then
-					local h = ChildContainer.AbsoluteSize.Y
-					if h == 0 then h = ChildList.AbsoluteContentSize.Y + 10 end
-					WrapFrame.Size = UDim2.new(1, 0, 0, math.max(h, 10))
-				else
-					WrapFrame.Size = UDim2.new(1, 0, 0, 0)
-				end
-			end
-
-			ChildContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-				if isOpen then RecalcWrap() end
-			end)
-
-			local function SetOpen(val, instant)
-				isOpen = val
-				SetFlag(Flag, isOpen)
-
-				local targetRot = isOpen and 180 or 0
-				local targetH = isOpen and math.max(ChildList.AbsoluteContentSize.Y + 10, 10) or 0
-
-				if instant then
-					ArrowIcon.Rotation = targetRot
-					WrapFrame.Size = UDim2.new(1, 0, 0, targetH)
-				else
-					CreateTween({ArrowIcon, "Rotation", targetRot, 0.25})
-					CreateTween({WrapFrame, "Size", UDim2.new(1, 0, 0, targetH), 0.25})
-				end
-			end
-
-			HeaderBtn.Activated:Connect(function()
-				SetOpen(not isOpen)
-			end)
-
-			-- ============================================================
-			-- ÐÐÐ®Ð§ÐÐÐÐ¯ ÐÐÐÐÐÐ: Ð¿ÐµÑÐµÐºÐ»ÑÑÐ°ÐµÐ¼ Container upvalue Ð½Ð° ChildContainer
-			-- ÐÑÐµ Ð²ÑÐ·Ð¾Ð²Ñ Tab:AddXxx Ð¿Ð¾ÑÐ»Ðµ ÑÑÐ¾Ð¹ ÑÐµÐºÑÐ¸Ð¸ Ð±ÑÐ´ÑÑ Ð´Ð¾Ð±Ð°Ð²Ð»ÑÑÑ
-			-- ÑÐ»ÐµÐ¼ÐµÐ½ÑÑ Ð² ChildContainer Ð¿Ð¾ÐºÐ° Ð½Ðµ Ð²ÑÐ·Ð²Ð°Ð½ DropSection:Close()
-			-- Ð¸Ð»Ð¸ Ð´Ð¾ ÑÐ»ÐµÐ´ÑÑÑÐµÐ¹ Tab:AddSection / Tab:AddDropdownSection
-			-- ============================================================
-			local prevContainer = Container
-			Container = ChildContainer
-
-			-- ÐÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ Ð½Ð°ÑÐ°Ð»ÑÐ½Ð¾Ðµ ÑÐ¾ÑÑÐ¾ÑÐ½Ð¸Ðµ Ð¿Ð¾ÑÐ»Ðµ Ð·Ð°Ð³ÑÑÐ·ÐºÐ¸ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð²
-			local DropSection = {}
-
-			function DropSection:_finalize()
-				-- ÐÐ¾ÑÑÑÐ°Ð½Ð°Ð²Ð»Ð¸Ð²Ð°ÐµÐ¼ Container Ð¸ Ð¿ÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ ÑÐ¾ÑÑÐ¾ÑÐ½Ð¸Ðµ
-				Container = prevContainer
-				task.defer(function()
-					SetOpen(isOpen, true)
-				end)
-			end
-
-			function DropSection:SetTitle(New)
-				if New then SectionLabel.Text = GetStr(New) end
-			end
-			function DropSection:Set(New) self:SetTitle(New) end
-			function DropSection:Open() SetOpen(true) end
-			function DropSection:Close()
-				-- ÐÑÐ»Ð¸ Container ÐµÑÑ ÑÐºÐ°Ð·ÑÐ²Ð°ÐµÑ Ð½Ð° Ð½Ð°Ñ â Ð·Ð°ÐºÑÑÐ²Ð°ÐµÐ¼ ÑÐµÐºÑÐ¸Ñ
-				if Container == ChildContainer then
-					Container = prevContainer
-				end
-				SetOpen(false)
-			end
-			function DropSection:Toggle() SetOpen(not isOpen) end
-			function DropSection:Visible(Bool)
-				local v = Bool == nil and not HeaderFrame.Visible or Bool
-				HeaderFrame.Visible = v
-				WrapFrame.Visible = v
-			end
-			function DropSection:Destroy()
-				if Container == ChildContainer then Container = prevContainer end
-				HeaderFrame:Destroy()
-				WrapFrame:Destroy()
-			end
-
-			return DropSection
-		end
 
 		-- ================================================================
 		-- AddParagraph
@@ -3734,7 +3542,6 @@ function redzlib:MakeWindow(Configs)
 			local Flag = Configs[5] or Configs.Flag or false
 			local DMultiSelect = Configs.MultiSelect or false
 			local Callback = Funcs:GetCallback(Configs, 4)
-			local DFontSize = Configs.FontSize or Configs.TextSize or 9  -- Ð½Ð°ÑÑÑÐ¾Ð¹ÐºÐ° ÑÐ°Ð·Ð¼ÐµÑÐ° ÑÑÐ¸ÑÑÐ° Ð¾Ð¿ÑÐ¸Ð¹
 
 			local Button, LabelFunc = ButtonFrame(Container, DName, DDesc, UDim2.new(1, -180))
 
@@ -4037,7 +3844,6 @@ function redzlib:MakeWindow(Configs)
 						Text = Name,
 						TextColor3 = Theme["Color Text"],
 						Font = Enum.Font.GothamBold,
-						TextSize = DFontSize,
 						TextXAlignment = "Left",
 						BackgroundTransparency = 1,
 						TextTransparency = 0.4
