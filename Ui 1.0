@@ -719,6 +719,500 @@ local redzlib = {
 			["Color Text"] = Color3.fromRGB(255, 225, 250),
 			["Color Dark Text"] = Color3.fromRGB(215, 160, 205)
 		},
+		-- ===== NEW 40 THEMES (total 100) =====
+		Titan = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(12, 12, 18)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(18, 18, 26)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(12, 12, 18))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(15, 15, 22),
+			["Color Stroke"] = Color3.fromRGB(32, 32, 48),
+			["Color Theme"] = Color3.fromRGB(180, 180, 255),
+			["Color Text"] = Color3.fromRGB(230, 230, 255),
+			["Color Dark Text"] = Color3.fromRGB(155, 155, 210)
+		},
+		Flame = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(30, 8, 4)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(44, 12, 6)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(24, 10, 6))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(37, 10, 5),
+			["Color Stroke"] = Color3.fromRGB(70, 20, 10),
+			["Color Theme"] = Color3.fromRGB(255, 60, 0),
+			["Color Text"] = Color3.fromRGB(255, 228, 218),
+			["Color Dark Text"] = Color3.fromRGB(210, 148, 120)
+		},
+		Mist = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(28, 30, 34)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(36, 40, 46)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 30, 34))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(32, 35, 40),
+			["Color Stroke"] = Color3.fromRGB(55, 60, 70),
+			["Color Theme"] = Color3.fromRGB(165, 190, 220),
+			["Color Text"] = Color3.fromRGB(228, 235, 245),
+			["Color Dark Text"] = Color3.fromRGB(160, 175, 198)
+		},
+		Orchid = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(28, 10, 34)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(38, 14, 46)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 10, 34))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(33, 12, 40),
+			["Color Stroke"] = Color3.fromRGB(60, 22, 74),
+			["Color Theme"] = Color3.fromRGB(220, 100, 255),
+			["Color Text"] = Color3.fromRGB(245, 220, 255),
+			["Color Dark Text"] = Color3.fromRGB(192, 152, 225)
+		},
+		Bronze = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(26, 14, 6)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(36, 20, 8)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(26, 14, 6))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(31, 17, 7),
+			["Color Stroke"] = Color3.fromRGB(58, 32, 14),
+			["Color Theme"] = Color3.fromRGB(205, 130, 70),
+			["Color Text"] = Color3.fromRGB(255, 238, 220),
+			["Color Dark Text"] = Color3.fromRGB(200, 165, 125)
+		},
+		Neptune = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(6, 16, 36)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(8, 22, 50)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(6, 16, 36))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(7, 19, 43),
+			["Color Stroke"] = Color3.fromRGB(14, 38, 80),
+			["Color Theme"] = Color3.fromRGB(60, 200, 200),
+			["Color Text"] = Color3.fromRGB(210, 248, 252),
+			["Color Dark Text"] = Color3.fromRGB(130, 195, 210)
+		},
+		Glacier2 = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(20, 30, 45)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(26, 40, 60)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(20, 30, 45))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(23, 35, 52),
+			["Color Stroke"] = Color3.fromRGB(40, 65, 95),
+			["Color Theme"] = Color3.fromRGB(150, 230, 255),
+			["Color Text"] = Color3.fromRGB(220, 248, 255),
+			["Color Dark Text"] = Color3.fromRGB(148, 200, 235)
+		},
+		Ruby = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(32, 8, 14)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(44, 11, 19)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(32, 8, 14))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(38, 9, 16),
+			["Color Stroke"] = Color3.fromRGB(70, 18, 30),
+			["Color Theme"] = Color3.fromRGB(255, 50, 80),
+			["Color Text"] = Color3.fromRGB(255, 220, 228),
+			["Color Dark Text"] = Color3.fromRGB(210, 145, 158)
+		},
+		Hazel = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(26, 20, 12)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(35, 28, 16)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(26, 20, 12))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(30, 24, 14),
+			["Color Stroke"] = Color3.fromRGB(56, 45, 26),
+			["Color Theme"] = Color3.fromRGB(190, 155, 90),
+			["Color Text"] = Color3.fromRGB(250, 242, 225),
+			["Color Dark Text"] = Color3.fromRGB(195, 172, 130)
+		},
+		Moonlight = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(12, 12, 24)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(16, 16, 34)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(12, 12, 24))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(14, 14, 29),
+			["Color Stroke"] = Color3.fromRGB(28, 28, 58),
+			["Color Theme"] = Color3.fromRGB(200, 210, 255),
+			["Color Text"] = Color3.fromRGB(232, 235, 255),
+			["Color Dark Text"] = Color3.fromRGB(165, 170, 225)
+		},
+		Citrus = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(28, 24, 6)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(38, 34, 8)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 24, 6))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(33, 29, 7),
+			["Color Stroke"] = Color3.fromRGB(60, 54, 14),
+			["Color Theme"] = Color3.fromRGB(255, 225, 0),
+			["Color Text"] = Color3.fromRGB(255, 252, 210),
+			["Color Dark Text"] = Color3.fromRGB(210, 195, 130)
+		},
+		Lagoon = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(6, 22, 28)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(8, 30, 38)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(6, 22, 28))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(7, 26, 33),
+			["Color Stroke"] = Color3.fromRGB(14, 50, 64),
+			["Color Theme"] = Color3.fromRGB(0, 210, 175),
+			["Color Text"] = Color3.fromRGB(210, 255, 248),
+			["Color Dark Text"] = Color3.fromRGB(130, 202, 192)
+		},
+		Phantom = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(10, 8, 16)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(14, 11, 22)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(10, 8, 16))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(12, 9, 19),
+			["Color Stroke"] = Color3.fromRGB(26, 20, 42),
+			["Color Theme"] = Color3.fromRGB(130, 255, 200),
+			["Color Text"] = Color3.fromRGB(218, 255, 240),
+			["Color Dark Text"] = Color3.fromRGB(142, 210, 180)
+		},
+		Tangerine = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(32, 16, 6)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(44, 22, 8)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(32, 16, 6))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(38, 19, 7),
+			["Color Stroke"] = Color3.fromRGB(70, 36, 14),
+			["Color Theme"] = Color3.fromRGB(255, 160, 0),
+			["Color Text"] = Color3.fromRGB(255, 242, 215),
+			["Color Dark Text"] = Color3.fromRGB(215, 178, 125)
+		},
+		Electric = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(6, 10, 30)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(8, 14, 42)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(6, 10, 30))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(7, 12, 36),
+			["Color Stroke"] = Color3.fromRGB(14, 24, 68),
+			["Color Theme"] = Color3.fromRGB(60, 140, 255),
+			["Color Text"] = Color3.fromRGB(215, 235, 255),
+			["Color Dark Text"] = Color3.fromRGB(138, 178, 240)
+		},
+		Sepia = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(30, 22, 14)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(40, 30, 18)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(30, 22, 14))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(35, 26, 16),
+			["Color Stroke"] = Color3.fromRGB(64, 48, 30),
+			["Color Theme"] = Color3.fromRGB(200, 160, 110),
+			["Color Text"] = Color3.fromRGB(255, 242, 225),
+			["Color Dark Text"] = Color3.fromRGB(200, 175, 145)
+		},
+		Haze = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(22, 16, 26)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(30, 22, 36)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(22, 16, 26))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(26, 19, 31),
+			["Color Stroke"] = Color3.fromRGB(48, 36, 58),
+			["Color Theme"] = Color3.fromRGB(180, 140, 220),
+			["Color Text"] = Color3.fromRGB(240, 230, 255),
+			["Color Dark Text"] = Color3.fromRGB(178, 155, 210)
+		},
+		Iron = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(20, 20, 22)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(28, 28, 30)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(20, 20, 22))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(24, 24, 26),
+			["Color Stroke"] = Color3.fromRGB(48, 48, 52),
+			["Color Theme"] = Color3.fromRGB(185, 195, 210),
+			["Color Text"] = Color3.fromRGB(235, 238, 245),
+			["Color Dark Text"] = Color3.fromRGB(162, 168, 182)
+		},
+		Meadow = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(12, 24, 14)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(17, 33, 19)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(12, 24, 14))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(14, 28, 16),
+			["Color Stroke"] = Color3.fromRGB(26, 52, 30),
+			["Color Theme"] = Color3.fromRGB(120, 210, 90),
+			["Color Text"] = Color3.fromRGB(222, 250, 214),
+			["Color Dark Text"] = Color3.fromRGB(148, 202, 132)
+		},
+		Vapor = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(14, 8, 28)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(22, 12, 40)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(8, 14, 32))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(18, 10, 34),
+			["Color Stroke"] = Color3.fromRGB(36, 20, 64),
+			["Color Theme"] = Color3.fromRGB(255, 80, 255),
+			["Color Text"] = Color3.fromRGB(255, 220, 255),
+			["Color Dark Text"] = Color3.fromRGB(210, 155, 225)
+		},
+		Nordic = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(16, 20, 28)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(22, 28, 38)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(16, 20, 28))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(19, 24, 33),
+			["Color Stroke"] = Color3.fromRGB(36, 46, 62),
+			["Color Theme"] = Color3.fromRGB(100, 200, 240),
+			["Color Text"] = Color3.fromRGB(220, 240, 252),
+			["Color Dark Text"] = Color3.fromRGB(145, 185, 218)
+		},
+		Velvet = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(28, 8, 20)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(38, 11, 28)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 8, 20))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(33, 9, 24),
+			["Color Stroke"] = Color3.fromRGB(62, 18, 46),
+			["Color Theme"] = Color3.fromRGB(200, 50, 140),
+			["Color Text"] = Color3.fromRGB(255, 218, 240),
+			["Color Dark Text"] = Color3.fromRGB(210, 145, 185)
+		},
+		Dawn = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(36, 20, 16)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(48, 28, 22)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 18, 24))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(42, 24, 19),
+			["Color Stroke"] = Color3.fromRGB(74, 44, 34),
+			["Color Theme"] = Color3.fromRGB(255, 180, 130),
+			["Color Text"] = Color3.fromRGB(255, 242, 232),
+			["Color Dark Text"] = Color3.fromRGB(215, 180, 158)
+		},
+		Phosphor = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(6, 14, 8)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(8, 20, 11)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(6, 14, 8))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(7, 17, 9),
+			["Color Stroke"] = Color3.fromRGB(14, 36, 18),
+			["Color Theme"] = Color3.fromRGB(50, 255, 80),
+			["Color Text"] = Color3.fromRGB(200, 255, 210),
+			["Color Dark Text"] = Color3.fromRGB(120, 205, 140)
+		},
+		Noir = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(6, 6, 6)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(10, 10, 10)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(6, 6, 6))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(8, 8, 8),
+			["Color Stroke"] = Color3.fromRGB(22, 22, 22),
+			["Color Theme"] = Color3.fromRGB(240, 240, 240),
+			["Color Text"] = Color3.fromRGB(248, 248, 248),
+			["Color Dark Text"] = Color3.fromRGB(170, 170, 170)
+		},
+		Wildfire = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(32, 12, 4)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(44, 18, 6)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(28, 14, 8))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(38, 15, 5),
+			["Color Stroke"] = Color3.fromRGB(70, 28, 10),
+			["Color Theme"] = Color3.fromRGB(255, 110, 20),
+			["Color Text"] = Color3.fromRGB(255, 235, 218),
+			["Color Dark Text"] = Color3.fromRGB(215, 165, 130)
+		},
+		Polar = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(18, 28, 40)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(24, 38, 55)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(18, 28, 40))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(21, 33, 47),
+			["Color Stroke"] = Color3.fromRGB(38, 60, 86),
+			["Color Theme"] = Color3.fromRGB(180, 240, 255),
+			["Color Text"] = Color3.fromRGB(228, 248, 255),
+			["Color Dark Text"] = Color3.fromRGB(155, 200, 232)
+		},
+		Shadow = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(8, 8, 10)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(12, 12, 15)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(8, 8, 10))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(10, 10, 12),
+			["Color Stroke"] = Color3.fromRGB(24, 24, 30),
+			["Color Theme"] = Color3.fromRGB(255, 255, 80),
+			["Color Text"] = Color3.fromRGB(255, 255, 220),
+			["Color Dark Text"] = Color3.fromRGB(200, 200, 145)
+		},
+		Prism = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(10, 14, 26)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(16, 20, 38)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(14, 10, 30))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(13, 17, 32),
+			["Color Stroke"] = Color3.fromRGB(26, 34, 64),
+			["Color Theme"] = Color3.fromRGB(100, 255, 255),
+			["Color Text"] = Color3.fromRGB(215, 252, 255),
+			["Color Dark Text"] = Color3.fromRGB(138, 200, 220)
+		},
+		Cacao = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(24, 14, 8)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(33, 20, 11)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(24, 14, 8))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(28, 17, 9),
+			["Color Stroke"] = Color3.fromRGB(52, 32, 18),
+			["Color Theme"] = Color3.fromRGB(175, 120, 80),
+			["Color Text"] = Color3.fromRGB(255, 240, 228),
+			["Color Dark Text"] = Color3.fromRGB(195, 162, 132)
+		},
+		Starlight = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(8, 8, 20)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(12, 12, 30)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(8, 8, 20))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(10, 10, 25),
+			["Color Stroke"] = Color3.fromRGB(22, 22, 52),
+			["Color Theme"] = Color3.fromRGB(255, 240, 160),
+			["Color Text"] = Color3.fromRGB(255, 252, 232),
+			["Color Dark Text"] = Color3.fromRGB(210, 198, 155)
+		},
+		Seafoam = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(8, 24, 22)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(11, 33, 30)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(8, 24, 22))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(9, 28, 26),
+			["Color Stroke"] = Color3.fromRGB(18, 54, 50),
+			["Color Theme"] = Color3.fromRGB(80, 230, 190),
+			["Color Text"] = Color3.fromRGB(210, 255, 248),
+			["Color Dark Text"] = Color3.fromRGB(130, 202, 190)
+		},
+		Lapis = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(10, 16, 44)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(14, 22, 60)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(10, 16, 44))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(12, 19, 52),
+			["Color Stroke"] = Color3.fromRGB(22, 36, 96),
+			["Color Theme"] = Color3.fromRGB(80, 150, 255),
+			["Color Text"] = Color3.fromRGB(215, 232, 255),
+			["Color Dark Text"] = Color3.fromRGB(138, 172, 235)
+		},
+		Spice = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(30, 14, 8)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(40, 20, 10)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(30, 14, 8))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(35, 17, 9),
+			["Color Stroke"] = Color3.fromRGB(64, 32, 18),
+			["Color Theme"] = Color3.fromRGB(225, 100, 50),
+			["Color Text"] = Color3.fromRGB(255, 235, 220),
+			["Color Dark Text"] = Color3.fromRGB(210, 160, 132)
+		},
+		Matrix = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(0, 10, 0)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 14, 0)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 10, 0))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(0, 12, 0),
+			["Color Stroke"] = Color3.fromRGB(0, 30, 0),
+			["Color Theme"] = Color3.fromRGB(0, 255, 70),
+			["Color Text"] = Color3.fromRGB(180, 255, 190),
+			["Color Dark Text"] = Color3.fromRGB(0, 180, 44)
+		},
+		Bismuth = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(18, 16, 24)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(24, 22, 32)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(18, 16, 24))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(21, 19, 28),
+			["Color Stroke"] = Color3.fromRGB(40, 36, 54),
+			["Color Theme"] = Color3.fromRGB(160, 210, 200),
+			["Color Text"] = Color3.fromRGB(228, 242, 240),
+			["Color Dark Text"] = Color3.fromRGB(155, 192, 185)
+		},
+		Glow = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(4, 8, 22)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(6, 12, 32)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(4, 8, 22))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(5, 10, 27),
+			["Color Stroke"] = Color3.fromRGB(10, 20, 54),
+			["Color Theme"] = Color3.fromRGB(80, 200, 255),
+			["Color Text"] = Color3.fromRGB(210, 240, 255),
+			["Color Dark Text"] = Color3.fromRGB(130, 185, 230)
+		},
+		Terra = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(22, 16, 10)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(30, 22, 14)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(22, 16, 10))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(26, 19, 12),
+			["Color Stroke"] = Color3.fromRGB(48, 36, 22),
+			["Color Theme"] = Color3.fromRGB(160, 120, 70),
+			["Color Text"] = Color3.fromRGB(248, 238, 222),
+			["Color Dark Text"] = Color3.fromRGB(192, 165, 130)
+		},
+		Rift = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(10, 6, 22)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(14, 8, 32)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(10, 6, 22))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(12, 7, 27),
+			["Color Stroke"] = Color3.fromRGB(24, 14, 54),
+			["Color Theme"] = Color3.fromRGB(150, 80, 255),
+			["Color Text"] = Color3.fromRGB(228, 215, 255),
+			["Color Dark Text"] = Color3.fromRGB(158, 135, 220)
+		},
+		Basalt = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(16, 14, 12)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(22, 20, 17)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(16, 14, 12))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(19, 17, 14),
+			["Color Stroke"] = Color3.fromRGB(38, 34, 28),
+			["Color Theme"] = Color3.fromRGB(160, 155, 145),
+			["Color Text"] = Color3.fromRGB(240, 236, 230),
+			["Color Dark Text"] = Color3.fromRGB(170, 162, 150)
+		},
+		Wildberry = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(30, 8, 20)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(42, 11, 28)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(30, 8, 20))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(36, 9, 24),
+			["Color Stroke"] = Color3.fromRGB(66, 18, 46),
+			["Color Theme"] = Color3.fromRGB(240, 60, 140),
+			["Color Text"] = Color3.fromRGB(255, 218, 238),
+			["Color Dark Text"] = Color3.fromRGB(210, 145, 180)
+		},
+
 	},
 	Info = {
 		Version = "1.2.0"
@@ -2502,6 +2996,7 @@ function redzlib:MakeWindow(Configs)
 			Create("UIListLayout", { Padding = UDim.new(0, 5) })
 		}), "ScrollBar")
 
+		local RootContainer = Container  -- ÑÐ¾ÑÑÐ°Ð½ÑÐµÐ¼ ÐºÐ¾ÑÐ½ÐµÐ²Ð¾Ð¹ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ ÑÐ°Ð±Ð°
 		table.insert(ContainerList, Container)
 		if not FirstTab then Container.Parent = Containers end
 
@@ -2552,6 +3047,9 @@ function redzlib:MakeWindow(Configs)
 		function Tab:AddSection(Configs)
 			local SectionName = type(Configs) == "string" and Configs or Configs[1] or Configs.Name or Configs.Title or Configs.Section
 
+			-- Ð¡Ð±ÑÐ°ÑÑÐ²Ð°ÐµÐ¼ Container ÐµÑÐ»Ð¸ Ð±ÑÐ» Ð² DropdownSection
+			Container = RootContainer
+
 			local SectionFrame = Create("Frame", Container, {
 				Size = UDim2.new(1, 0, 0, 20),
 				BackgroundTransparency = 1,
@@ -2584,12 +3082,16 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		-- ================================================================
-		-- AddDropdownSection â ÑÐµÐºÑÐ¸Ñ-Ð°ÐºÐºÐ¾ÑÐ´ÐµÐ¾Ð½ Ñ ÑÐ¾ÑÑÐ°Ð½ÐµÐ½Ð¸ÐµÐ¼ ÑÐ¾ÑÑÐ¾ÑÐ½Ð¸Ñ
+		-- AddDropdownSection â Ð°ÐºÐºÐ¾ÑÐ´ÐµÐ¾Ð½-ÑÐµÐºÑÐ¸Ñ (Ð²ÑÐµ ÑÐ»ÐµÐ¼ÐµÐ½ÑÑ Ð½Ð¸Ð¶Ðµ Ð´Ð¾
+		-- ÑÐ»ÐµÐ´ÑÑÑÐµÐ¹ ÑÐµÐºÑÐ¸Ð¸ Ð°Ð²ÑÐ¾Ð¼Ð°ÑÐ¸ÑÐµÑÐºÐ¸ Ð¿Ð¾Ð¼ÐµÑÐ°ÑÑÑÑ Ð²Ð½ÑÑÑÑ)
 		-- ================================================================
 		function Tab:AddDropdownSection(Configs)
 			local SectionName = type(Configs) == "string" and Configs or Configs[1] or Configs.Name or Configs.Title or Configs.Section
 			local Flag = (type(Configs) == "table" and (Configs.Flag or Configs[2])) or false
 			local DefaultOpen = (type(Configs) == "table" and Configs.DefaultOpen) or false
+
+			-- Ð¡Ð±ÑÐ°ÑÑÐ²Ð°ÐµÐ¼ Container ÐµÑÐ»Ð¸ Ð±ÑÐ» Ð² Ð¿ÑÐµÐ´ÑÐ´ÑÑÐµÐ¹ DropdownSection
+			Container = RootContainer
 
 			-- ÐÐ°Ð³ÑÑÐ¶Ð°ÐµÐ¼ ÑÐ¾ÑÑÐ°Ð½ÑÐ½Ð½Ð¾Ðµ ÑÐ¾ÑÑÐ¾ÑÐ½Ð¸Ðµ (Ð¾ÑÐºÑÑÑ/Ð·Ð°ÐºÑÑÑ)
 			local isOpen = DefaultOpen
@@ -2598,7 +3100,7 @@ function redzlib:MakeWindow(Configs)
 				if type(saved) == "boolean" then isOpen = saved end
 			end
 
-			-- Ð¨Ð°Ð¿ÐºÐ° ÑÐµÐºÑÐ¸Ð¸ (ÐºÐ»Ð¸ÐºÐ°Ð±ÐµÐ»ÑÐ½Ð°Ñ)
+			-- Ð¨Ð°Ð¿ÐºÐ° ÑÐµÐºÑÐ¸Ð¸ (ÐºÐ»Ð¸ÐºÐ°Ð±ÐµÐ»ÑÐ½Ð°Ñ) â Ð´Ð¾Ð±Ð°Ð²Ð»ÑÐµÑÑÑ Ð² Ð¾ÑÐ½Ð¾Ð²Ð½Ð¾Ð¹ Container ÑÐ°Ð±Ð°
 			local HeaderFrame = Create("Frame", Container, {
 				Size = UDim2.new(1, 0, 0, 26),
 				BackgroundTransparency = 1,
@@ -2636,16 +3138,27 @@ function redzlib:MakeWindow(Configs)
 				ImageColor3 = Theme["Color Dark Text"]
 			}), "DarkText")
 
-			-- ÐÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ Ð´Ð»Ñ Ð´Ð¾ÑÐµÑÐ½Ð¸Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð²
-			local ChildContainer = Create("Frame", Container, {
+			-- ÐÐ±ÑÑÑÐºÐ°-ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ: ClipsDescendants Ð´Ð»Ñ Ð°Ð½Ð¸Ð¼Ð°ÑÐ¸Ð¸ ÑÐºÑÑÑÐ¸Ñ
+			-- ÐÐ½ÑÑÑÐ¸ â ScrollingFrame ÑÑÐ¾Ð±Ñ ÐºÐ¾Ð½ÑÐµÐ½Ñ ÑÐºÑÐ¾Ð»Ð»Ð¸Ð»ÑÑ ÐµÑÐ»Ð¸ Ð±Ð¾Ð»ÑÑÐ¾Ð¹
+			local WrapFrame = Create("Frame", Container, {
 				Size = UDim2.new(1, 0, 0, 0),
 				BackgroundTransparency = 1,
 				ClipsDescendants = true,
 				Name = "Option"
+			})
+
+			-- ÐÐ½ÑÑÑÐµÐ½Ð½Ð¸Ð¹ Frame ÐºÐ¾ÑÐ¾ÑÑÐ¹ ÑÐµÐ°Ð»ÑÐ½Ð¾ ÑÑÐ°Ð½Ð¸Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÑ
+			local ChildContainer = Create("Frame", WrapFrame, {
+				Size = UDim2.new(1, 0, 0, 0),
+				AutomaticSize = "Y",
+				BackgroundTransparency = 1,
+				Name = "ChildContent"
 			}, {
 				Create("UIPadding", {
-					PaddingLeft = UDim.new(0, 8),
-					PaddingRight = UDim.new(0, 0)
+					PaddingLeft = UDim.new(0, 10),
+					PaddingRight = UDim.new(0, 0),
+					PaddingTop = UDim.new(0, 5),
+					PaddingBottom = UDim.new(0, 5)
 				}),
 				Create("UIListLayout", {
 					Padding = UDim.new(0, 5),
@@ -2653,34 +3166,31 @@ function redzlib:MakeWindow(Configs)
 				})
 			})
 
-			-- ÐÐµÑÑÐ¸ÐºÐ°Ð»ÑÐ½Ð°Ñ Ð»Ð¸Ð½Ð¸Ñ-Ð¸Ð½Ð´Ð¸ÐºÐ°ÑÐ¾Ñ ÑÐ»ÐµÐ²Ð° (Ð°Ð±ÑÐ¾Ð»ÑÑÐ½Ð°Ñ, Ð½Ðµ Ð² Ð¿Ð¾ÑÐ¾ÐºÐµ UIListLayout)
-			local SideLineHolder = Create("Frame", ChildContainer, {
+			-- ÐÐµÑÑÐ¸ÐºÐ°Ð»ÑÐ½Ð°Ñ Ð»Ð¸Ð½Ð¸Ñ-Ð°ÐºÑÐµÐ½Ñ ÑÐ»ÐµÐ²Ð°
+			local SideLine = InsertTheme(Create("Frame", WrapFrame, {
 				Size = UDim2.new(0, 2, 1, 0),
-				Position = UDim2.new(0, -14, 0, 0),
-				BackgroundTransparency = 1,
-				ZIndex = 0,
-			})
-			local SideLine = InsertTheme(Create("Frame", SideLineHolder, {
-				Size = UDim2.new(1, 0, 1, 0),
+				Position = UDim2.new(0, 2, 0, 0),
 				BackgroundColor3 = Theme["Color Theme"],
-				BorderSizePixel = 0
+				BorderSizePixel = 0,
+				ZIndex = 2
 			}), "Theme")
 			Make("Corner", SideLine, UDim.new(0.5, 0))
 
-			-- ÐÐ²ÑÐ¾-Ð²ÑÑÐ¾ÑÐ° ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑÐ° ÑÐµÑÐµÐ· UIListLayout
 			local ChildList = ChildContainer:FindFirstChildOfClass("UIListLayout")
 
-			local function RecalcHeight()
+			-- ÐÐµÑÐµÑÑÑÑ Ð²ÑÑÐ¾ÑÑ WrapFrame Ð¿Ð¾ ÑÐµÐ°Ð»ÑÐ½Ð¾Ð¼Ñ ÐºÐ¾Ð½ÑÐµÐ½ÑÑ
+			local function RecalcWrap()
 				if isOpen then
-					local total = ChildList.AbsoluteContentSize.Y + 10
-					ChildContainer.Size = UDim2.new(1, 0, 0, total)
+					local h = ChildContainer.AbsoluteSize.Y
+					if h == 0 then h = ChildList.AbsoluteContentSize.Y + 10 end
+					WrapFrame.Size = UDim2.new(1, 0, 0, math.max(h, 10))
 				else
-					ChildContainer.Size = UDim2.new(1, 0, 0, 0)
+					WrapFrame.Size = UDim2.new(1, 0, 0, 0)
 				end
 			end
 
-			ChildList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-				if isOpen then RecalcHeight() end
+			ChildContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+				if isOpen then RecalcWrap() end
 			end)
 
 			local function SetOpen(val, instant)
@@ -2688,14 +3198,14 @@ function redzlib:MakeWindow(Configs)
 				SetFlag(Flag, isOpen)
 
 				local targetRot = isOpen and 180 or 0
-				local targetH = isOpen and (ChildList.AbsoluteContentSize.Y + 10) or 0
+				local targetH = isOpen and math.max(ChildList.AbsoluteContentSize.Y + 10, 10) or 0
 
 				if instant then
 					ArrowIcon.Rotation = targetRot
-					ChildContainer.Size = UDim2.new(1, 0, 0, targetH)
+					WrapFrame.Size = UDim2.new(1, 0, 0, targetH)
 				else
 					CreateTween({ArrowIcon, "Rotation", targetRot, 0.25})
-					CreateTween({ChildContainer, "Size", UDim2.new(1, 0, 0, targetH), 0.25})
+					CreateTween({WrapFrame, "Size", UDim2.new(1, 0, 0, targetH), 0.25})
 				end
 			end
 
@@ -2703,58 +3213,48 @@ function redzlib:MakeWindow(Configs)
 				SetOpen(not isOpen)
 			end)
 
-			-- ÐÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ Ð½Ð°ÑÐ°Ð»ÑÐ½Ð¾Ðµ ÑÐ¾ÑÑÐ¾ÑÐ½Ð¸Ðµ ÑÑÐ°Ð·Ñ
-			task.defer(function()
-				SetOpen(isOpen, true)
-			end)
+			-- ============================================================
+			-- ÐÐÐ®Ð§ÐÐÐÐ¯ ÐÐÐÐÐÐ: Ð¿ÐµÑÐµÐºÐ»ÑÑÐ°ÐµÐ¼ Container upvalue Ð½Ð° ChildContainer
+			-- ÐÑÐµ Ð²ÑÐ·Ð¾Ð²Ñ Tab:AddXxx Ð¿Ð¾ÑÐ»Ðµ ÑÑÐ¾Ð¹ ÑÐµÐºÑÐ¸Ð¸ Ð±ÑÐ´ÑÑ Ð´Ð¾Ð±Ð°Ð²Ð»ÑÑÑ
+			-- ÑÐ»ÐµÐ¼ÐµÐ½ÑÑ Ð² ChildContainer Ð¿Ð¾ÐºÐ° Ð½Ðµ Ð²ÑÐ·Ð²Ð°Ð½ DropSection:Close()
+			-- Ð¸Ð»Ð¸ Ð´Ð¾ ÑÐ»ÐµÐ´ÑÑÑÐµÐ¹ Tab:AddSection / Tab:AddDropdownSection
+			-- ============================================================
+			local prevContainer = Container
+			Container = ChildContainer
 
-			-- ÐÐ¾Ð·Ð²ÑÐ°ÑÐ°ÐµÐ¼ Ð¾Ð±ÑÐµÐºÑ-ÑÐµÐºÑÐ¸Ñ Ñ Ð¼ÐµÑÐ¾Ð´Ð°Ð¼Ð¸ Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð¸Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð²
+			-- ÐÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ Ð½Ð°ÑÐ°Ð»ÑÐ½Ð¾Ðµ ÑÐ¾ÑÑÐ¾ÑÐ½Ð¸Ðµ Ð¿Ð¾ÑÐ»Ðµ Ð·Ð°Ð³ÑÑÐ·ÐºÐ¸ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð²
 			local DropSection = {}
-			DropSection._container = ChildContainer
+
+			function DropSection:_finalize()
+				-- ÐÐ¾ÑÑÑÐ°Ð½Ð°Ð²Ð»Ð¸Ð²Ð°ÐµÐ¼ Container Ð¸ Ð¿ÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ ÑÐ¾ÑÑÐ¾ÑÐ½Ð¸Ðµ
+				Container = prevContainer
+				task.defer(function()
+					SetOpen(isOpen, true)
+				end)
+			end
 
 			function DropSection:SetTitle(New)
 				if New then SectionLabel.Text = GetStr(New) end
 			end
 			function DropSection:Set(New) self:SetTitle(New) end
 			function DropSection:Open() SetOpen(true) end
-			function DropSection:Close() SetOpen(false) end
+			function DropSection:Close()
+				-- ÐÑÐ»Ð¸ Container ÐµÑÑ ÑÐºÐ°Ð·ÑÐ²Ð°ÐµÑ Ð½Ð° Ð½Ð°Ñ â Ð·Ð°ÐºÑÑÐ²Ð°ÐµÐ¼ ÑÐµÐºÑÐ¸Ñ
+				if Container == ChildContainer then
+					Container = prevContainer
+				end
+				SetOpen(false)
+			end
 			function DropSection:Toggle() SetOpen(not isOpen) end
 			function DropSection:Visible(Bool)
-				if Bool == nil then
-					HeaderFrame.Visible = not HeaderFrame.Visible
-					ChildContainer.Visible = not ChildContainer.Visible
-				else
-					HeaderFrame.Visible = Bool
-					ChildContainer.Visible = Bool
-				end
+				local v = Bool == nil and not HeaderFrame.Visible or Bool
+				HeaderFrame.Visible = v
+				WrapFrame.Visible = v
 			end
 			function DropSection:Destroy()
+				if Container == ChildContainer then Container = prevContainer end
 				HeaderFrame:Destroy()
-				ChildContainer:Destroy()
-			end
-
-			-- ÐÑÐ¾ÐºÑÐ¸-Ð¼ÐµÑÐ¾Ð´Ñ Tab'Ð°, Ð½Ð¾ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ â ChildContainer
-			local function MakeChildProxy(methodName)
-				DropSection[methodName] = function(self2, cfg)
-					-- ÐÑÐµÐ¼ÐµÐ½Ð½Ð¾ Ð¿Ð¾Ð´Ð¼ÐµÐ½ÑÐµÐ¼ Container
-					local origContainer = Container
-					-- Trick: Ð²ÑÐ·ÑÐ²Ð°ÐµÐ¼ Ð¼ÐµÑÐ¾Ð´ Tab Ñ Ð¿Ð¾Ð´Ð¼ÐµÐ½ÑÐ½Ð½ÑÐ¼ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑÐ¾Ð¼ ÑÐµÑÐµÐ· closure
-					-- Ð¡Ð¾Ð·Ð´Ð°ÑÐ¼ Ð²ÑÐµÐ¼ÐµÐ½Ð½ÑÐ¹ Tab-like Ð¾Ð±ÑÐµÐºÑ
-					local savedContainer = Container
-					-- ÐÑÐ¿Ð¾Ð»ÑÐ·ÑÐµÐ¼ ÑÑÐ½ÐºÑÐ¸Ñ Ð½Ð°Ð¿ÑÑÐ¼ÑÑ ÑÐµÑÐµÐ· upvalue
-					Container = ChildContainer
-					local result = Tab[methodName](Tab, cfg)
-					Container = savedContainer
-					return result
-				end
-			end
-
-			-- ÐÑÐ¾ÐºÑÐ¸ Ð´Ð»Ñ Ð²ÑÐµÑ Ð¼ÐµÑÐ¾Ð´Ð¾Ð² Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð¸Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð²
-			for _, name in ipairs({
-				"AddButton", "AddToggle", "AddSlider", "AddDropdown",
-				"AddTextBox", "AddParagraph", "AddSection"
-			}) do
-				MakeChildProxy(name)
+				WrapFrame:Destroy()
 			end
 
 			return DropSection
@@ -2914,6 +3414,7 @@ function redzlib:MakeWindow(Configs)
 			local Flag = Configs[5] or Configs.Flag or false
 			local DMultiSelect = Configs.MultiSelect or false
 			local Callback = Funcs:GetCallback(Configs, 4)
+			local DFontSize = Configs.FontSize or Configs.TextSize or 9  -- Ð½Ð°ÑÑÑÐ¾Ð¹ÐºÐ° ÑÐ°Ð·Ð¼ÐµÑÐ° ÑÑÐ¸ÑÑÐ° Ð¾Ð¿ÑÐ¸Ð¹
 
 			local Button, LabelFunc = ButtonFrame(Container, DName, DDesc, UDim2.new(1, -180))
 
@@ -3216,6 +3717,7 @@ function redzlib:MakeWindow(Configs)
 						Text = Name,
 						TextColor3 = Theme["Color Text"],
 						Font = Enum.Font.GothamBold,
+						TextSize = DFontSize,
 						TextXAlignment = "Left",
 						BackgroundTransparency = 1,
 						TextTransparency = 0.4
