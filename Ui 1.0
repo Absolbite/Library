@@ -2584,6 +2584,183 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		-- ================================================================
+		-- AddDropdownSection â ÑÐµÐºÑÐ¸Ñ-Ð°ÐºÐºÐ¾ÑÐ´ÐµÐ¾Ð½ Ñ ÑÐ¾ÑÑÐ°Ð½ÐµÐ½Ð¸ÐµÐ¼ ÑÐ¾ÑÑÐ¾ÑÐ½Ð¸Ñ
+		-- ================================================================
+		function Tab:AddDropdownSection(Configs)
+			local SectionName = type(Configs) == "string" and Configs or Configs[1] or Configs.Name or Configs.Title or Configs.Section
+			local Flag = (type(Configs) == "table" and (Configs.Flag or Configs[2])) or false
+			local DefaultOpen = (type(Configs) == "table" and Configs.DefaultOpen) or false
+
+			-- ÐÐ°Ð³ÑÑÐ¶Ð°ÐµÐ¼ ÑÐ¾ÑÑÐ°Ð½ÑÐ½Ð½Ð¾Ðµ ÑÐ¾ÑÑÐ¾ÑÐ½Ð¸Ðµ (Ð¾ÑÐºÑÑÑ/Ð·Ð°ÐºÑÑÑ)
+			local isOpen = DefaultOpen
+			if CheckFlag(Flag) then
+				local saved = GetFlag(Flag)
+				if type(saved) == "boolean" then isOpen = saved end
+			end
+
+			-- Ð¨Ð°Ð¿ÐºÐ° ÑÐµÐºÑÐ¸Ð¸ (ÐºÐ»Ð¸ÐºÐ°Ð±ÐµÐ»ÑÐ½Ð°Ñ)
+			local HeaderFrame = Create("Frame", Container, {
+				Size = UDim2.new(1, 0, 0, 26),
+				BackgroundTransparency = 1,
+				Name = "Option"
+			})
+
+			local HeaderBtn = InsertTheme(Create("TextButton", HeaderFrame, {
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundColor3 = Theme["Color Hub 2"],
+				AutoButtonColor = false,
+				Text = "",
+				Name = "SectionHeader"
+			}), "Frame")
+			Make("Corner", HeaderBtn, UDim.new(0, 6))
+			Make("Stroke", HeaderBtn)
+
+			local SectionLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
+				Font = Enum.Font.GothamBold,
+				Text = SectionName,
+				TextColor3 = Theme["Color Text"],
+				Size = UDim2.new(1, -38, 1, 0),
+				Position = UDim2.new(0, 10),
+				BackgroundTransparency = 1,
+				TextTruncate = "AtEnd",
+				TextSize = 10,
+				TextXAlignment = "Left"
+			}), "Text")
+
+			local ArrowIcon = InsertTheme(Create("ImageLabel", HeaderBtn, {
+				Size = UDim2.new(0, 12, 0, 12),
+				Position = UDim2.new(1, -10, 0.5),
+				AnchorPoint = Vector2.new(1, 0.5),
+				BackgroundTransparency = 1,
+				Image = "rbxassetid://10709791523",
+				ImageColor3 = Theme["Color Dark Text"]
+			}), "DarkText")
+
+			-- ÐÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ Ð´Ð»Ñ Ð´Ð¾ÑÐµÑÐ½Ð¸Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð²
+			local ChildContainer = Create("Frame", Container, {
+				Size = UDim2.new(1, 0, 0, 0),
+				BackgroundTransparency = 1,
+				ClipsDescendants = true,
+				Name = "Option"
+			}, {
+				Create("UIPadding", {
+					PaddingLeft = UDim.new(0, 8),
+					PaddingRight = UDim.new(0, 0)
+				}),
+				Create("UIListLayout", {
+					Padding = UDim.new(0, 5),
+					SortOrder = "LayoutOrder"
+				})
+			})
+
+			-- ÐÐµÑÑÐ¸ÐºÐ°Ð»ÑÐ½Ð°Ñ Ð»Ð¸Ð½Ð¸Ñ-Ð¸Ð½Ð´Ð¸ÐºÐ°ÑÐ¾Ñ ÑÐ»ÐµÐ²Ð° (Ð°Ð±ÑÐ¾Ð»ÑÑÐ½Ð°Ñ, Ð½Ðµ Ð² Ð¿Ð¾ÑÐ¾ÐºÐµ UIListLayout)
+			local SideLineHolder = Create("Frame", ChildContainer, {
+				Size = UDim2.new(0, 2, 1, 0),
+				Position = UDim2.new(0, -14, 0, 0),
+				BackgroundTransparency = 1,
+				ZIndex = 0,
+			})
+			local SideLine = InsertTheme(Create("Frame", SideLineHolder, {
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundColor3 = Theme["Color Theme"],
+				BorderSizePixel = 0
+			}), "Theme")
+			Make("Corner", SideLine, UDim.new(0.5, 0))
+
+			-- ÐÐ²ÑÐ¾-Ð²ÑÑÐ¾ÑÐ° ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑÐ° ÑÐµÑÐµÐ· UIListLayout
+			local ChildList = ChildContainer:FindFirstChildOfClass("UIListLayout")
+
+			local function RecalcHeight()
+				if isOpen then
+					local total = ChildList.AbsoluteContentSize.Y + 10
+					ChildContainer.Size = UDim2.new(1, 0, 0, total)
+				else
+					ChildContainer.Size = UDim2.new(1, 0, 0, 0)
+				end
+			end
+
+			ChildList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+				if isOpen then RecalcHeight() end
+			end)
+
+			local function SetOpen(val, instant)
+				isOpen = val
+				SetFlag(Flag, isOpen)
+
+				local targetRot = isOpen and 180 or 0
+				local targetH = isOpen and (ChildList.AbsoluteContentSize.Y + 10) or 0
+
+				if instant then
+					ArrowIcon.Rotation = targetRot
+					ChildContainer.Size = UDim2.new(1, 0, 0, targetH)
+				else
+					CreateTween({ArrowIcon, "Rotation", targetRot, 0.25})
+					CreateTween({ChildContainer, "Size", UDim2.new(1, 0, 0, targetH), 0.25})
+				end
+			end
+
+			HeaderBtn.Activated:Connect(function()
+				SetOpen(not isOpen)
+			end)
+
+			-- ÐÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ Ð½Ð°ÑÐ°Ð»ÑÐ½Ð¾Ðµ ÑÐ¾ÑÑÐ¾ÑÐ½Ð¸Ðµ ÑÑÐ°Ð·Ñ
+			task.defer(function()
+				SetOpen(isOpen, true)
+			end)
+
+			-- ÐÐ¾Ð·Ð²ÑÐ°ÑÐ°ÐµÐ¼ Ð¾Ð±ÑÐµÐºÑ-ÑÐµÐºÑÐ¸Ñ Ñ Ð¼ÐµÑÐ¾Ð´Ð°Ð¼Ð¸ Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð¸Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð²
+			local DropSection = {}
+			DropSection._container = ChildContainer
+
+			function DropSection:SetTitle(New)
+				if New then SectionLabel.Text = GetStr(New) end
+			end
+			function DropSection:Set(New) self:SetTitle(New) end
+			function DropSection:Open() SetOpen(true) end
+			function DropSection:Close() SetOpen(false) end
+			function DropSection:Toggle() SetOpen(not isOpen) end
+			function DropSection:Visible(Bool)
+				if Bool == nil then
+					HeaderFrame.Visible = not HeaderFrame.Visible
+					ChildContainer.Visible = not ChildContainer.Visible
+				else
+					HeaderFrame.Visible = Bool
+					ChildContainer.Visible = Bool
+				end
+			end
+			function DropSection:Destroy()
+				HeaderFrame:Destroy()
+				ChildContainer:Destroy()
+			end
+
+			-- ÐÑÐ¾ÐºÑÐ¸-Ð¼ÐµÑÐ¾Ð´Ñ Tab'Ð°, Ð½Ð¾ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ â ChildContainer
+			local function MakeChildProxy(methodName)
+				DropSection[methodName] = function(self2, cfg)
+					-- ÐÑÐµÐ¼ÐµÐ½Ð½Ð¾ Ð¿Ð¾Ð´Ð¼ÐµÐ½ÑÐµÐ¼ Container
+					local origContainer = Container
+					-- Trick: Ð²ÑÐ·ÑÐ²Ð°ÐµÐ¼ Ð¼ÐµÑÐ¾Ð´ Tab Ñ Ð¿Ð¾Ð´Ð¼ÐµÐ½ÑÐ½Ð½ÑÐ¼ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑÐ¾Ð¼ ÑÐµÑÐµÐ· closure
+					-- Ð¡Ð¾Ð·Ð´Ð°ÑÐ¼ Ð²ÑÐµÐ¼ÐµÐ½Ð½ÑÐ¹ Tab-like Ð¾Ð±ÑÐµÐºÑ
+					local savedContainer = Container
+					-- ÐÑÐ¿Ð¾Ð»ÑÐ·ÑÐµÐ¼ ÑÑÐ½ÐºÑÐ¸Ñ Ð½Ð°Ð¿ÑÑÐ¼ÑÑ ÑÐµÑÐµÐ· upvalue
+					Container = ChildContainer
+					local result = Tab[methodName](Tab, cfg)
+					Container = savedContainer
+					return result
+				end
+			end
+
+			-- ÐÑÐ¾ÐºÑÐ¸ Ð´Ð»Ñ Ð²ÑÐµÑ Ð¼ÐµÑÐ¾Ð´Ð¾Ð² Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð¸Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð²
+			for _, name in ipairs({
+				"AddButton", "AddToggle", "AddSlider", "AddDropdown",
+				"AddTextBox", "AddParagraph", "AddSection"
+			}) do
+				MakeChildProxy(name)
+			end
+
+			return DropSection
+		end
+
+		-- ================================================================
 		-- AddParagraph
 		-- ================================================================
 		function Tab:AddParagraph(Configs)
@@ -3407,10 +3584,15 @@ function redzlib:MakeWindow(Configs)
 			local TPlaceholderText = Configs[5] or Configs.PlaceholderText or "Input"
 			local TClearText = Configs[3] or Configs.ClearText or false
 			local Callback = Funcs:GetCallback(Configs, 4)
+			local Flag = Configs.Flag or Configs[6] or false
 
-			if type(TDefault) ~= "string" or TDefault:gsub(" ", ""):len() < 1 then
-				TDefault = false
+			-- ÐÐ°Ð³ÑÑÐ¶Ð°ÐµÐ¼ ÑÐ¾ÑÑÐ°Ð½ÑÐ½Ð½Ð¾Ðµ Ð·Ð½Ð°ÑÐµÐ½Ð¸Ðµ Ð¸Ð· ÑÐ»Ð°Ð³Ð°
+			if CheckFlag(Flag) then
+				local saved = GetFlag(Flag)
+				if type(saved) == "string" then TDefault = saved end
 			end
+
+			if type(TDefault) ~= "string" then TDefault = "" end
 
 			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -38))
 
@@ -3432,7 +3614,7 @@ function redzlib:MakeWindow(Configs)
 				TextColor3 = Theme["Color Text"],
 				ClearTextOnFocus = TClearText,
 				PlaceholderText = TPlaceholderText,
-				Text = ""
+				Text = TDefault
 			}), "Text")
 
 			local Pencil = Create("ImageLabel", SelectedFrame, {
@@ -3450,11 +3632,20 @@ function redzlib:MakeWindow(Configs)
 					if TextBox.OnChanging then Text = TextBox.OnChanging(Text) or Text end
 					Funcs:FireCallback(Callback, Text)
 					TextBoxInput.Text = Text
+					-- Ð¡Ð¾ÑÑÐ°Ð½ÑÐµÐ¼ Ð² ÑÐ»Ð°Ð³
+					SetFlag(Flag, Text)
 				end
 			end
 
 			TextBoxInput.FocusLost:Connect(Input)
-			Input()
+
+			-- ÐÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ Ð´ÐµÑÐ¾Ð»Ñ/Ð·Ð°Ð³ÑÑÐ¶ÐµÐ½Ð½Ð¾Ðµ Ð·Ð½Ð°ÑÐµÐ½Ð¸Ðµ
+			if TDefault ~= "" then
+				task.defer(function()
+					Funcs:FireCallback(Callback, TDefault)
+					SetFlag(Flag, TDefault)
+				end)
+			end
 
 			TextBoxInput.FocusLost:Connect(function()
 				CreateTween({Pencil, "ImageColor3", Color3.fromRGB(255, 255, 255), 0.2})
@@ -3466,6 +3657,15 @@ function redzlib:MakeWindow(Configs)
 			TextBox.OnChanging = false
 			function TextBox:Visible(...) Funcs:ToggleVisible(Button, ...) end
 			function TextBox:Destroy() Button:Destroy() end
+			function TextBox:Set(Val)
+				if type(Val) == "string" then
+					TextBoxInput.Text = Val
+					SetFlag(Flag, Val)
+					Funcs:FireCallback(Callback, Val)
+				elseif type(Val) == "function" then
+					Callback = {Val}
+				end
+			end
 			return TextBox
 		end
 
