@@ -3878,9 +3878,23 @@ function redzlib:MakeWindow(Configs)
 
 				AddNewOptions = function(List, Clear)
 					if Clear then
+						-- Ð£Ð´Ð°Ð»ÑÐµÐ¼ Ð²ÑÐµ UI-ÑÐ»ÐµÐ¼ÐµÐ½ÑÑ Ð¾Ð¿ÑÐ¸Ð¹
 						for k, v in pairs(Options) do
-							RemoveOption(k, v.Value)
+							if v.nodes and v.nodes[1] then
+								v.nodes[1]:Destroy()
+							end
+							table.clear(Options[k])
+							Options[k] = nil
 						end
+						table.clear(Options)
+						-- ÐÐ¾Ð»Ð½Ð¾ÑÑÑÑ ÑÐ±ÑÐ°ÑÑÐ²Ð°ÐµÐ¼ Ð²ÑÐ±Ð¾Ñ
+						if MultiSelect then
+							table.clear(Selected)
+							table.clear(SelectedValues)
+						else
+							Selected = nil
+						end
+						UpdateLabel()
 					end
 					table.foreach(List, AddOption)
 					CallbackSelected()
@@ -4403,6 +4417,7 @@ function redzlib:MakeWindow(Configs)
 
 		return Tab
 	end
+
 
 	CloseButton.Activated:Connect(Window.CloseBtn)
 	MinimizeButton.Activated:Connect(Window.MinimizeBtn)
