@@ -370,7 +370,6 @@ local redzlib = {
 			["Color Text"] = Color3.fromRGB(210, 200, 255),
 			["Color Dark Text"] = Color3.fromRGB(140, 125, 200)
 		},
-		-- ===== NEW 30 THEMES =====
 		Mint = {
 			["Color Hub 1"] = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(8, 28, 22)),
@@ -719,6 +718,7 @@ local redzlib = {
 			["Color Text"] = Color3.fromRGB(255, 225, 250),
 			["Color Dark Text"] = Color3.fromRGB(215, 160, 205)
 		},
+		-- ===== NEW 40 THEMES (total 100) =====
 		Titan = {
 			["Color Hub 1"] = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(12, 12, 18)),
@@ -2792,16 +2792,22 @@ function redzlib:MakeWindow(Configs)
 		local BtnTrans   = (Cfg.Transparency ~= nil and Cfg.Transparency) or 0
 		local BtnImage   = Cfg.Image or "rbxassetid://10734895698"
 		local BtnFlag    = Cfg.Flag or false
+		local BtnCorner  = (Cfg.Corner and Cfg.Corner.CornerRadius) or UDim.new(0.2, 0)
+		local BtnPos     = Cfg.Position or UDim2.fromScale(0.05, 0.5)
 
 		-- ÐÐ°Ð³ÑÑÐ¶Ð°ÐµÐ¼ ÑÐ¾ÑÑÐ°Ð½ÑÐ½Ð½ÑÐµ Ð¿Ð°ÑÐ°Ð¼ÐµÑÑÑ
 		if CheckFlag(BtnFlag .. "_size")  then BtnSize  = GetFlag(BtnFlag .. "_size")  end
 		if CheckFlag(BtnFlag .. "_trans") then BtnTrans = GetFlag(BtnFlag .. "_trans") end
 		if CheckFlag(BtnFlag .. "_image") then BtnImage = GetFlag(BtnFlag .. "_image") end
+		if CheckFlag(BtnFlag .. "_pos") then
+			local p = GetFlag(BtnFlag .. "_pos")
+			if type(p) == "table" then BtnPos = UDim2.fromOffset(p[1], p[2]) end
+		end
 
 		-- ÐÑÐ½Ð¾Ð²Ð½Ð°Ñ ÐºÐ½Ð¾Ð¿ÐºÐ° (Ð¿ÐµÑÐµÑÐ°ÑÐºÐ¸Ð²Ð°ÐµÐ¼Ð°Ñ)
 		local Button = MakeDrag(Create("ImageButton", ScreenGui, {
 			Size         = UDim2.fromOffset(BtnSize, BtnSize),
-			Position     = UDim2.fromScale(0.05, 0.5),
+			Position     = BtnPos,
 			BackgroundColor3 = Theme["Color Hub 2"],
 			BackgroundTransparency = BtnTrans,
 			Image        = BtnImage,
@@ -2810,7 +2816,7 @@ function redzlib:MakeWindow(Configs)
 			ZIndex       = 10,
 			Name         = "MinimizeFloatBtn"
 		}))
-		Make("Corner", Button, UDim.new(0.2, 0))
+		local BtnCornerInst = Make("Corner", Button, BtnCorner)
 		local BtnStroke = Make("Stroke", Button)
 
 		-- Hover-ÑÑÑÐµÐºÑ
@@ -3088,8 +3094,22 @@ function redzlib:MakeWindow(Configs)
 			end
 		end)
 
-		if Cfg.Corner then Make("Corner", Button, Cfg.Corner) end
-		if Cfg.Button  then SetProps(Button, Cfg.Button) end
+		-- ÐÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ Ð´Ð¾Ð¿Ð¾Ð»Ð½Ð¸ÑÐµÐ»ÑÐ½ÑÐµ Ð¿ÑÐ¾Ð¿ÑÑ Ð¸Ð· Cfg.Button ÐµÑÐ»Ð¸ ÐµÑÑÑ
+		if Cfg.Button then SetProps(Button, Cfg.Button) end
+
+		-- Ð¡Ð¾ÑÑÐ°Ð½ÑÐµÐ¼ Ð¿Ð¾Ð·Ð¸ÑÐ¸Ñ Ð¿Ð¾ÑÐ»Ðµ Ð¿ÐµÑÐµÑÐ°ÑÐºÐ¸Ð²Ð°Ð½Ð¸Ñ
+		Button:GetPropertyChangedSignal("Position"):Connect(function()
+			if not PanelOpen then
+				local p = Button.Position
+				SetFlag(BtnFlag .. "_pos", {p.X.Offset, p.Y.Offset})
+				SaveJson("redz library V5.json", redzlib.Save)
+			end
+		end)
+
+		-- ÐÐµÑÐ¾Ð´ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ ÑÐ°Ð´Ð¸ÑÑÐ° ÑÐºÑÑÐ³Ð»ÐµÐ½Ð¸Ñ
+		local function ApplyCorner(udim)
+			BtnCornerInst.CornerRadius = udim
+		end
 
 		return {
 			Button = Button,
@@ -3098,7 +3118,8 @@ function redzlib:MakeWindow(Configs)
 			SetSize  = function(_, sz)  ApplySize(sz)  end,
 			SetTrans = function(_, tr)  ApplyTrans(tr) end,
 			OpenSettings = OpenPanel,
-			CloseSettings = CloseP
+			CloseSettings = CloseP,
+			SetCorner = function(_, udim) ApplyCorner(udim) end
 		}
 	end
 	function Window:Set(Val1, Val2)
