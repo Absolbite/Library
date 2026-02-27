@@ -2584,26 +2584,99 @@ function redzlib:SetTransparency(value)
 end
 
 -- Ð£ÑÑÐ°Ð½Ð¾Ð²Ð¸ÑÑ ÑÐ¾Ð½Ð¾Ð²Ð¾Ðµ Ð¸Ð·Ð¾Ð±ÑÐ°Ð¶ÐµÐ½Ð¸Ðµ Ð³Ð»Ð°Ð²Ð½Ð¾Ð³Ð¾ Ð¾ÐºÐ½Ð° (Ð¿Ð¾Ð´Ð´ÐµÑÐ¶ÐºÐ° rbxassetid Ð¸ catbox/https URL)
+-- ÐÐ¾ÑÐ¼Ð°Ð»Ð¸Ð·Ð°ÑÐ¸Ñ image id (ÑÐ¾Ð»ÑÐºÐ¾ rbxassetid, ÑÐ¸ÑÐ»Ð°)
 local function NormalizeImageUrl(raw)
 	raw = tostring(raw or ""):gsub("^%s+",""):gsub("%s+$","")
-	if raw == "" then return "" end
-	if raw:match("^rbxassetid://") then return raw end
-	if raw:match("^https?://") then return raw end
-	if raw:match("^%d+$") then return "rbxassetid://" .. raw end
-	return "rbxassetid://" .. raw
+	if raw == "" then return "", false end
+	if raw:match("^https?://") then return raw, true end  -- Ð²Ð½ÐµÑÐ½Ð¸Ð¹ URL
+	if raw:match("^rbxassetid://") then return raw, false end
+	if raw:match("^%d+$") then return "rbxassetid://" .. raw, false end
+	return "rbxassetid://" .. raw, false
+end
+
+-- ÐÐ°Ð³ÑÑÐ·Ð¸ÑÑ Ð²Ð½ÐµÑÐ½Ð¸Ð¹ URL ÐºÐ°Ðº ÑÐµÐºÑÑÑÑÑ ÑÐµÑÐµÐ· EditableImage (executor API)
+-- ÐÐ¾Ð´Ð´ÐµÑÐ¶Ð¸Ð²Ð°ÐµÑ: catbox, imgur, discord cdn Ð¸ Ð»ÑÐ±ÑÐµ Ð¿ÑÑÐ¼ÑÐµ ÑÑÑÐ»ÐºÐ¸ Ð½Ð° Ð¸Ð·Ð¾Ð±ÑÐ°Ð¶ÐµÐ½Ð¸Ñ
+local function LoadExternalImage(url, imageInstance, onDone)
+	task.spawn(function()
+		local ok, result = false, nil
+
+		-- ÐÐµÑÐ¾Ð´ 1: game:HttpGet + EditableImage (Synapse X, KRNL, Fluxus Ð¸ Ð´Ñ.)
+		if not ok then
+			pcall(function()
+				local data = game:HttpGet(url)
+				if data and #data > 0 then
+					local editImg = Instance.new("EditableImage")
+					editImg:ReadPixelsFromBuffer(buffer.fromstring(data), Enum.ImageFormat.PNG)
+					if imageInstance and imageInstance.Parent then
+						imageInstance.ImageContent = Content.fromObject(editImg)
+						imageInstance.Image = ""
+					end
+					ok = true
+				end
+			end)
+		end
+
+		-- ÐÐµÑÐ¾Ð´ 2: request() / http_request() â ÑÐºÐ°ÑÐ°ÑÑ Ð¸ Ð·Ð°Ð¿Ð¸ÑÐ°ÑÑ Ð²Ð¾ Ð²ÑÐµÐ¼ÐµÐ½Ð½ÑÐ¹ ÑÐ°Ð¹Ð»
+		if not ok then
+			pcall(function()
+				local reqFn = (syn and syn.request) or request or http_request
+				if reqFn then
+					local res = reqFn({ Url = url, Method = "GET" })
+					if res and res.Body and #res.Body > 0 then
+						local tmpFile = "redzlib_tmp_img_" .. tostring(tick()):gsub("%.", "") .. ".png"
+						if writefile then
+							writefile(tmpFile, res.Body)
+							if imageInstance and imageInstance.Parent then
+								imageInstance.Image = "rbxasset://" .. tmpFile
+							end
+							ok = true
+						end
+					end
+				end
+			end)
+		end
+
+		-- ÐÐµÑÐ¾Ð´ 3: getcustomasset (Fluxus/Ð½ÐµÐºÐ¾ÑÐ¾ÑÑÐµ Ð´ÑÑÐ³Ð¸Ðµ)
+		if not ok then
+			pcall(function()
+				if getcustomasset then
+					local data = game:HttpGet(url)
+					if data and #data > 0 then
+						local tmpFile = "redzlib_bg_" .. tostring(tick()):gsub("%.", "") .. ".png"
+						writefile(tmpFile, data)
+						local asset = getcustomasset(tmpFile)
+						if imageInstance and imageInstance.Parent then
+							imageInstance.Image = asset
+						end
+						ok = true
+					end
+				end
+			end)
+		end
+
+		if onDone then onDone(ok) end
+	end)
 end
 
 function redzlib:SetBackground(raw, transparency)
-	local id = NormalizeImageUrl(raw)
+	local id, isExternal = NormalizeImageUrl(raw)
+	if id == "" then return end
 	if _MainFrame then
-		_MainFrame.Image = id
-		_MainFrame.ImageTransparency = transparency ~= nil and math.clamp(tonumber(transparency) or 0, 0, 1) or (id ~= "" and 0 or 0)
+		local trans = transparency ~= nil and math.clamp(tonumber(transparency) or 0, 0, 1) or 0
+		if isExternal then
+			LoadExternalImage(id, _MainFrame, nil)
+			_MainFrame.ImageTransparency = trans
+		else
+			_MainFrame.Image = id
+			_MainFrame.ImageTransparency = trans
+		end
 	end
 end
 
 function redzlib:ClearBackground()
 	if _MainFrame then
 		_MainFrame.Image = ""
+		_MainFrame.ImageContent = Content.none
 		_MainFrame.ImageTransparency = 0
 	end
 end
@@ -2826,7 +2899,7 @@ function redzlib:MakeWindow(Configs)
 
 		local BtnSize  = Saved.size  or Cfg.Size  or 40
 		local BtnTrans = Saved.trans ~= nil and Saved.trans or (Cfg.Transparency ~= nil and Cfg.Transparency or 0)
-		local BtnImage = NormalizeImageUrl(Saved.image or Cfg.Image or "rbxassetid://10734895698")
+		local BtnImage = (NormalizeImageUrl(Saved.image or Cfg.Image or "rbxassetid://10734895698"))
 		if Saved.posX and Saved.posY then
 			BtnPos = UDim2.fromOffset(Saved.posX, Saved.posY)
 		end
@@ -3032,9 +3105,13 @@ function redzlib:MakeWindow(Configs)
 
 		-- ÐÑÐ¸Ð¼ÐµÐ½Ð¸ÑÑ ÑÑÐ½ÐºÑÐ¸Ð¸
 		local function ApplyImage(raw)
-			local id = NormalizeImageUrl(raw)
+			local id, isExternal = NormalizeImageUrl(raw)
 			if id == "" then return end
-			Button.Image = id
+			if isExternal then
+				LoadExternalImage(id, Button, nil)
+			else
+				Button.Image = id
+			end
 			BtnImage = id
 			SaveBtn()
 		end
