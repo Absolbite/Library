@@ -2752,6 +2752,7 @@ function redzlib:MakeWindow(Configs)
 		Name = "Minimize"
 	})
 
+	SetChildren(ButtonsFolder, { CloseButton, MinimizeButton })
 
 	local Minimized, SaveSize, WaitClick
 	local Window, FirstTab = {}, false
