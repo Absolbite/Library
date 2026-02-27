@@ -719,6 +719,7 @@ local redzlib = {
 			["Color Text"] = Color3.fromRGB(255, 225, 250),
 			["Color Dark Text"] = Color3.fromRGB(215, 160, 205)
 		},
+		-- ===== NEW 40 THEMES (total 100) =====
 		Titan = {
 			["Color Hub 1"] = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(12, 12, 18)),
@@ -3124,95 +3125,415 @@ function redzlib:MakeWindow(Configs)
 		if MainFrame:FindFirstChild("Dialog") then return end
 		if Minimized then Window:MinimizeBtn() end
 
-		local DTitle = Configs[1] or Configs.Title or "Dialog"
-		local DText = Configs[2] or Configs.Text or "This is a Dialog"
+		local DTitle   = Configs[1] or Configs.Title or "Dialog"
+		local DText    = Configs[2] or Configs.Text or "This is a Dialog"
 		local DOptions = Configs[3] or Configs.Options or {}
+		local DIcon    = Configs.Icon or ""
+		local DType    = Configs.Type or "default" -- "default" | "theme" | "image"
 
-		local Frame = Create("Frame", {
+		-- ÐÑÐ¿Ð¾Ð¼Ð¾Ð³Ð°ÑÐµÐ»ÑÐ½Ð°Ñ ÑÑÐ½ÐºÑÐ¸Ñ Ð½Ð¾ÑÐ¼Ð°Ð»Ð¸Ð·Ð°ÑÐ¸Ð¸ rbxassetid/catbox
+		local function NormalizeImageId(raw)
+			raw = tostring(raw or ""):gsub("^%s+",""):gsub("%s+$","")
+			if raw == "" then return "" end
+			if raw:match("^rbxassetid://") then return raw end
+			if raw:match("^https?://") then return raw end
+			if raw:match("^%d+$") then return "rbxassetid://" .. raw end
+			return "rbxassetid://" .. raw
+		end
+
+		-- ââ Ð Ð°Ð·Ð¼ÐµÑ ÑÑÐµÐ¹Ð¼Ð° Ð·Ð°Ð²Ð¸ÑÐ¸Ñ Ð¾Ñ ÑÐ¸Ð¿Ð° ââââââââââââââââââââââââââ
+		local baseW = DType == "theme" and 310 or DType == "image" and 290 or 270
+		local baseH = DType == "theme" and 220 or DType == "image" and 200 or 160
+
+		local Screen = InsertTheme(Create("Frame", MainFrame, {
+			BackgroundTransparency = 1,
 			Active = true,
-			Size = UDim2.fromOffset(250 * 1.08, 150 * 1.08),
+			BackgroundColor3 = Theme["Color Stroke"],
+			Size = UDim2.new(1, 0, 1, 0),
+			Name = "Dialog"
+		}), "Stroke")
+		MainCorner:Clone().Parent = Screen
+
+		local Frame = Create("Frame", Screen, {
+			Active = true,
+			Size = UDim2.fromOffset(baseW * 1.06, baseH * 1.06),
 			Position = UDim2.fromScale(0.5, 0.5),
-			AnchorPoint = Vector2.new(0.5, 0.5)
-		}, {
-			InsertTheme(Create("TextLabel", {
-				Font = Enum.Font.GothamBold,
-				Size = UDim2.new(1, 0, 0, 20),
-				Text = DTitle,
-				TextXAlignment = "Left",
-				TextColor3 = Theme["Color Text"],
-				TextSize = 15,
-				Position = UDim2.fromOffset(15, 5),
-				BackgroundTransparency = 1
-			}), "Text"),
-			InsertTheme(Create("TextLabel", {
-				Font = Enum.Font.GothamMedium,
-				Size = UDim2.new(1, -25),
-				AutomaticSize = "Y",
-				Text = DText,
-				TextXAlignment = "Left",
-				TextColor3 = Theme["Color Dark Text"],
-				TextSize = 12,
-				Position = UDim2.fromOffset(15, 25),
-				BackgroundTransparency = 1,
-				TextWrapped = true
-			}), "DarkText")
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundTransparency = 0,
+			BackgroundColor3 = Theme["Color Hub 2"],
+			ClipsDescendants = true
 		})
 		Make("Gradient", Frame, {Rotation = 270})
 		Make("Corner", Frame)
+		Make("Stroke", Frame)
 
+		-- ââ ÐÐºÐ¾Ð½ÐºÐ° ÑÐ¸Ð¿Ð° Ð´Ð¸Ð°Ð»Ð¾Ð³Ð° (ÑÐ»ÐµÐ²Ð° Ð¾Ñ Ð·Ð°Ð³Ð¾Ð»Ð¾Ð²ÐºÐ°) âââââââââââââââ
+		local iconMap = {
+			info    = "rbxassetid://10723415903",
+			warning = "rbxassetid://10709753149",
+			error   = "rbxassetid://10709752996",
+			success = "rbxassetid://10709790387",
+			theme   = "rbxassetid://10734950309",
+			image   = "rbxassetid://10723415040",
+		}
+		local resolvedIcon = DIcon ~= "" and NormalizeImageId(DIcon)
+			or iconMap[DType] or iconMap["info"]
+
+		local TopBar = Create("Frame", Frame, {
+			Size = UDim2.new(1, 0, 0, 36),
+			BackgroundTransparency = 1,
+			Position = UDim2.new(0, 0, 0, 0)
+		})
+
+		Create("ImageLabel", TopBar, {
+			Size = UDim2.fromOffset(16, 16),
+			Position = UDim2.new(0, 12, 0.5),
+			AnchorPoint = Vector2.new(0, 0.5),
+			Image = resolvedIcon,
+			ImageColor3 = Theme["Color Theme"],
+			BackgroundTransparency = 1
+		})
+
+		InsertTheme(Create("TextLabel", TopBar, {
+			Font = Enum.Font.GothamBold,
+			Size = UDim2.new(1, -80, 1, 0),
+			Text = DTitle,
+			TextXAlignment = "Left",
+			TextColor3 = Theme["Color Text"],
+			TextSize = 13,
+			Position = UDim2.fromOffset(34, 0),
+			BackgroundTransparency = 1,
+			TextTruncate = "AtEnd"
+		}), "Text")
+
+		-- ÐÐ½Ð¾Ð¿ÐºÐ° Ð·Ð°ÐºÑÑÑÐ¸Ñ ÐºÑÐµÑÑÐ¸ÐºÐ¾Ð¼
+		local XBtn = Create("ImageButton", TopBar, {
+			Size = UDim2.fromOffset(14, 14),
+			Position = UDim2.new(1, -10, 0.5),
+			AnchorPoint = Vector2.new(1, 0.5),
+			Image = "rbxassetid://10747384394",
+			ImageColor3 = Theme["Color Dark Text"],
+			BackgroundTransparency = 1,
+			AutoButtonColor = false
+		})
+
+		-- Ð Ð°Ð·Ð´ÐµÐ»Ð¸ÑÐµÐ»Ñ
+		InsertTheme(Create("Frame", Frame, {
+			Size = UDim2.new(1, -24, 0, 1),
+			Position = UDim2.fromOffset(12, 36),
+			BackgroundColor3 = Theme["Color Stroke"]
+		}), "Stroke")
+
+		-- ââ Ð¢ÐµÐºÑÑ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ñ âââââââââââââââââââââââââââââââââââââââââ
+		InsertTheme(Create("TextLabel", Frame, {
+			Font = Enum.Font.GothamMedium,
+			Size = UDim2.new(1, -24, 0, 0),
+			AutomaticSize = "Y",
+			Text = DText,
+			TextXAlignment = "Left",
+			TextColor3 = Theme["Color Dark Text"],
+			TextSize = 11,
+			Position = UDim2.fromOffset(12, 44),
+			BackgroundTransparency = 1,
+			TextWrapped = true,
+			RichText = true
+		}), "DarkText")
+
+		-- ââ ÐÐÐÐ¢ÐÐÐ¢: Theme / Image / Default âââââââââââââââââââââââ
+		local ContentY = 44
+
+		if DType == "theme" then
+			-- Ð¡Ð¿Ð¸ÑÐ¾Ðº ÑÐµÐ¼ Ð² Ð²Ð¸Ð´Ðµ ÑÐµÑÐºÐ¸
+			ContentY = 95
+			local themeNames = {}
+			for k in pairs(redzlib.Themes) do table.insert(themeNames, k) end
+			table.sort(themeNames)
+
+			InsertTheme(Create("TextLabel", Frame, {
+				Font = Enum.Font.GothamBold,
+				Size = UDim2.new(1, -24, 0, 14),
+				Position = UDim2.fromOffset(12, 72),
+				Text = "Select Theme:",
+				TextXAlignment = "Left",
+				TextSize = 9,
+				TextColor3 = Theme["Color Dark Text"],
+				BackgroundTransparency = 1
+			}), "DarkText")
+
+			local ThemeScroll = InsertTheme(Create("ScrollingFrame", Frame, {
+				Size = UDim2.new(1, -24, 0, 80),
+				Position = UDim2.fromOffset(12, 88),
+				BackgroundTransparency = 1,
+				ScrollBarThickness = 2,
+				ScrollBarImageColor3 = Theme["Color Theme"],
+				BorderSizePixel = 0,
+				CanvasSize = UDim2.new(),
+				AutomaticCanvasSize = "Y",
+				ScrollingDirection = "Y"
+			}, {
+				Create("UIGridLayout", {
+					CellSize = UDim2.fromOffset(76, 22),
+					CellPadding = UDim2.fromOffset(4, 4),
+					SortOrder = "LayoutOrder"
+				}),
+				Create("UIPadding", {PaddingBottom = UDim.new(0, 4)})
+			}), "ScrollBar")
+
+			for _, tname in ipairs(themeNames) do
+				local isActive = tname == redzlib.Save.Theme
+				local TBtn = InsertTheme(Create("TextButton", ThemeScroll, {
+					Size = UDim2.fromOffset(76, 22),
+					BackgroundColor3 = Theme["Color Hub 2"],
+					Font = Enum.Font.GothamBold,
+					Text = tname,
+					TextSize = 8,
+					TextColor3 = isActive and Theme["Color Theme"] or Theme["Color Text"],
+					AutoButtonColor = false,
+					Name = tname
+				}), "Frame")
+				Make("Corner", TBtn, UDim.new(0, 4))
+				if isActive then Make("Stroke", TBtn) end
+				TBtn.Activated:Connect(function()
+					redzlib:SetTheme(tname)
+					-- ÐÐ±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ Ð¿Ð¾Ð´ÑÐ²ÐµÑÐºÑ
+					for _, ch in ipairs(ThemeScroll:GetChildren()) do
+						if ch:IsA("TextButton") then
+							ch.TextColor3 = ch.Name == tname and Theme["Color Theme"] or Theme["Color Text"]
+						end
+					end
+				end)
+			end
+
+			-- ÐÐ¾Ð»Ðµ Ð²Ð²Ð¾Ð´Ð° rbxassetid/catbox Ð´Ð»Ñ ÐºÐ°ÑÑÐ¾Ð¼Ð½Ð¾Ð³Ð¾ ÑÐ²ÐµÑÐ° ÑÐµÐ¼Ñ
+			InsertTheme(Create("TextLabel", Frame, {
+				Font = Enum.Font.GothamBold,
+				Size = UDim2.new(1, -24, 0, 14),
+				Position = UDim2.fromOffset(12, 172),
+				Text = "Custom Theme Image (rbxassetid / catbox):",
+				TextXAlignment = "Left",
+				TextSize = 8,
+				TextColor3 = Theme["Color Dark Text"],
+				BackgroundTransparency = 1,
+				TextTruncate = "AtEnd"
+			}), "DarkText")
+
+			local ThemeImgHolder = InsertTheme(Create("Frame", Frame, {
+				Size = UDim2.new(1, -24, 0, 24),
+				Position = UDim2.fromOffset(12, 186),
+				BackgroundColor3 = Theme["Color Stroke"]
+			}), "Stroke")
+			Make("Corner", ThemeImgHolder, UDim.new(0, 5))
+
+			local ThemeImgInput = InsertTheme(Create("TextBox", ThemeImgHolder, {
+				Size = UDim2.new(1, -10, 1, 0),
+				Position = UDim2.fromOffset(5, 0),
+				BackgroundTransparency = 1,
+				Font = Enum.Font.Gotham,
+				TextSize = 9,
+				TextColor3 = Theme["Color Text"],
+				PlaceholderText = "rbxassetid://... or https://files.catbox.moe/...",
+				PlaceholderColor3 = Theme["Color Dark Text"],
+				Text = "",
+				ClearTextOnFocus = false,
+				TextXAlignment = "Left"
+			}), "Text")
+
+			local ThemePreview = Create("ImageLabel", Frame, {
+				Size = UDim2.fromOffset(24, 24),
+				Position = UDim2.new(1, -12, 0, 186),
+				AnchorPoint = Vector2.new(1, 0),
+				BackgroundTransparency = 1,
+				Image = "",
+				Visible = false
+			})
+			Make("Corner", ThemePreview, UDim.new(0, 4))
+
+			ThemeImgInput.FocusLost:Connect(function()
+				local id = NormalizeImageId(ThemeImgInput.Text)
+				if id ~= "" then
+					ThemePreview.Image = id
+					ThemePreview.Visible = true
+					-- ÐÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ Ðº MainFrame ÐºÐ°Ðº ÑÐ¾Ð½Ð¾Ð²Ð¾Ðµ Ð¸Ð·Ð¾Ð±ÑÐ°Ð¶ÐµÐ½Ð¸Ðµ
+					if MainFrame then
+						MainFrame.Image = id
+						MainFrame.ImageTransparency = 0.1
+					end
+				end
+			end)
+
+		elseif DType == "image" then
+			-- Ð¡Ð¼ÐµÐ½Ð° Ð¸ÐºÐ¾Ð½ÐºÐ¸ MinimizeButton
+			ContentY = 95
+			InsertTheme(Create("TextLabel", Frame, {
+				Font = Enum.Font.GothamBold,
+				Size = UDim2.new(1, -24, 0, 14),
+				Position = UDim2.fromOffset(12, 72),
+				Text = "Minimize Button Image:",
+				TextXAlignment = "Left",
+				TextSize = 9,
+				TextColor3 = Theme["Color Dark Text"],
+				BackgroundTransparency = 1
+			}), "DarkText")
+
+			local ImgHolder = InsertTheme(Create("Frame", Frame, {
+				Size = UDim2.new(1, -24, 0, 24),
+				Position = UDim2.fromOffset(12, 88),
+				BackgroundColor3 = Theme["Color Stroke"]
+			}), "Stroke")
+			Make("Corner", ImgHolder, UDim.new(0, 5))
+
+			local ImgInput = InsertTheme(Create("TextBox", ImgHolder, {
+				Size = UDim2.new(1, -10, 1, 0),
+				Position = UDim2.fromOffset(5, 0),
+				BackgroundTransparency = 1,
+				Font = Enum.Font.Gotham,
+				TextSize = 9,
+				TextColor3 = Theme["Color Text"],
+				PlaceholderText = "rbxassetid://... or https://files.catbox.moe/...",
+				PlaceholderColor3 = Theme["Color Dark Text"],
+				Text = "",
+				ClearTextOnFocus = false,
+				TextXAlignment = "Left"
+			}), "Text")
+
+			InsertTheme(Create("TextLabel", Frame, {
+				Font = Enum.Font.GothamBold,
+				Size = UDim2.new(1, -24, 0, 14),
+				Position = UDim2.fromOffset(12, 120),
+				Text = "Main Frame Image:",
+				TextXAlignment = "Left",
+				TextSize = 9,
+				TextColor3 = Theme["Color Dark Text"],
+				BackgroundTransparency = 1
+			}), "DarkText")
+
+			local MainImgHolder = InsertTheme(Create("Frame", Frame, {
+				Size = UDim2.new(1, -24, 0, 24),
+				Position = UDim2.fromOffset(12, 136),
+				BackgroundColor3 = Theme["Color Stroke"]
+			}), "Stroke")
+			Make("Corner", MainImgHolder, UDim.new(0, 5))
+
+			local MainImgInput = InsertTheme(Create("TextBox", MainImgHolder, {
+				Size = UDim2.new(1, -10, 1, 0),
+				Position = UDim2.fromOffset(5, 0),
+				BackgroundTransparency = 1,
+				Font = Enum.Font.Gotham,
+				TextSize = 9,
+				TextColor3 = Theme["Color Text"],
+				PlaceholderText = "rbxassetid://... or https://files.catbox.moe/...",
+				PlaceholderColor3 = Theme["Color Dark Text"],
+				Text = "",
+				ClearTextOnFocus = false,
+				TextXAlignment = "Left"
+			}), "Text")
+
+			-- ÐÑÐµÐ²ÑÑ
+			local Preview = Create("ImageLabel", Frame, {
+				Size = UDim2.fromOffset(40, 40),
+				Position = UDim2.new(0.5, 0, 0, 162),
+				AnchorPoint = Vector2.new(0.5, 0),
+				BackgroundColor3 = Theme["Color Stroke"],
+				Image = "",
+				Visible = false
+			})
+			Make("Corner", Preview, UDim.new(0, 6))
+			Make("Stroke", Preview)
+
+			ContentY = 210
+
+			local function ApplyBtn(raw)
+				local id = NormalizeImageId(raw)
+				if id == "" then return end
+				Preview.Image = id
+				Preview.Visible = true
+				-- ÐÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ Ðº MinimizeButton ÑÐµÑÐµÐ· ÑÐ¾ÑÑÐ°Ð½ÑÐ½Ð½ÑÐµ Ð´Ð°Ð½Ð½ÑÐµ
+				if MinimizeButton then
+					MinimizeButton.Image = id
+				end
+				-- Ð¢Ð°ÐºÐ¶Ðµ ÑÐ¾ÑÑÐ°Ð½ÑÐµÐ¼ Ð² MinimizeButtons default
+				if redzlib.Save.MinimizeButtons then
+					for _, btn in pairs(redzlib.Save.MinimizeButtons) do
+						btn.image = id
+					end
+					SaveJson("redz library V5.json", redzlib.Save)
+				end
+			end
+
+			local function ApplyMain(raw)
+				local id = NormalizeImageId(raw)
+				if id == "" then return end
+				Preview.Image = id
+				Preview.Visible = true
+				if MainFrame then
+					MainFrame.Image = id
+					MainFrame.ImageTransparency = 0.05
+				end
+			end
+
+			ImgInput.FocusLost:Connect(function() ApplyBtn(ImgInput.Text) end)
+			MainImgInput.FocusLost:Connect(function() ApplyMain(MainImgInput.Text) end)
+		end
+
+		-- ââ ÐÐ½Ð¾Ð¿ÐºÐ¸ âââââââââââââââââââââââââââââââââââââââââââââââââ
 		local ButtonsHolder = Create("Frame", Frame, {
-			Size = UDim2.fromScale(1, 0.35),
-			Position = UDim2.fromScale(0, 1),
+			Size = UDim2.new(1, -20, 0, 30),
+			Position = UDim2.new(0, 10, 1, -10),
 			AnchorPoint = Vector2.new(0, 1),
 			BackgroundTransparency = 1
 		}, {
 			Create("UIListLayout", {
-				Padding = UDim.new(0, 10),
+				Padding = UDim.new(0, 8),
 				VerticalAlignment = "Center",
 				FillDirection = "Horizontal",
 				HorizontalAlignment = "Center"
 			})
 		})
 
-		local Screen = InsertTheme(Create("Frame", MainFrame, {
-			BackgroundTransparency = 0.6,
-			Active = true,
-			BackgroundColor3 = Theme["Color Stroke"],
-			Size = UDim2.new(1, 0, 1, 0),
-			Name = "Dialog"
-		}), "Stroke")
-
-		MainCorner:Clone().Parent = Screen
-		Frame.Parent = Screen
-		CreateTween({Frame, "Size", UDim2.fromOffset(250, 150), 0.2})
-		CreateTween({Screen, "BackgroundTransparency", 0.3, 0.15})
+		CreateTween({Frame, "Size", UDim2.fromOffset(baseW, baseH), 0.25})
+		CreateTween({Screen, "BackgroundTransparency", 0.35, 0.15})
 
 		local ButtonCount, Dialog = 1, {}
+
 		function Dialog:Button(Cfg)
 			local Name = Cfg[1] or Cfg.Name or Cfg.Title or ""
 			local Callback = Cfg[2] or Cfg.Callback or function()end
+			local BtnColor = Cfg.Color -- Ð¾Ð¿ÑÐ¸Ð¾Ð½Ð°Ð»ÑÐ½ÑÐ¹ ÑÐ²ÐµÑ ÐºÐ½Ð¾Ð¿ÐºÐ¸
 			ButtonCount = ButtonCount + 1
 			local Btn = Make("Button", ButtonsHolder)
-			Make("Corner", Btn)
+			Make("Corner", Btn, UDim.new(0, 5))
 			SetProps(Btn, {
 				Text = Name,
 				Font = Enum.Font.GothamBold,
 				TextColor3 = Theme["Color Text"],
-				TextSize = 12
+				TextSize = 11
 			})
+			if BtnColor then
+				Btn.BackgroundColor3 = BtnColor
+			end
 			for _,B in pairs(ButtonsHolder:GetChildren()) do
 				if B:IsA("TextButton") then
-					B.Size = UDim2.new(1 / ButtonCount, -(((ButtonCount - 1) * 20) / ButtonCount), 0, 32)
+					B.Size = UDim2.new(1 / ButtonCount, -(((ButtonCount - 1) * 20) / ButtonCount), 0, 28)
 				end
 			end
 			Btn.Activated:Connect(Dialog.Close)
 			Btn.Activated:Connect(Callback)
 		end
+
 		function Dialog:Close()
-			CreateTween({Frame, "Size", UDim2.fromOffset(250 * 1.08, 150 * 1.08), 0.2})
+			CreateTween({Frame, "Size", UDim2.fromOffset(baseW * 1.06, baseH * 1.06), 0.2})
 			CreateTween({Screen, "BackgroundTransparency", 1, 0.15})
-			task.delay(0.15, function() Screen:Destroy() end)
+			task.delay(0.2, function() Screen:Destroy() end)
 		end
+
+		XBtn.Activated:Connect(Dialog.Close)
+		XBtn.MouseEnter:Connect(function()
+			CreateTween({XBtn, "ImageColor3", Color3.fromRGB(255, 80, 80), 0.15})
+		end)
+		XBtn.MouseLeave:Connect(function()
+			CreateTween({XBtn, "ImageColor3", Theme["Color Dark Text"], 0.15})
+		end)
+
 		table.foreach(DOptions, function(_,B) Dialog:Button(B) end)
 		return Dialog
 	end
