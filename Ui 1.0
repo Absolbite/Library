@@ -2583,6 +2583,31 @@ function redzlib:SetTransparency(value)
 	end
 end
 
+-- Ð£ÑÑÐ°Ð½Ð¾Ð²Ð¸ÑÑ ÑÐ¾Ð½Ð¾Ð²Ð¾Ðµ Ð¸Ð·Ð¾Ð±ÑÐ°Ð¶ÐµÐ½Ð¸Ðµ Ð³Ð»Ð°Ð²Ð½Ð¾Ð³Ð¾ Ð¾ÐºÐ½Ð° (Ð¿Ð¾Ð´Ð´ÐµÑÐ¶ÐºÐ° rbxassetid Ð¸ catbox/https URL)
+local function NormalizeImageUrl(raw)
+	raw = tostring(raw or ""):gsub("^%s+",""):gsub("%s+$","")
+	if raw == "" then return "" end
+	if raw:match("^rbxassetid://") then return raw end
+	if raw:match("^https?://") then return raw end
+	if raw:match("^%d+$") then return "rbxassetid://" .. raw end
+	return "rbxassetid://" .. raw
+end
+
+function redzlib:SetBackground(raw, transparency)
+	local id = NormalizeImageUrl(raw)
+	if _MainFrame then
+		_MainFrame.Image = id
+		_MainFrame.ImageTransparency = transparency ~= nil and math.clamp(tonumber(transparency) or 0, 0, 1) or (id ~= "" and 0 or 0)
+	end
+end
+
+function redzlib:ClearBackground()
+	if _MainFrame then
+		_MainFrame.Image = ""
+		_MainFrame.ImageTransparency = 0
+	end
+end
+
 function redzlib:SetScale(NewScale)
 	NewScale = ViewportSize.Y / math.clamp(NewScale, 300, 2000)
 	UIScale, ScreenGui.Scale.Scale = NewScale, NewScale
@@ -2801,7 +2826,7 @@ function redzlib:MakeWindow(Configs)
 
 		local BtnSize  = Saved.size  or Cfg.Size  or 40
 		local BtnTrans = Saved.trans ~= nil and Saved.trans or (Cfg.Transparency ~= nil and Cfg.Transparency or 0)
-		local BtnImage = Saved.image or Cfg.Image or "rbxassetid://10734895698"
+		local BtnImage = NormalizeImageUrl(Saved.image or Cfg.Image or "rbxassetid://10734895698")
 		if Saved.posX and Saved.posY then
 			BtnPos = UDim2.fromOffset(Saved.posX, Saved.posY)
 		end
@@ -3007,12 +3032,8 @@ function redzlib:MakeWindow(Configs)
 
 		-- ÐÑÐ¸Ð¼ÐµÐ½Ð¸ÑÑ ÑÑÐ½ÐºÑÐ¸Ð¸
 		local function ApplyImage(raw)
-			raw = tostring(raw):gsub("^%s+",""):gsub("%s+$","")
-			if raw == "" then return end
-			local id = raw:match("^%d+$") and ("rbxassetid://"..raw)
-				or raw:match("^rbxassetid://") and raw
-				or raw:match("^https?://") and raw
-				or ("rbxassetid://"..raw)
+			local id = NormalizeImageUrl(raw)
+			if id == "" then return end
 			Button.Image = id
 			BtnImage = id
 			SaveBtn()
@@ -3552,6 +3573,12 @@ function redzlib:MakeWindow(Configs)
 	-- SetTransparency Ð´Ð¾ÑÑÑÐ¿Ð½Ð° ÑÐµÑÐµÐ· Window
 	function Window:SetTransparency(value)
 		redzlib:SetTransparency(value)
+	end
+	function Window:SetBackground(raw, transparency)
+		redzlib:SetBackground(raw, transparency)
+	end
+	function Window:ClearBackground()
+		redzlib:ClearBackground()
 	end
 
 	-- SetTheme Ð´Ð¾ÑÑÑÐ¿Ð½Ð° ÑÐµÑÐµÐ· Window
