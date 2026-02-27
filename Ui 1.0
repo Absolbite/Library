@@ -2784,9 +2784,9 @@ function redzlib:MakeWindow(Configs)
 			return "rbxassetid://" .. raw
 		end
 
-		local panelW, panelH = 300, 420
+		local panelW, panelH = 300, 390
 
-		SettingsPanel = Create("Frame", ScreenGui, {
+		SettingsPanel = Create("ImageButton", ScreenGui, {
 			Size = UDim2.fromOffset(panelW, panelH),
 			Position = UDim2.fromOffset(
 				MainFrame.AbsolutePosition.X / UIScale + MainFrame.AbsoluteSize.X / UIScale - panelW - 2,
@@ -2795,11 +2795,16 @@ function redzlib:MakeWindow(Configs)
 			BackgroundColor3 = Theme["Color Hub 2"],
 			ClipsDescendants = false,
 			ZIndex = 50,
+			Active = true,
+			AutoButtonColor = false,
 			Name = "SettingsPanel"
 		})
 		Make("Corner", SettingsPanel, UDim.new(0, 8))
 		Make("Stroke", SettingsPanel)
 		Make("Gradient", SettingsPanel, {Rotation = 90})
+
+		-- Draggable Ð´Ð»Ñ Ð¿Ð°Ð½ÐµÐ»Ð¸ Ð½Ð°ÑÑÑÐ¾ÐµÐº
+		MakeDrag(SettingsPanel)
 
 		-- ÐÐ°Ð³Ð¾Ð»Ð¾Ð²Ð¾Ðº Ð¿Ð°Ð½ÐµÐ»Ð¸
 		local SPTopBar = Create("Frame", SettingsPanel, {
@@ -2888,12 +2893,12 @@ function redzlib:MakeWindow(Configs)
 			}), "Theme")
 		end
 
-		local function MkInputRow(placeholder, currentVal, order)
+		local function MkInputRow(placeholder, currentVal)
 			sectionOrder += 1
 			local row = InsertTheme(Create("Frame", SPScroll, {
 				Size = UDim2.new(1, 0, 0, 26),
 				BackgroundColor3 = Theme["Color Stroke"],
-				LayoutOrder = order or sectionOrder,
+				LayoutOrder = sectionOrder,
 				ZIndex = 51
 			}), "Stroke")
 			Make("Corner", row, UDim.new(0, 5))
@@ -2914,12 +2919,32 @@ function redzlib:MakeWindow(Configs)
 			return row, box
 		end
 
-		local function MkSliderRow(order)
+		local function MkApplyBtn(label, color)
+			sectionOrder += 1
+			local btn = InsertTheme(Create("TextButton", SPScroll, {
+				Size = UDim2.new(1, 0, 0, 22),
+				BackgroundColor3 = Theme["Color Hub 2"],
+				Font = Enum.Font.GothamBold,
+				Text = label,
+				TextSize = 9,
+				TextColor3 = color or Theme["Color Theme"],
+				AutoButtonColor = false,
+				LayoutOrder = sectionOrder,
+				ZIndex = 51
+			}), "Frame")
+			Make("Corner", btn, UDim.new(0, 5))
+			Make("Stroke", btn)
+			btn.MouseEnter:Connect(function() btn.BackgroundTransparency = 0.4 end)
+			btn.MouseLeave:Connect(function() btn.BackgroundTransparency = 0 end)
+			return btn
+		end
+
+		local function MkSliderRow()
 			sectionOrder += 1
 			local track = InsertTheme(Create("Frame", SPScroll, {
 				Size = UDim2.new(1, 0, 0, 14),
 				BackgroundColor3 = Theme["Color Stroke"],
-				LayoutOrder = order or sectionOrder,
+				LayoutOrder = sectionOrder,
 				ZIndex = 51
 			}), "Stroke")
 			Make("Corner", track, UDim.new(0.5, 0))
@@ -2938,38 +2963,6 @@ function redzlib:MakeWindow(Configs)
 			})
 			Make("Corner", knob, UDim.new(0.5, 0))
 			return track, fill, knob
-		end
-
-		local function MkThemeBtn(tname, order)
-			sectionOrder += 1
-			local isActive = tname == redzlib.Save.Theme
-			local btn = InsertTheme(Create("TextButton", SPScroll, {
-				Size = UDim2.new(1, 0, 0, 24),
-				BackgroundColor3 = Theme["Color Hub 2"],
-				Font = Enum.Font.GothamBold,
-				Text = "  " .. tname,
-				TextSize = 9,
-				TextColor3 = isActive and Theme["Color Theme"] or Theme["Color Text"],
-				TextXAlignment = "Left",
-				AutoButtonColor = false,
-				LayoutOrder = order or sectionOrder,
-				Name = tname,
-				ZIndex = 51
-			}), "Frame")
-			Make("Corner", btn, UDim.new(0, 5))
-			if isActive then
-				local dot = InsertTheme(Create("Frame", btn, {
-					Size = UDim2.fromOffset(4, 14),
-					Position = UDim2.new(0, 1, 0.5),
-					AnchorPoint = Vector2.new(0, 0.5),
-					BackgroundColor3 = Theme["Color Theme"],
-					ZIndex = 52
-				}), "Theme")
-				Make("Corner", dot, UDim.new(0.5, 0))
-			end
-			btn.MouseEnter:Connect(function() btn.BackgroundTransparency = 0.4 end)
-			btn.MouseLeave:Connect(function() btn.BackgroundTransparency = 0 end)
-			return btn
 		end
 
 		local function SliderLogic(track, fill, knob, onValue, minV, maxV, initScale)
@@ -2991,7 +2984,7 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		-- ââââââââââââââââââââââââââââââââââââââââââââââ
-		-- Ð¡ÐÐÐ¦ÐÐ¯ 1: Ð¢ÐÐÐ
+		-- Ð¡ÐÐÐ¦ÐÐ¯ 1: Ð¢ÐÐÐ (Dropdown)
 		-- ââââââââââââââââââââââââââââââââââââââââââââââ
 		MkSectionLabel("Theme")
 
@@ -2999,39 +2992,139 @@ function redzlib:MakeWindow(Configs)
 		for k in pairs(redzlib.Themes) do table.insert(themeNames, k) end
 		table.sort(themeNames)
 
-		local themeButtons = {}
-		for _, tname in ipairs(themeNames) do
-			local btn = MkThemeBtn(tname)
-			themeButtons[tname] = btn
-			btn.Activated:Connect(function()
-				redzlib:SetTheme(tname)
-				for n, b in pairs(themeButtons) do
-					b.TextColor3 = n == tname and Theme["Color Theme"] or Theme["Color Text"]
-				end
-			end)
+		-- Ð¢ÐµÐºÑÑÐ°Ñ Ð²ÑÐ±ÑÐ°Ð½Ð½Ð°Ñ ÑÐµÐ¼Ð° (Ð¿ÐµÑÐµÐ¼ÐµÐ½Ð½Ð°Ñ Ð´Ð»Ñ dropdown)
+		local selectedTheme = redzlib.Save.Theme
+		local dropdownOpen = false
+		local dropdownList = nil
+
+		sectionOrder += 1
+		local dropdownRow = InsertTheme(Create("Frame", SPScroll, {
+			Size = UDim2.new(1, 0, 0, 26),
+			BackgroundColor3 = Theme["Color Stroke"],
+			LayoutOrder = sectionOrder,
+			ZIndex = 51,
+			ClipsDescendants = false
+		}), "Stroke")
+		Make("Corner", dropdownRow, UDim.new(0, 5))
+
+		local dropdownLabel = InsertTheme(Create("TextLabel", dropdownRow, {
+			Size = UDim2.new(1, -30, 1, 0),
+			Position = UDim2.fromOffset(8, 0),
+			BackgroundTransparency = 1,
+			Font = Enum.Font.GothamBold,
+			TextSize = 9,
+			TextColor3 = Theme["Color Text"],
+			TextXAlignment = "Left",
+			Text = selectedTheme,
+			ZIndex = 52
+		}), "Text")
+
+		local dropdownArrow = Create("ImageLabel", dropdownRow, {
+			Size = UDim2.fromOffset(10, 10),
+			Position = UDim2.new(1, -8, 0.5),
+			AnchorPoint = Vector2.new(1, 0.5),
+			Image = "rbxassetid://10734896206",
+			ImageColor3 = Theme["Color Dark Text"],
+			BackgroundTransparency = 1,
+			ZIndex = 52
+		})
+
+		local dropdownBtn = Create("TextButton", dropdownRow, {
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			Text = "",
+			ZIndex = 53
+		})
+
+		-- Ð¡Ð¿Ð¸ÑÐ¾Ðº ÑÐµÐ¼ (popup Ð½Ð°Ð´ scroll)
+		local function ToggleThemeDropdown()
+			dropdownOpen = not dropdownOpen
+			CreateTween({dropdownArrow, "Rotation", dropdownOpen and 180 or 0, 0.2})
+
+			if dropdownList then
+				dropdownList:Destroy()
+				dropdownList = nil
+			end
+
+			if not dropdownOpen then return end
+
+			-- Ð¡Ð¾Ð·Ð´Ð°ÑÐ¼ ÑÐ¿Ð¸ÑÐ¾Ðº Ð¿Ð¾Ð²ÐµÑÑ Ð¿Ð°Ð½ÐµÐ»Ð¸ (Ð² ScreenGui ÑÑÐ¾Ð±Ñ Ð½Ðµ Ð¾Ð±ÑÐµÐ·Ð°Ð»ÑÑ scroll)
+			local listH = math.min(#themeNames * 22, 180)
+			local absPos = dropdownRow.AbsolutePosition
+			local absSize = dropdownRow.AbsoluteSize
+
+			dropdownList = Create("ScrollingFrame", SettingsPanel, {
+				Size = UDim2.fromOffset(absSize.X, listH),
+				Position = UDim2.fromOffset(
+					absPos.X - SettingsPanel.AbsolutePosition.X,
+					absPos.Y - SettingsPanel.AbsolutePosition.Y + absSize.Y + 2
+				),
+				BackgroundColor3 = Theme["Color Hub 2"],
+				BorderSizePixel = 0,
+				ScrollBarThickness = 2,
+				ScrollBarImageColor3 = Theme["Color Theme"],
+				CanvasSize = UDim2.new(),
+				AutomaticCanvasSize = "Y",
+				ZIndex = 60,
+				ClipsDescendants = true
+			})
+			Make("Corner", dropdownList, UDim.new(0, 5))
+			Make("Stroke", dropdownList)
+			Create("UIListLayout", dropdownList, {Padding = UDim.new(0, 2), SortOrder = "LayoutOrder"})
+			Create("UIPadding", dropdownList, {
+				PaddingLeft = UDim.new(0, 4),
+				PaddingRight = UDim.new(0, 4),
+				PaddingTop = UDim.new(0, 4),
+				PaddingBottom = UDim.new(0, 4)
+			})
+
+			for i, tname in ipairs(themeNames) do
+				local isActive = tname == selectedTheme
+				local item = InsertTheme(Create("TextButton", dropdownList, {
+					Size = UDim2.new(1, 0, 0, 20),
+					BackgroundColor3 = isActive and Theme["Color Stroke"] or Theme["Color Hub 2"],
+					Font = Enum.Font.GothamBold,
+					Text = "  " .. tname,
+					TextSize = 9,
+					TextColor3 = isActive and Theme["Color Theme"] or Theme["Color Text"],
+					TextXAlignment = "Left",
+					AutoButtonColor = false,
+					LayoutOrder = i,
+					ZIndex = 61
+				}), "Frame")
+				Make("Corner", item, UDim.new(0, 4))
+				item.MouseEnter:Connect(function() item.BackgroundTransparency = 0.4 end)
+				item.MouseLeave:Connect(function() item.BackgroundTransparency = 0 end)
+				item.Activated:Connect(function()
+					selectedTheme = tname
+					dropdownLabel.Text = tname
+					redzlib:SetTheme(tname)
+					-- ÐÐ±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ ÑÐ²ÐµÑ Ð²ÑÐµÑ item
+					for _, child in ipairs(dropdownList:GetChildren()) do
+						if child:IsA("TextButton") then
+							child.TextColor3 = child.Text:gsub("^%s+","") == tname and Theme["Color Theme"] or Theme["Color Text"]
+							child.BackgroundColor3 = child.Text:gsub("^%s+","") == tname and Theme["Color Stroke"] or Theme["Color Hub 2"]
+						end
+					end
+					-- ÐÐ°ÐºÑÑÐ²Ð°ÐµÐ¼ dropdown
+					dropdownOpen = false
+					CreateTween({dropdownArrow, "Rotation", 0, 0.2})
+					if dropdownList then dropdownList:Destroy(); dropdownList = nil end
+				end)
+			end
 		end
+
+		dropdownBtn.Activated:Connect(ToggleThemeDropdown)
+		dropdownRow.MouseEnter:Connect(function() dropdownRow.BackgroundTransparency = 0.3 end)
+		dropdownRow.MouseLeave:Connect(function() dropdownRow.BackgroundTransparency = 0 end)
 
 		-- ââââââââââââââââââââââââââââââââââââââââââââââ
 		-- Ð¡ÐÐÐ¦ÐÐ¯ 2: ÐÐÐÐÐ ÐÐÐÐÐÐ Ð¤ÐÐÐ (MainFrame)
 		-- ââââââââââââââââââââââââââââââââââââââââââââââ
 		MkSectionLabel("Background Image")
 
-		local _, BgInput = MkInputRow("rbxassetid://... or https://files.catbox.moe/...", "")
-		local BgApplyBtn = InsertTheme(Create("TextButton", SPScroll, {
-			Size = UDim2.new(1, 0, 0, 22),
-			BackgroundColor3 = Theme["Color Hub 2"],
-			Font = Enum.Font.GothamBold,
-			Text = "Apply Background",
-			TextSize = 9,
-			TextColor3 = Theme["Color Theme"],
-			AutoButtonColor = false,
-			LayoutOrder = sectionOrder,
-			ZIndex = 51
-		}), "Frame")
-		Make("Corner", BgApplyBtn, UDim.new(0, 5))
-		Make("Stroke", BgApplyBtn)
-		BgApplyBtn.MouseEnter:Connect(function() BgApplyBtn.BackgroundTransparency = 0.4 end)
-		BgApplyBtn.MouseLeave:Connect(function() BgApplyBtn.BackgroundTransparency = 0 end)
+		local _, BgInput = MkInputRow("rbxassetid://... or asset id number", "")
+		local BgApplyBtn = MkApplyBtn("Apply Background")
 		BgApplyBtn.Activated:Connect(function()
 			local id = NormId(BgInput.Text)
 			if id ~= "" and MainFrame then
@@ -3040,21 +3133,7 @@ function redzlib:MakeWindow(Configs)
 			end
 		end)
 
-		local ClearBgBtn = InsertTheme(Create("TextButton", SPScroll, {
-			Size = UDim2.new(1, 0, 0, 22),
-			BackgroundColor3 = Theme["Color Hub 2"],
-			Font = Enum.Font.GothamBold,
-			Text = "Clear Background",
-			TextSize = 9,
-			TextColor3 = Theme["Color Dark Text"],
-			AutoButtonColor = false,
-			LayoutOrder = sectionOrder + 1,
-			ZIndex = 51
-		}), "Frame")
-		sectionOrder += 1
-		Make("Corner", ClearBgBtn, UDim.new(0, 5))
-		ClearBgBtn.MouseEnter:Connect(function() ClearBgBtn.BackgroundTransparency = 0.4 end)
-		ClearBgBtn.MouseLeave:Connect(function() ClearBgBtn.BackgroundTransparency = 0 end)
+		local ClearBgBtn = MkApplyBtn("Clear Background", Theme["Color Dark Text"])
 		ClearBgBtn.Activated:Connect(function()
 			if MainFrame then
 				MainFrame.Image = ""
@@ -3067,22 +3146,8 @@ function redzlib:MakeWindow(Configs)
 		-- ââââââââââââââââââââââââââââââââââââââââââââââ
 		MkSectionLabel("Minimize Button Icon")
 
-		local _, MiniIconInput = MkInputRow("rbxassetid://... or https://files.catbox.moe/...", "")
-		local MiniApplyBtn = InsertTheme(Create("TextButton", SPScroll, {
-			Size = UDim2.new(1, 0, 0, 22),
-			BackgroundColor3 = Theme["Color Hub 2"],
-			Font = Enum.Font.GothamBold,
-			Text = "Apply Icon",
-			TextSize = 9,
-			TextColor3 = Theme["Color Theme"],
-			AutoButtonColor = false,
-			LayoutOrder = sectionOrder,
-			ZIndex = 51
-		}), "Frame")
-		Make("Corner", MiniApplyBtn, UDim.new(0, 5))
-		Make("Stroke", MiniApplyBtn)
-		MiniApplyBtn.MouseEnter:Connect(function() MiniApplyBtn.BackgroundTransparency = 0.4 end)
-		MiniApplyBtn.MouseLeave:Connect(function() MiniApplyBtn.BackgroundTransparency = 0 end)
+		local _, MiniIconInput = MkInputRow("rbxassetid://... or asset id number", "")
+		local MiniApplyBtn = MkApplyBtn("Apply Icon")
 		MiniApplyBtn.Activated:Connect(function()
 			local id = NormId(MiniIconInput.Text)
 			if id ~= "" then
@@ -3101,10 +3166,8 @@ function redzlib:MakeWindow(Configs)
 
 		local initTrans = math.clamp(CurrentTransparency, 0, 0.95)
 		local TransTrack, TransFill, TransKnob = MkSliderRow()
-		SliderLogic(TransTrack, TransFill, TransKnob, function(v)
-			redzlib:SetTransparency(v)
-		end, 0, 0.95, initTrans / 0.95)
 
+		sectionOrder += 1
 		local TransLabel = InsertTheme(Create("TextLabel", SPScroll, {
 			Size = UDim2.new(1, 0, 0, 12),
 			BackgroundTransparency = 1,
@@ -3116,7 +3179,8 @@ function redzlib:MakeWindow(Configs)
 			LayoutOrder = sectionOrder,
 			ZIndex = 51
 		}), "DarkText")
-		sectionOrder += 1
+
+		-- ÐÐ½Ð¸ÑÐ¸Ð°Ð»Ð¸Ð·Ð¸ÑÑÐµÐ¼ Ð¿Ð¾Ð·Ð¸ÑÐ¸Ñ ÑÐ»Ð°Ð¹Ð´ÐµÑÐ° Ð¸ Ð¿Ð¾Ð´ÐºÐ»ÑÑÐ°ÐµÐ¼ Ð»Ð¾Ð³Ð¸ÐºÑ (Ð¾Ð´Ð¸Ð½ ÑÐ°Ð·)
 		SliderLogic(TransTrack, TransFill, TransKnob, function(v)
 			v = math.clamp(math.floor(v * 100 + 0.5) / 100, 0, 0.95)
 			redzlib:SetTransparency(v)
@@ -3147,8 +3211,18 @@ function redzlib:MakeWindow(Configs)
 			local ss = SettingsButton.AbsoluteSize
 			local inPanel  = m.X>=pp.X and m.X<=pp.X+ps.X and m.Y>=pp.Y and m.Y<=pp.Y+ps.Y
 			local inBtn    = m.X>=sb.X and m.X<=sb.X+ss.X and m.Y>=sb.Y and m.Y<=sb.Y+ss.Y
-			if not inPanel and not inBtn then
+			-- Ð¢Ð°ÐºÐ¶Ðµ Ð¿ÑÐ¾Ð²ÐµÑÑÐµÐ¼ Ð¾ÑÐºÑÑÑÑÐ¹ dropdown ÑÐ¿Ð¸ÑÐ¾Ðº
+			local inDropdown = false
+			if dropdownList and dropdownList.Parent then
+				local dp = dropdownList.AbsolutePosition
+				local ds = dropdownList.AbsoluteSize
+				inDropdown = m.X>=dp.X and m.X<=dp.X+ds.X and m.Y>=dp.Y and m.Y<=dp.Y+ds.Y
+			end
+			if not inPanel and not inBtn and not inDropdown then
 				outConn:Disconnect()
+				-- ÐÐ°ÐºÑÑÐ²Ð°ÐµÐ¼ dropdown ÐµÑÐ»Ð¸ Ð¾ÑÐºÑÑÑ
+				if dropdownList then dropdownList:Destroy(); dropdownList = nil end
+				dropdownOpen = false
 				if SettingsPanel and SettingsPanel.Parent then
 					SettingsPanel.ClipsDescendants = true
 					CreateTween({SettingsPanel, "Size", UDim2.fromOffset(panelW, 0), 0.2})
