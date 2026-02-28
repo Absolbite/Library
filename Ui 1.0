@@ -2062,17 +2062,10 @@ local Settings = redzlib.Settings
 local Flags = redzlib.Flags
 
 local SetProps, SetChildren, InsertTheme, Create do
-	-- InsertTheme(obj, redzType [, windKey [, prop]])
-	-- redzType  : "Frame"|"Text"|"Stroke"|"Theme"|"DarkText"|"Gradient"|"Main"|"ScrollBar"
-	-- windKey   : "Background"|"Accent"|"Text"|"Icon"|"Hover"|"WindowBackground"|
-	--             "ElementBackground"|"TabBackground" (Ð¾Ð¿ÑÐ¸Ð¾Ð½Ð°Ð»ÑÐ½Ð¾)
-	-- prop      : ÑÐ²Ð¾Ð¹ÑÑÐ²Ð¾ Ð´Ð»Ñ Ð¿ÑÐ¸Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ windKey (Ð¾Ð¿ÑÐ¸Ð¾Ð½Ð°Ð»ÑÐ½Ð¾, Ð°Ð²ÑÐ¾-Ð¾Ð¿ÑÐµÐ´ÐµÐ»ÑÐµÑÑÑ)
-	InsertTheme = function(Instance, Type, windKey, prop)
+	InsertTheme = function(Instance, Type)
 		table.insert(redzlib.Instances, {
 			Instance = Instance,
-			Type     = Type,
-			WindKey  = windKey,
-			Prop     = prop
+			Type = Type
 		})
 		return Instance
 	end
@@ -2497,72 +2490,25 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 	return Frame, Label
 end
 
--- ÐÐ²ÑÐ¾-Ð¾Ð¿ÑÐµÐ´ÐµÐ»ÐµÐ½Ð¸Ðµ ÑÐ²ÐµÑÐ¾Ð²Ð¾Ð³Ð¾ ÑÐ²Ð¾Ð¹ÑÑÐ²Ð° Ð¿Ð¾ ÑÐ¸Ð¿Ñ Ð¸Ð½ÑÑÐ°Ð½ÑÐ°
 local function GetColor(Instance)
-	if Instance:IsA("Frame") or Instance:IsA("TextButton") or Instance:IsA("ImageButton") or Instance:IsA("ScrollingFrame") then
+	if Instance:IsA("Frame") then
 		return "BackgroundColor3"
 	elseif Instance:IsA("ImageLabel") then
 		return "ImageColor3"
-	elseif Instance:IsA("TextLabel") or Instance:IsA("TextBox") then
+	elseif Instance:IsA("ImageButton") then
+		return "BackgroundColor3"
+	elseif Instance:IsA("TextButton") then
+		return "BackgroundColor3"
+	elseif Instance:IsA("TextLabel") then
 		return "TextColor3"
+	elseif Instance:IsA("TextBox") then
+		return "TextColor3"
+	elseif Instance:IsA("ScrollingFrame") then
+		return "ScrollBarImageColor3"
 	elseif Instance:IsA("UIStroke") then
 		return "Color"
 	end
 	return ""
-end
-
--- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
--- ThemeFallbacks: WindUI-ÑÐ¾Ð²Ð¼ÐµÑÑÐ¸Ð¼ÑÐµ ÐºÐ»ÑÑÐ¸ â Color* ÑÐµÐ¼Ñ
--- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-local ThemeFallbacks = {
-	-- WindUI ÐºÐ»ÑÑ            â ÑÑÐ½ÐºÑÐ¸Ñ, Ð²Ð¾Ð·Ð²ÑÐ°ÑÐ°ÑÑÐ°Ñ Color3 Ð¸Ð· ÑÐµÐºÑÑÐµÐ¹ ÑÐµÐ¼Ñ
-	Background          = function(t) return t["Color Hub 2"] end,
-	WindowBackground    = function(t) return t["Color Hub 2"] end,
-	ElementBackground   = function(t) return t["Color Stroke"] end,
-	TabBackground       = function(t) return t["Color Hub 2"] end,
-	Accent              = function(t) return t["Color Theme"] end,
-	Icon                = function(t) return t["Color Theme"] end,
-	Hover               = function(t) return t["Color Stroke"] end,
-	Text                = function(t) return t["Color Text"] end,
-	SubText             = function(t) return t["Color Dark Text"] end,
-	Border              = function(t) return t["Color Stroke"] end,
-	Divider             = function(t) return t["Color Stroke"] end,
-	ScrollBar           = function(t) return t["Color Theme"] end,
-	ToggleOn            = function(t) return t["Color Theme"] end,
-	ToggleOff           = function(t) return t["Color Stroke"] end,
-	SliderFill          = function(t) return t["Color Theme"] end,
-	SliderTrack         = function(t) return t["Color Stroke"] end,
-	DropdownBg          = function(t) return t["Color Hub 2"] end,
-	DropdownItem        = function(t) return t["Color Stroke"] end,
-	ButtonBg            = function(t) return t["Color Hub 2"] end,
-	ButtonText          = function(t) return t["Color Text"] end,
-}
-
--- ÐÐ¾Ð»ÑÑÐ¸ÑÑ ÑÐ²ÐµÑ Ð¿Ð¾ WindUI ÐºÐ»ÑÑÑ Ð¸Ð· ÑÐµÐºÑÑÐµÐ¹ ÑÐµÐ¼Ñ
-function redzlib:GetThemeProperty(windKey)
-	local fn = ThemeFallbacks[windKey]
-	if fn then return fn(Theme) end
-	return Theme["Color Hub 2"]
-end
-
--- ÐÐ°ÑÐµÐ³Ð¸ÑÑÑÐ¸ÑÐ¾Ð²Ð°ÑÑ Ð²Ð½ÐµÑÐ½Ð¸Ð¹ Ð¾Ð±ÑÐµÐºÑ Ð² ÑÐ¸ÑÑÐµÐ¼Ðµ ÑÐµÐ¼
--- ÐÑÐ¸Ð¼ÐµÑ: redzlib:AddThemeObject(frame, { BackgroundColor3 = "Background" })
-function redzlib:AddThemeObject(obj, propMap)
-	if not obj or not propMap then return end
-	for prop, windKey in pairs(propMap) do
-		-- ÐÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ ÑÑÐ°Ð·Ñ
-		local fn = ThemeFallbacks[windKey]
-		if fn and obj[prop] ~= nil then
-			pcall(function() obj[prop] = fn(Theme) end)
-		end
-		-- Ð ÐµÐ³Ð¸ÑÑÑÐ¸ÑÑÐµÐ¼ Ð´Ð»Ñ Ð°Ð²ÑÐ¾-Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ Ð¿ÑÐ¸ ÑÐ¼ÐµÐ½Ðµ ÑÐµÐ¼Ñ
-		table.insert(redzlib.Instances, {
-			Instance = obj,
-			Type     = "WindObj",
-			WindKey  = windKey,
-			Prop     = prop
-		})
-	end
 end
 
 -- /////////// --
@@ -2589,6 +2535,100 @@ function redzlib:GetIcon(index)
 	return firstMatch or index
 end
 
+-- ================================================================
+-- HexToColor3: converts "#rrggbb" or "rrggbb" to Color3
+-- ================================================================
+local function HexToColor3(hex)
+	hex = tostring(hex or ""):gsub("^#", ""):gsub("^0x", "")
+	if #hex == 3 then
+		hex = hex:sub(1,1):rep(2) .. hex:sub(2,2):rep(2) .. hex:sub(3,3):rep(2)
+	end
+	if #hex ~= 6 then return nil end
+	local r = tonumber(hex:sub(1,2), 16)
+	local g = tonumber(hex:sub(3,4), 16)
+	local b = tonumber(hex:sub(5,6), 16)
+	if not r or not g or not b then return nil end
+	return Color3.fromRGB(r, g, b)
+end
+
+-- ================================================================
+-- ColorOverrides: per-element color overrides
+-- Maps element type names to their active color overrides
+-- Structure: ColorOverrides[ElementType][ColorKey] = Color3
+-- ================================================================
+local ColorOverrides = {}
+
+-- Element → list of Instance types it covers
+-- Each entry: { types = {...types...}, colorKey = "Color ..." }
+local ElementColorMap = {
+	-- Ui (global / main window)
+	Ui = {
+		Background  = { types = {"Frame","Main"}, themeKey = "Color Hub 2" },
+		Gradient    = { types = {"Gradient"},     themeKey = "Color Hub 1", isGradient = true },
+		Stroke      = { types = {"Stroke"},       themeKey = "Color Stroke" },
+		Accent      = { types = {"Theme","ScrollBar"}, themeKey = "Color Theme" },
+		Text        = { types = {"Text"},         themeKey = "Color Text" },
+		DarkText    = { types = {"DarkText"},     themeKey = "Color Dark Text" },
+	},
+	-- Tab sidebar items
+	Tab = {
+		Background  = { types = {"TabBg"},        themeKey = "Color Hub 2" },
+		Accent      = { types = {"TabTheme"},     themeKey = "Color Theme" },
+		Text        = { types = {"TabText"},      themeKey = "Color Text" },
+	},
+	-- Section labels
+	Section = {
+		Text        = { types = {"SectionText"},  themeKey = "Color Text" },
+	},
+	-- Dropdown
+	Dropdown = {
+		Background  = { types = {"DropdownBg"},   themeKey = "Color Hub 2" },
+		Stroke      = { types = {"DropdownStroke"},themeKey = "Color Stroke" },
+		Text        = { types = {"DropdownText"}, themeKey = "Color Text" },
+		Accent      = { types = {"DropdownTheme"},themeKey = "Color Theme" },
+	},
+	-- Slider
+	Slider = {
+		Track       = { types = {"SliderTrack"},  themeKey = "Color Stroke" },
+		Fill        = { types = {"SliderFill"},   themeKey = "Color Theme" },
+		Text        = { types = {"SliderText"},   themeKey = "Color Text" },
+	},
+	-- TextBox
+	TextBox = {
+		Background  = { types = {"TextBoxBg"},    themeKey = "Color Stroke" },
+		Text        = { types = {"TextBoxText"},  themeKey = "Color Text" },
+	},
+	-- Toggle
+	Toggle = {
+		Track       = { types = {"ToggleTrack"},  themeKey = "Color Stroke" },
+		Knob        = { types = {"ToggleKnob"},   themeKey = "Color Theme" },
+	},
+	-- Button
+	Button = {
+		Background  = { types = {"ButtonBg"},     themeKey = "Color Hub 2" },
+		Text        = { types = {"ButtonText"},   themeKey = "Color Text" },
+	},
+}
+
+-- Helper: get the effective color for a type (override or theme fallback)
+local function GetEffectiveColor(instanceType)
+	-- Check each element map for this type
+	for elemName, colorKeys in pairs(ElementColorMap) do
+		for colorKeyName, cfg in pairs(colorKeys) do
+			for _, t in ipairs(cfg.types) do
+				if t == instanceType then
+					-- Check if there's an override
+					local over = ColorOverrides[elemName] and ColorOverrides[elemName][colorKeyName]
+					if over then return over end
+					-- Fall back to theme
+					return Theme[cfg.themeKey]
+				end
+			end
+		end
+	end
+	return nil
+end
+
 function redzlib:SetTheme(NewTheme)
 	if not VerifyTheme(NewTheme) then return end
 
@@ -2597,60 +2637,150 @@ function redzlib:SetTheme(NewTheme)
 	Theme = redzlib.Themes[NewTheme]
 
 	Connection:FireConnection("ThemeChanged", NewTheme)
-
-	table.foreach(redzlib.Instances, function(_, Val)
-		if not Val or not Val.Instance then return end
+	table.foreach(redzlib.Instances, function(_,Val)
+		if not Val or not Val.Instance or not Val.Instance.Parent then return end
 		local inst = Val.Instance
-		if not pcall(function() return inst.Parent end) then return end
-		if not inst.Parent then return end
+		local itype = Val.Type
 
-		local rType = Val.Type
-
-		-- ââ WindUI-Ð¾Ð±ÑÐµÐºÑÑ (AddThemeObject) ââââââââââââââââââââââââââââ
-		if rType == "WindObj" then
-			local fn = ThemeFallbacks[Val.WindKey]
-			if fn then
-				pcall(function() inst[Val.Prop] = fn(Theme) end)
-			end
+		-- Check for specific element overrides first
+		local override = GetEffectiveColor(itype)
+		if override then
+			local prop = GetColor(inst)
+			if prop ~= "" then inst[prop] = override end
 			return
 		end
 
-		-- ââ ÐÑÐ»Ð¸ Ð¾Ð±ÑÐµÐºÑ Ð¸Ð¼ÐµÐµÑ WindKey â Ð¿ÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ ÐµÐ³Ð¾ Ð¿Ð¾Ð²ÐµÑÑ redzType ââ
-		if Val.WindKey then
-			local fn = ThemeFallbacks[Val.WindKey]
-			if fn then
-				local prop = Val.Prop or GetColor(inst)
-				if prop ~= "" then
-					pcall(function() inst[prop] = fn(Theme) end)
-				end
-				return
-			end
-		end
-
-		-- ââ Ð¡ÑÐ°Ð½Ð´Ð°ÑÑÐ½ÑÐµ redzlib ÑÐ¸Ð¿Ñ ââââââââââââââââââââââââââââââââââââ
-		if rType == "Gradient" then
-			pcall(function() inst.Color = Theme["Color Hub 1"] end)
-		elseif rType == "Frame" then
-			pcall(function() inst.BackgroundColor3 = Theme["Color Hub 2"] end)
-		elseif rType == "Main" then
-			pcall(function() inst.BackgroundColor3 = Theme["Color Hub 2"] end)
-		elseif rType == "Stroke" then
+		-- Default theme application
+		if itype == "Gradient" then
+			inst.Color = Theme["Color Hub 1"]
+		elseif itype == "Frame" then
+			inst.BackgroundColor3 = ColorOverrides.Ui and ColorOverrides.Ui.Background or Theme["Color Hub 2"]
+		elseif itype == "Main" then
+			inst.BackgroundColor3 = ColorOverrides.Ui and ColorOverrides.Ui.Background or Theme["Color Hub 2"]
+		elseif itype == "Stroke" then
 			local prop = GetColor(inst)
-			if prop ~= "" then pcall(function() inst[prop] = Theme["Color Stroke"] end) end
-		elseif rType == "Theme" then
+			if prop ~= "" then inst[prop] = ColorOverrides.Ui and ColorOverrides.Ui.Stroke or Theme["Color Stroke"] end
+		elseif itype == "Theme" then
 			local prop = GetColor(inst)
-			if prop ~= "" then pcall(function() inst[prop] = Theme["Color Theme"] end) end
-		elseif rType == "Text" then
+			if prop ~= "" then inst[prop] = ColorOverrides.Ui and ColorOverrides.Ui.Accent or Theme["Color Theme"] end
+		elseif itype == "Text" then
 			local prop = GetColor(inst)
-			if prop ~= "" then pcall(function() inst[prop] = Theme["Color Text"] end) end
-		elseif rType == "DarkText" then
+			if prop ~= "" then inst[prop] = ColorOverrides.Ui and ColorOverrides.Ui.Text or Theme["Color Text"] end
+		elseif itype == "DarkText" then
 			local prop = GetColor(inst)
-			if prop ~= "" then pcall(function() inst[prop] = Theme["Color Dark Text"] end) end
-		elseif rType == "ScrollBar" then
+			if prop ~= "" then inst[prop] = ColorOverrides.Ui and ColorOverrides.Ui.DarkText or Theme["Color Dark Text"] end
+		elseif itype == "ScrollBar" then
 			local prop = GetColor(inst)
-			if prop ~= "" then pcall(function() inst[prop] = Theme["Color Theme"] end) end
+			if prop ~= "" then inst[prop] = ColorOverrides.Ui and ColorOverrides.Ui.Accent or Theme["Color Theme"] end
 		end
 	end)
+end
+
+-- ================================================================
+-- SetColor: set a color for a specific element type via hex
+--
+-- Usage examples:
+--   redzlib:SetColor("Ui", "Accent", "#ff0000")        -- accent color globally
+--   redzlib:SetColor("Tab", "Text", "#ffffff")          -- tab text color
+--   redzlib:SetColor("Tab", "Accent", "#00ff88")        -- tab active marker
+--   redzlib:SetColor("Section", "Text", "#ffcc00")      -- section label color
+--   redzlib:SetColor("Dropdown", "Background", "#1a1a2e")
+--   redzlib:SetColor("Slider", "Fill", "#ff6600")       -- slider fill color
+--   redzlib:SetColor("Slider", "Track", "#333333")      -- slider track
+--   redzlib:SetColor("TextBox", "Text", "#aaffaa")      -- textbox text
+--   redzlib:SetColor("Toggle", "Knob", "#ff00ff")       -- toggle knob
+--   redzlib:SetColor("Button", "Background", "#2a2a2a") -- button background
+--
+-- Available elements: Ui, Tab, Section, Dropdown, Slider, TextBox, Toggle, Button
+-- Available color keys per element: see ElementColorMap above
+-- Pass nil or "" as hex to reset the override for that key
+-- ================================================================
+function redzlib:SetColor(element, colorKey, hex)
+	-- Validate element
+	if not ElementColorMap[element] then
+		warn("[redzlib:SetColor] Unknown element: '" .. tostring(element) .. "'")
+		warn("Available elements: " .. table.concat((function()
+			local t = {} for k in pairs(ElementColorMap) do table.insert(t, k) end return t
+		end)(), ", "))
+		return
+	end
+
+	-- Validate colorKey
+	if not ElementColorMap[element][colorKey] then
+		warn("[redzlib:SetColor] Unknown colorKey '" .. tostring(colorKey) .. "' for element '" .. element .. "'")
+		local valid = {}
+		for k in pairs(ElementColorMap[element]) do table.insert(valid, k) end
+		warn("Valid keys for '" .. element .. "': " .. table.concat(valid, ", "))
+		return
+	end
+
+	-- Reset override if nil/empty
+	if hex == nil or hex == "" then
+		if ColorOverrides[element] then
+			ColorOverrides[element][colorKey] = nil
+		end
+	else
+		local color = HexToColor3(hex)
+		if not color then
+			warn("[redzlib:SetColor] Invalid hex color: '" .. tostring(hex) .. "' (use format #rrggbb or rrggbb)")
+			return
+		end
+		ColorOverrides[element] = ColorOverrides[element] or {}
+		ColorOverrides[element][colorKey] = color
+	end
+
+	-- Apply immediately to all matching instances
+	local cfg = ElementColorMap[element][colorKey]
+	local newColor = ColorOverrides[element] and ColorOverrides[element][colorKey] or Theme[cfg.themeKey]
+
+	table.foreach(redzlib.Instances, function(_, Val)
+		if not Val or not Val.Instance or not Val.Instance.Parent then return end
+		local inst = Val.Instance
+		for _, t in ipairs(cfg.types) do
+			if Val.Type == t then
+				if cfg.isGradient then
+					-- For gradient types, can't set Color3 directly
+					-- newColor must be a ColorSequence for gradients
+					-- Skip for now (gradient = theme only)
+				else
+					local prop = GetColor(inst)
+					if prop ~= "" then inst[prop] = newColor end
+				end
+				break
+			end
+		end
+	end)
+end
+
+-- ================================================================
+-- GetColorOverrides: returns current color overrides table (read-only copy)
+-- ================================================================
+function redzlib:GetColorOverrides()
+	local copy = {}
+	for elem, keys in pairs(ColorOverrides) do
+		copy[elem] = {}
+		for k, v in pairs(keys) do
+			-- Convert Color3 back to hex string for readability
+			local r = math.floor(v.R * 255)
+			local g = math.floor(v.G * 255)
+			local b = math.floor(v.B * 255)
+			copy[elem][k] = string.format("#%02x%02x%02x", r, g, b)
+		end
+	end
+	return copy
+end
+
+-- ================================================================
+-- ResetColors: reset all color overrides (or for a specific element)
+-- ================================================================
+function redzlib:ResetColors(element)
+	if element then
+		ColorOverrides[element] = nil
+	else
+		table.clear(ColorOverrides)
+	end
+	-- Re-apply theme to refresh all colors
+	redzlib:SetTheme(redzlib.Save.Theme)
 end
 
 -- Ð£ÑÑÐ°Ð½Ð¾Ð²Ð¸ÑÑ Ð¿ÑÐ¾Ð·ÑÐ°ÑÐ½Ð¾ÑÑÑ Ð³Ð»Ð°Ð²Ð½Ð¾Ð³Ð¾ Ð¾ÐºÐ½Ð° (0 = Ð½ÐµÐ¿ÑÐ¾Ð·ÑÐ°ÑÐ½ÑÐ¹, 1 = Ð¿Ð¾Ð»Ð½Ð¾ÑÑÑÑ Ð¿ÑÐ¾Ð·ÑÐ°ÑÐ½ÑÐ¹)
@@ -3675,6 +3805,22 @@ function redzlib:MakeWindow(Configs)
 		redzlib:SetTheme(name)
 	end
 
+	-- SetColor: change color of specific element via hex (#rrggbb)
+	-- Example: Window:SetColor("Tab", "Accent", "#ff6600")
+	function Window:SetColor(element, colorKey, hex)
+		redzlib:SetColor(element, colorKey, hex)
+	end
+
+	-- ResetColors: reset color overrides (all or specific element)
+	function Window:ResetColors(element)
+		redzlib:ResetColors(element)
+	end
+
+	-- GetColorOverrides: get current color overrides as hex strings
+	function Window:GetColorOverrides()
+		return redzlib:GetColorOverrides()
+	end
+
 	local ContainerList = {}
 	function Window:MakeTab(paste, Configs)
 		if type(paste) == "table" then Configs = paste end
@@ -3700,7 +3846,7 @@ function redzlib:MakeWindow(Configs)
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextTransparency = (FirstTab and 0.3) or 0,
 			TextTruncate = "AtEnd"
-		}), "Text")
+		}), "TabText")
 
 		local LabelIcon = InsertTheme(Create("ImageLabel", TabSelect, {
 			Position = UDim2.new(0, 8, 0.5),
@@ -3709,7 +3855,7 @@ function redzlib:MakeWindow(Configs)
 			Image = TIcon or "",
 			BackgroundTransparency = 1,
 			ImageTransparency = (FirstTab and 0.3) or 0
-		}), "Text")
+		}), "TabText")
 
 		local Selected = InsertTheme(Create("Frame", TabSelect, {
 			Size = FirstTab and UDim2.new(0, 4, 0, 4) or UDim2.new(0, 4, 0, 13),
@@ -3717,7 +3863,7 @@ function redzlib:MakeWindow(Configs)
 			AnchorPoint = Vector2.new(0, 0.5),
 			BackgroundColor3 = Theme["Color Theme"],
 			BackgroundTransparency = FirstTab and 1 or 0
-		}), "Theme")
+		}), "TabTheme")
 		Make("Corner", Selected, UDim.new(0.5, 0))
 
 		local Container = InsertTheme(Create("ScrollingFrame", {
@@ -3809,7 +3955,7 @@ function redzlib:MakeWindow(Configs)
 				TextTruncate = "AtEnd",
 				TextSize = 14,
 				TextXAlignment = "Left"
-			}), "Text")
+			}), "SectionText")
 
 			local Section = {}
 			table.insert(redzlib.Options, {type = "Section", Name = SectionName, func = Section})
@@ -3906,7 +4052,7 @@ function redzlib:MakeWindow(Configs)
 				Position = UDim2.new(1, -10, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke")
+			}), "ToggleTrack")
 			Make("Corner", ToggleHolder, UDim.new(0.5, 0))
 
 			local Slider = Create("Frame", ToggleHolder, {
@@ -3921,7 +4067,7 @@ function redzlib:MakeWindow(Configs)
 				Position = UDim2.new(0, 0, 0.5),
 				AnchorPoint = Vector2.new(0, 0.5),
 				BackgroundColor3 = Theme["Color Theme"]
-			}), "Theme")
+			}), "ToggleKnob")
 			Make("Corner", ToggleKnob, UDim.new(0.5, 0))
 
 			local WaitToggle
@@ -3987,7 +4133,7 @@ function redzlib:MakeWindow(Configs)
 				Position = UDim2.new(1, -10, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke")
+			}), "DropdownStroke")
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
 
 			local ActiveLabel = InsertTheme(Create("TextLabel", SelectedFrame, {
@@ -3999,7 +4145,7 @@ function redzlib:MakeWindow(Configs)
 				TextScaled = true,
 				TextColor3 = Theme["Color Text"],
 				Text = "..."
-			}), "Text")
+			}), "DropdownText")
 
 			local Arrow = Create("ImageLabel", SelectedFrame, {
 				Size = UDim2.new(0, 15, 0, 15),
@@ -4504,14 +4650,14 @@ function redzlib:MakeWindow(Configs)
 				Size = UDim2.new(1, -20, 0, 6),
 				Position = UDim2.new(0.5, 0, 0.5),
 				AnchorPoint = Vector2.new(0.5, 0.5)
-			}), "Stroke")
+			}), "SliderTrack")
 			Make("Corner", SliderBar)
 
 			local Indicator = InsertTheme(Create("Frame", SliderBar, {
 				BackgroundColor3 = Theme["Color Theme"],
 				Size = UDim2.fromScale(0, 1),
 				BorderSizePixel = 0
-			}), "Theme")
+			}), "SliderFill")
 			Make("Corner", Indicator)
 
 			local SliderIcon = Create("Frame", SliderBar, {
@@ -4529,7 +4675,7 @@ function redzlib:MakeWindow(Configs)
 				Position = UDim2.new(1, -125, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke")
+			}), "SliderTrack")
 			Make("Corner", InputHolder, UDim.new(0, 4))
 
 			local ValueInput = InsertTheme(Create("TextBox", InputHolder, {
@@ -4543,7 +4689,7 @@ function redzlib:MakeWindow(Configs)
 				Text = tostring(Default),
 				ClearTextOnFocus = true,
 				TextXAlignment = "Center"
-			}), "Text")
+			}), "SliderText")
 
 			-- ÐÐ¾ÐºÐ°Ð»ÑÐ½ÑÐµ Ð¿ÐµÑÐµÐ¼ÐµÐ½Ð½ÑÐµ ÑÐ¾Ð»ÑÐºÐ¾ Ð´Ð»Ñ ÑÑÐ¾Ð³Ð¾ ÑÐ»Ð°Ð¹Ð´ÐµÑÐ°
 			local currentValue = Default
@@ -4680,7 +4826,7 @@ function redzlib:MakeWindow(Configs)
 				Position = UDim2.new(1, -10, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke")
+			}), "TextBoxBg")
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
 
 			local TextBoxInput = InsertTheme(Create("TextBox", SelectedFrame, {
@@ -4694,7 +4840,7 @@ function redzlib:MakeWindow(Configs)
 				ClearTextOnFocus = TClearText,
 				PlaceholderText = TPlaceholderText,
 				Text = TDefault
-			}), "Text")
+			}), "TextBoxText")
 
 			local Pencil = Create("ImageLabel", SelectedFrame, {
 				Size = UDim2.new(0, 12, 0, 12),
