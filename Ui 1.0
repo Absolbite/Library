@@ -2062,10 +2062,17 @@ local Settings = redzlib.Settings
 local Flags = redzlib.Flags
 
 local SetProps, SetChildren, InsertTheme, Create do
-	InsertTheme = function(Instance, Type)
+	-- InsertTheme(obj, redzType [, windKey [, prop]])
+	-- redzType  : "Frame"|"Text"|"Stroke"|"Theme"|"DarkText"|"Gradient"|"Main"|"ScrollBar"
+	-- windKey   : "Background"|"Accent"|"Text"|"Icon"|"Hover"|"WindowBackground"|
+	--             "ElementBackground"|"TabBackground" (Ð¾Ð¿ÑÐ¸Ð¾Ð½Ð°Ð»ÑÐ½Ð¾)
+	-- prop      : ÑÐ²Ð¾Ð¹ÑÑÐ²Ð¾ Ð´Ð»Ñ Ð¿ÑÐ¸Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ windKey (Ð¾Ð¿ÑÐ¸Ð¾Ð½Ð°Ð»ÑÐ½Ð¾, Ð°Ð²ÑÐ¾-Ð¾Ð¿ÑÐµÐ´ÐµÐ»ÑÐµÑÑÑ)
+	InsertTheme = function(Instance, Type, windKey, prop)
 		table.insert(redzlib.Instances, {
 			Instance = Instance,
-			Type = Type
+			Type     = Type,
+			WindKey  = windKey,
+			Prop     = prop
 		})
 		return Instance
 	end
@@ -2490,25 +2497,72 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 	return Frame, Label
 end
 
+-- ÐÐ²ÑÐ¾-Ð¾Ð¿ÑÐµÐ´ÐµÐ»ÐµÐ½Ð¸Ðµ ÑÐ²ÐµÑÐ¾Ð²Ð¾Ð³Ð¾ ÑÐ²Ð¾Ð¹ÑÑÐ²Ð° Ð¿Ð¾ ÑÐ¸Ð¿Ñ Ð¸Ð½ÑÑÐ°Ð½ÑÐ°
 local function GetColor(Instance)
-	if Instance:IsA("Frame") then
+	if Instance:IsA("Frame") or Instance:IsA("TextButton") or Instance:IsA("ImageButton") or Instance:IsA("ScrollingFrame") then
 		return "BackgroundColor3"
 	elseif Instance:IsA("ImageLabel") then
 		return "ImageColor3"
-	elseif Instance:IsA("ImageButton") then
-		return "BackgroundColor3"
-	elseif Instance:IsA("TextButton") then
-		return "BackgroundColor3"
-	elseif Instance:IsA("TextLabel") then
+	elseif Instance:IsA("TextLabel") or Instance:IsA("TextBox") then
 		return "TextColor3"
-	elseif Instance:IsA("TextBox") then
-		return "TextColor3"
-	elseif Instance:IsA("ScrollingFrame") then
-		return "ScrollBarImageColor3"
 	elseif Instance:IsA("UIStroke") then
 		return "Color"
 	end
 	return ""
+end
+
+-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+-- ThemeFallbacks: WindUI-ÑÐ¾Ð²Ð¼ÐµÑÑÐ¸Ð¼ÑÐµ ÐºÐ»ÑÑÐ¸ â Color* ÑÐµÐ¼Ñ
+-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+local ThemeFallbacks = {
+	-- WindUI ÐºÐ»ÑÑ            â ÑÑÐ½ÐºÑÐ¸Ñ, Ð²Ð¾Ð·Ð²ÑÐ°ÑÐ°ÑÑÐ°Ñ Color3 Ð¸Ð· ÑÐµÐºÑÑÐµÐ¹ ÑÐµÐ¼Ñ
+	Background          = function(t) return t["Color Hub 2"] end,
+	WindowBackground    = function(t) return t["Color Hub 2"] end,
+	ElementBackground   = function(t) return t["Color Stroke"] end,
+	TabBackground       = function(t) return t["Color Hub 2"] end,
+	Accent              = function(t) return t["Color Theme"] end,
+	Icon                = function(t) return t["Color Theme"] end,
+	Hover               = function(t) return t["Color Stroke"] end,
+	Text                = function(t) return t["Color Text"] end,
+	SubText             = function(t) return t["Color Dark Text"] end,
+	Border              = function(t) return t["Color Stroke"] end,
+	Divider             = function(t) return t["Color Stroke"] end,
+	ScrollBar           = function(t) return t["Color Theme"] end,
+	ToggleOn            = function(t) return t["Color Theme"] end,
+	ToggleOff           = function(t) return t["Color Stroke"] end,
+	SliderFill          = function(t) return t["Color Theme"] end,
+	SliderTrack         = function(t) return t["Color Stroke"] end,
+	DropdownBg          = function(t) return t["Color Hub 2"] end,
+	DropdownItem        = function(t) return t["Color Stroke"] end,
+	ButtonBg            = function(t) return t["Color Hub 2"] end,
+	ButtonText          = function(t) return t["Color Text"] end,
+}
+
+-- ÐÐ¾Ð»ÑÑÐ¸ÑÑ ÑÐ²ÐµÑ Ð¿Ð¾ WindUI ÐºÐ»ÑÑÑ Ð¸Ð· ÑÐµÐºÑÑÐµÐ¹ ÑÐµÐ¼Ñ
+function redzlib:GetThemeProperty(windKey)
+	local fn = ThemeFallbacks[windKey]
+	if fn then return fn(Theme) end
+	return Theme["Color Hub 2"]
+end
+
+-- ÐÐ°ÑÐµÐ³Ð¸ÑÑÑÐ¸ÑÐ¾Ð²Ð°ÑÑ Ð²Ð½ÐµÑÐ½Ð¸Ð¹ Ð¾Ð±ÑÐµÐºÑ Ð² ÑÐ¸ÑÑÐµÐ¼Ðµ ÑÐµÐ¼
+-- ÐÑÐ¸Ð¼ÐµÑ: redzlib:AddThemeObject(frame, { BackgroundColor3 = "Background" })
+function redzlib:AddThemeObject(obj, propMap)
+	if not obj or not propMap then return end
+	for prop, windKey in pairs(propMap) do
+		-- ÐÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ ÑÑÐ°Ð·Ñ
+		local fn = ThemeFallbacks[windKey]
+		if fn and obj[prop] ~= nil then
+			pcall(function() obj[prop] = fn(Theme) end)
+		end
+		-- Ð ÐµÐ³Ð¸ÑÑÑÐ¸ÑÑÐµÐ¼ Ð´Ð»Ñ Ð°Ð²ÑÐ¾-Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ Ð¿ÑÐ¸ ÑÐ¼ÐµÐ½Ðµ ÑÐµÐ¼Ñ
+		table.insert(redzlib.Instances, {
+			Instance = obj,
+			Type     = "WindObj",
+			WindKey  = windKey,
+			Prop     = prop
+		})
+	end
 end
 
 -- /////////// --
@@ -2543,31 +2597,58 @@ function redzlib:SetTheme(NewTheme)
 	Theme = redzlib.Themes[NewTheme]
 
 	Connection:FireConnection("ThemeChanged", NewTheme)
-	table.foreach(redzlib.Instances, function(_,Val)
-		if not Val or not Val.Instance or not Val.Instance.Parent then return end
+
+	table.foreach(redzlib.Instances, function(_, Val)
+		if not Val or not Val.Instance then return end
 		local inst = Val.Instance
-		if Val.Type == "Gradient" then
-			inst.Color = Theme["Color Hub 1"]
-		elseif Val.Type == "Frame" then
-			inst.BackgroundColor3 = Theme["Color Hub 2"]
-		elseif Val.Type == "Main" then
-			-- MainFrame (ImageButton) uses gradient, just update bg color
-			inst.BackgroundColor3 = Theme["Color Hub 2"]
-		elseif Val.Type == "Stroke" then
+		if not pcall(function() return inst.Parent end) then return end
+		if not inst.Parent then return end
+
+		local rType = Val.Type
+
+		-- ââ WindUI-Ð¾Ð±ÑÐµÐºÑÑ (AddThemeObject) ââââââââââââââââââââââââââââ
+		if rType == "WindObj" then
+			local fn = ThemeFallbacks[Val.WindKey]
+			if fn then
+				pcall(function() inst[Val.Prop] = fn(Theme) end)
+			end
+			return
+		end
+
+		-- ââ ÐÑÐ»Ð¸ Ð¾Ð±ÑÐµÐºÑ Ð¸Ð¼ÐµÐµÑ WindKey â Ð¿ÑÐ¸Ð¼ÐµÐ½ÑÐµÐ¼ ÐµÐ³Ð¾ Ð¿Ð¾Ð²ÐµÑÑ redzType ââ
+		if Val.WindKey then
+			local fn = ThemeFallbacks[Val.WindKey]
+			if fn then
+				local prop = Val.Prop or GetColor(inst)
+				if prop ~= "" then
+					pcall(function() inst[prop] = fn(Theme) end)
+				end
+				return
+			end
+		end
+
+		-- ââ Ð¡ÑÐ°Ð½Ð´Ð°ÑÑÐ½ÑÐµ redzlib ÑÐ¸Ð¿Ñ ââââââââââââââââââââââââââââââââââââ
+		if rType == "Gradient" then
+			pcall(function() inst.Color = Theme["Color Hub 1"] end)
+		elseif rType == "Frame" then
+			pcall(function() inst.BackgroundColor3 = Theme["Color Hub 2"] end)
+		elseif rType == "Main" then
+			pcall(function() inst.BackgroundColor3 = Theme["Color Hub 2"] end)
+		elseif rType == "Stroke" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = Theme["Color Stroke"] end
-		elseif Val.Type == "Theme" then
+			if prop ~= "" then pcall(function() inst[prop] = Theme["Color Stroke"] end) end
+		elseif rType == "Theme" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
-		elseif Val.Type == "Text" then
+			if prop ~= "" then pcall(function() inst[prop] = Theme["Color Theme"] end) end
+		elseif rType == "Text" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = Theme["Color Text"] end
-		elseif Val.Type == "DarkText" then
+			if prop ~= "" then pcall(function() inst[prop] = Theme["Color Text"] end) end
+		elseif rType == "DarkText" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = Theme["Color Dark Text"] end
-		elseif Val.Type == "ScrollBar" then
+			if prop ~= "" then pcall(function() inst[prop] = Theme["Color Dark Text"] end) end
+		elseif rType == "ScrollBar" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
+			if prop ~= "" then pcall(function() inst[prop] = Theme["Color Theme"] end) end
 		end
 	end)
 end
