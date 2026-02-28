@@ -1231,7 +1231,6 @@ local redzlib = {
 	Options = {},
 	Flags = {},
 	Tabs = {},
-	ElementThemes = {}, -- per-element theme overrides: { Tab = "Neon", Slider = "Rose", ... }
 	Icons = (function()
 		return {
 			["accessibility"] = "rbxassetid://10709751939",
@@ -2063,11 +2062,10 @@ local Settings = redzlib.Settings
 local Flags = redzlib.Flags
 
 local SetProps, SetChildren, InsertTheme, Create do
-	InsertTheme = function(Instance, Type, ElementKey)
+	InsertTheme = function(Instance, Type)
 		table.insert(redzlib.Instances, {
 			Instance = Instance,
-			Type = Type,
-			ElementKey = ElementKey -- e.g. "Tab", "Slider", "Toggle", etc.
+			Type = Type
 		})
 		return Instance
 	end
@@ -2355,9 +2353,9 @@ end
 
 local Theme = redzlib.Themes[redzlib.Save.Theme]
 
--- ÃÂ¢ÃÂµÃÂºÃÂÃÂÃÂ°ÃÂ ÃÂ¿ÃÂÃÂ¾ÃÂ·ÃÂÃÂ°ÃÂÃÂ½ÃÂ¾ÃÂÃÂÃÂ ÃÂ³ÃÂ»ÃÂ°ÃÂ²ÃÂ½ÃÂ¾ÃÂ³ÃÂ¾ ÃÂ¾ÃÂºÃÂ½ÃÂ°
+-- ÃÂ¢ÃÂµÃÂºÃ‘ÂƒÃ‘Â‰ÃÂ°Ã‘Â ÃÂ¿Ã‘Â€ÃÂ¾ÃÂ·Ã‘Â€ÃÂ°Ã‘Â‡ÃÂ½ÃÂ¾Ã‘ÂÃ‘Â‚Ã‘ÂŒ ÃÂ³ÃÂ»ÃÂ°ÃÂ²ÃÂ½ÃÂ¾ÃÂ³ÃÂ¾ ÃÂ¾ÃÂºÃÂ½ÃÂ°
 local CurrentTransparency = redzlib.Save.Transparency or 0.03
--- ÃÂ¡ÃÂÃÂÃÂ»ÃÂºÃÂ° ÃÂ½ÃÂ° MainFrame, ÃÂ·ÃÂ°ÃÂ¿ÃÂ¾ÃÂ»ÃÂ½ÃÂÃÂµÃÂÃÂÃÂ ÃÂ² MakeWindow
+-- ÃÂ¡Ã‘ÂÃ‘Â‹ÃÂ»ÃÂºÃÂ° ÃÂ½ÃÂ° MainFrame, ÃÂ·ÃÂ°ÃÂ¿ÃÂ¾ÃÂ»ÃÂ½Ã‘ÂÃÂµÃ‘Â‚Ã‘ÂÃ‘Â ÃÂ² MakeWindow
 local _MainFrame = nil
 
 local function AddEle(Name, Func)
@@ -2547,108 +2545,34 @@ function redzlib:SetTheme(NewTheme)
 	Connection:FireConnection("ThemeChanged", NewTheme)
 	table.foreach(redzlib.Instances, function(_,Val)
 		if not Val or not Val.Instance or not Val.Instance.Parent then return end
-		-- If this instance belongs to an element that has its own theme, skip it
-		if Val.ElementKey and redzlib.ElementThemes[Val.ElementKey] then return end
 		local inst = Val.Instance
-		local t = Theme
 		if Val.Type == "Gradient" then
-			inst.Color = t["Color Hub 1"]
+			inst.Color = Theme["Color Hub 1"]
 		elseif Val.Type == "Frame" then
-			inst.BackgroundColor3 = t["Color Hub 2"]
+			inst.BackgroundColor3 = Theme["Color Hub 2"]
 		elseif Val.Type == "Main" then
-			inst.BackgroundColor3 = t["Color Hub 2"]
+			-- MainFrame (ImageButton) uses gradient, just update bg color
+			inst.BackgroundColor3 = Theme["Color Hub 2"]
 		elseif Val.Type == "Stroke" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = t["Color Stroke"] end
+			if prop ~= "" then inst[prop] = Theme["Color Stroke"] end
 		elseif Val.Type == "Theme" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = t["Color Theme"] end
+			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
 		elseif Val.Type == "Text" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = t["Color Text"] end
+			if prop ~= "" then inst[prop] = Theme["Color Text"] end
 		elseif Val.Type == "DarkText" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = t["Color Dark Text"] end
+			if prop ~= "" then inst[prop] = Theme["Color Dark Text"] end
 		elseif Val.Type == "ScrollBar" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = t["Color Theme"] end
+			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
 		end
 	end)
 end
 
--- Apply a theme to a specific element type only (Tab/Section/Dropdown/Slider/TextBox/Toggle/Button)
-function redzlib:SetElementTheme(ElementKey, NewTheme)
-	if not ElementKey then return end
-
-	-- Passing nil or "" clears the override and restores global theme
-	if not NewTheme or NewTheme == "" then
-		redzlib.ElementThemes[ElementKey] = nil
-		-- Re-apply global theme to this element's instances
-		local globalTheme = Theme
-		table.foreach(redzlib.Instances, function(_, Val)
-			if not Val or not Val.Instance or not Val.Instance.Parent then return end
-			if Val.ElementKey ~= ElementKey then return end
-			local inst = Val.Instance
-			if Val.Type == "Gradient" then
-				inst.Color = globalTheme["Color Hub 1"]
-			elseif Val.Type == "Frame" then
-				inst.BackgroundColor3 = globalTheme["Color Hub 2"]
-			elseif Val.Type == "Stroke" then
-				local prop = GetColor(inst)
-				if prop ~= "" then inst[prop] = globalTheme["Color Stroke"] end
-			elseif Val.Type == "Theme" then
-				local prop = GetColor(inst)
-				if prop ~= "" then inst[prop] = globalTheme["Color Theme"] end
-			elseif Val.Type == "Text" then
-				local prop = GetColor(inst)
-				if prop ~= "" then inst[prop] = globalTheme["Color Text"] end
-			elseif Val.Type == "DarkText" then
-				local prop = GetColor(inst)
-				if prop ~= "" then inst[prop] = globalTheme["Color Dark Text"] end
-			elseif Val.Type == "ScrollBar" then
-				local prop = GetColor(inst)
-				if prop ~= "" then inst[prop] = globalTheme["Color Theme"] end
-			end
-		end)
-		return
-	end
-
-	if not VerifyTheme(NewTheme) then
-		warn("redzlib: Unknown theme '" .. tostring(NewTheme) .. "'")
-		return
-	end
-
-	redzlib.ElementThemes[ElementKey] = NewTheme
-	local elemTheme = redzlib.Themes[NewTheme]
-
-	table.foreach(redzlib.Instances, function(_, Val)
-		if not Val or not Val.Instance or not Val.Instance.Parent then return end
-		if Val.ElementKey ~= ElementKey then return end
-		local inst = Val.Instance
-		if Val.Type == "Gradient" then
-			inst.Color = elemTheme["Color Hub 1"]
-		elseif Val.Type == "Frame" then
-			inst.BackgroundColor3 = elemTheme["Color Hub 2"]
-		elseif Val.Type == "Stroke" then
-			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = elemTheme["Color Stroke"] end
-		elseif Val.Type == "Theme" then
-			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = elemTheme["Color Theme"] end
-		elseif Val.Type == "Text" then
-			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = elemTheme["Color Text"] end
-		elseif Val.Type == "DarkText" then
-			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = elemTheme["Color Dark Text"] end
-		elseif Val.Type == "ScrollBar" then
-			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = elemTheme["Color Theme"] end
-		end
-	end)
-end
-
--- ÃÂ£ÃÂÃÂÃÂ°ÃÂ½ÃÂ¾ÃÂ²ÃÂ¸ÃÂÃÂ ÃÂ¿ÃÂÃÂ¾ÃÂ·ÃÂÃÂ°ÃÂÃÂ½ÃÂ¾ÃÂÃÂÃÂ ÃÂ³ÃÂ»ÃÂ°ÃÂ²ÃÂ½ÃÂ¾ÃÂ³ÃÂ¾ ÃÂ¾ÃÂºÃÂ½ÃÂ° (0 = ÃÂ½ÃÂµÃÂ¿ÃÂÃÂ¾ÃÂ·ÃÂÃÂ°ÃÂÃÂ½ÃÂÃÂ¹, 1 = ÃÂ¿ÃÂ¾ÃÂ»ÃÂ½ÃÂ¾ÃÂÃÂÃÂÃÂ ÃÂ¿ÃÂÃÂ¾ÃÂ·ÃÂÃÂ°ÃÂÃÂ½ÃÂÃÂ¹)
+-- ÃÂ£Ã‘ÂÃ‘Â‚ÃÂ°ÃÂ½ÃÂ¾ÃÂ²ÃÂ¸Ã‘Â‚Ã‘ÂŒ ÃÂ¿Ã‘Â€ÃÂ¾ÃÂ·Ã‘Â€ÃÂ°Ã‘Â‡ÃÂ½ÃÂ¾Ã‘ÂÃ‘Â‚Ã‘ÂŒ ÃÂ³ÃÂ»ÃÂ°ÃÂ²ÃÂ½ÃÂ¾ÃÂ³ÃÂ¾ ÃÂ¾ÃÂºÃÂ½ÃÂ° (0 = ÃÂ½ÃÂµÃÂ¿Ã‘Â€ÃÂ¾ÃÂ·Ã‘Â€ÃÂ°Ã‘Â‡ÃÂ½Ã‘Â‹ÃÂ¹, 1 = ÃÂ¿ÃÂ¾ÃÂ»ÃÂ½ÃÂ¾Ã‘ÂÃ‘Â‚Ã‘ÂŒÃ‘ÂŽ ÃÂ¿Ã‘Â€ÃÂ¾ÃÂ·Ã‘Â€ÃÂ°Ã‘Â‡ÃÂ½Ã‘Â‹ÃÂ¹)
 function redzlib:SetTransparency(value)
 	value = math.clamp(tonumber(value) or 0, 0, 0.95)
 	CurrentTransparency = value
@@ -2659,8 +2583,8 @@ function redzlib:SetTransparency(value)
 	end
 end
 
--- ÃÂ£ÃÂÃÂÃÂ°ÃÂ½ÃÂ¾ÃÂ²ÃÂ¸ÃÂÃÂ ÃÂÃÂ¾ÃÂ½ÃÂ¾ÃÂ²ÃÂ¾ÃÂµ ÃÂ¸ÃÂ·ÃÂ¾ÃÂ±ÃÂÃÂ°ÃÂ¶ÃÂµÃÂ½ÃÂ¸ÃÂµ ÃÂ³ÃÂ»ÃÂ°ÃÂ²ÃÂ½ÃÂ¾ÃÂ³ÃÂ¾ ÃÂ¾ÃÂºÃÂ½ÃÂ° (ÃÂÃÂ¾ÃÂ»ÃÂÃÂºÃÂ¾ rbxassetid)
--- ÃÂÃÂ¾ÃÂÃÂ¼ÃÂ°ÃÂ»ÃÂ¸ÃÂ·ÃÂ°ÃÂÃÂ¸ÃÂ: ÃÂÃÂ¾ÃÂ»ÃÂÃÂºÃÂ¾ rbxassetid
+-- ÃÂ£Ã‘ÂÃ‘Â‚ÃÂ°ÃÂ½ÃÂ¾ÃÂ²ÃÂ¸Ã‘Â‚Ã‘ÂŒ Ã‘Â„ÃÂ¾ÃÂ½ÃÂ¾ÃÂ²ÃÂ¾ÃÂµ ÃÂ¸ÃÂ·ÃÂ¾ÃÂ±Ã‘Â€ÃÂ°ÃÂ¶ÃÂµÃÂ½ÃÂ¸ÃÂµ ÃÂ³ÃÂ»ÃÂ°ÃÂ²ÃÂ½ÃÂ¾ÃÂ³ÃÂ¾ ÃÂ¾ÃÂºÃÂ½ÃÂ° (Ã‘Â‚ÃÂ¾ÃÂ»Ã‘ÂŒÃÂºÃÂ¾ rbxassetid)
+-- ÃÂÃÂ¾Ã‘Â€ÃÂ¼ÃÂ°ÃÂ»ÃÂ¸ÃÂ·ÃÂ°Ã‘Â†ÃÂ¸Ã‘Â: Ã‘Â‚ÃÂ¾ÃÂ»Ã‘ÂŒÃÂºÃÂ¾ rbxassetid
 local function NormalizeImageUrl(raw)
 	raw = tostring(raw or ""):gsub("^%s+",""):gsub("%s+$","")
 	if raw == "" then return "" end
@@ -2676,7 +2600,7 @@ function redzlib:SetBackground(raw, transparency)
 		local trans = transparency ~= nil and math.clamp(tonumber(transparency) or 0, 0, 1) or 0
 		_MainFrame.Image = id
 		_MainFrame.ImageTransparency = trans
-		-- ÃÂ ÃÂ°ÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂ ÃÂ¿ÃÂ¾ÃÂ´ ÃÂ»ÃÂÃÂ±ÃÂ¾ÃÂ¹ ÃÂÃÂ°ÃÂ·ÃÂ¼ÃÂµÃÂ ÃÂºÃÂ°ÃÂÃÂÃÂ¸ÃÂ½ÃÂºÃÂ¸
+		-- ÃÂ ÃÂ°Ã‘ÂÃ‘Â‚Ã‘ÂÃÂ½Ã‘ÂƒÃ‘Â‚Ã‘ÂŒ ÃÂ¿ÃÂ¾ÃÂ´ ÃÂ»Ã‘ÂŽÃÂ±ÃÂ¾ÃÂ¹ Ã‘Â€ÃÂ°ÃÂ·ÃÂ¼ÃÂµÃ‘Â€ ÃÂºÃÂ°Ã‘Â€Ã‘Â‚ÃÂ¸ÃÂ½ÃÂºÃÂ¸
 		_MainFrame.ScaleType = Enum.ScaleType.Stretch
 	end
 end
@@ -2722,7 +2646,7 @@ function redzlib:MakeWindow(Configs)
 		Name = "Hub"
 	}), "Main")
 
-	-- ÃÂ¡ÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂÃÂµÃÂ¼ ÃÂÃÂÃÂÃÂ»ÃÂºÃÂ ÃÂ´ÃÂ»ÃÂ SetTransparency
+	-- ÃÂ¡ÃÂ¾Ã‘Â…Ã‘Â€ÃÂ°ÃÂ½Ã‘ÂÃÂµÃÂ¼ Ã‘ÂÃ‘ÂÃ‘Â‹ÃÂ»ÃÂºÃ‘Âƒ ÃÂ´ÃÂ»Ã‘Â SetTransparency
 	_MainFrame = MainFrame
 
 	Make("Gradient", MainFrame, { Rotation = 45 })
@@ -2901,7 +2825,7 @@ function redzlib:MakeWindow(Configs)
 		local BtnCorner = (Cfg.Corner and Cfg.Corner.CornerRadius) or UDim.new(0.2, 0)
 		local BtnPos    = Cfg.Position or UDim2.fromScale(0.05, 0.5)
 
-		-- ÃÂÃÂ°ÃÂ³ÃÂÃÂÃÂ¶ÃÂ°ÃÂµÃÂ¼ ÃÂÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂÃÂ½ÃÂ½ÃÂÃÂµ ÃÂ¿ÃÂ°ÃÂÃÂ°ÃÂ¼ÃÂµÃÂÃÂÃÂ ÃÂ¸ÃÂ· redzlib.Save.MinimizeButtons
+		-- ÃÂ—ÃÂ°ÃÂ³Ã‘Â€Ã‘ÂƒÃÂ¶ÃÂ°ÃÂµÃÂ¼ Ã‘ÂÃÂ¾Ã‘Â…Ã‘Â€ÃÂ°ÃÂ½Ã‘Â‘ÃÂ½ÃÂ½Ã‘Â‹ÃÂµ ÃÂ¿ÃÂ°Ã‘Â€ÃÂ°ÃÂ¼ÃÂµÃ‘Â‚Ã‘Â€Ã‘Â‹ ÃÂ¸ÃÂ· redzlib.Save.MinimizeButtons
 		if not redzlib.Save.MinimizeButtons then redzlib.Save.MinimizeButtons = {} end
 		local Saved = redzlib.Save.MinimizeButtons[BtnId] or {}
 
@@ -2912,7 +2836,7 @@ function redzlib:MakeWindow(Configs)
 			BtnPos = UDim2.fromOffset(Saved.posX, Saved.posY)
 		end
 
-		-- ÃÂ¤ÃÂÃÂ½ÃÂºÃÂÃÂ¸ÃÂ ÃÂÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂ ÃÂ¿ÃÂ°ÃÂÃÂ°ÃÂ¼ÃÂµÃÂÃÂÃÂ¾ÃÂ²
+		-- ÃÂ¤Ã‘ÂƒÃÂ½ÃÂºÃ‘Â†ÃÂ¸Ã‘Â Ã‘ÂÃÂ¾Ã‘Â…Ã‘Â€ÃÂ°ÃÂ½ÃÂµÃÂ½ÃÂ¸Ã‘Â ÃÂ¿ÃÂ°Ã‘Â€ÃÂ°ÃÂ¼ÃÂµÃ‘Â‚Ã‘Â€ÃÂ¾ÃÂ²
 		local function SaveBtn()
 			redzlib.Save.MinimizeButtons[BtnId] = {
 				size  = BtnSize,
@@ -2924,7 +2848,7 @@ function redzlib:MakeWindow(Configs)
 			SaveJson("redz library V5.json", redzlib.Save)
 		end
 
-		-- ÃÂÃÂÃÂ½ÃÂ¾ÃÂ²ÃÂ½ÃÂ°ÃÂ ÃÂºÃÂ½ÃÂ¾ÃÂ¿ÃÂºÃÂ° (ÃÂ¿ÃÂµÃÂÃÂµÃÂÃÂ°ÃÂÃÂºÃÂ¸ÃÂ²ÃÂ°ÃÂµÃÂ¼ÃÂ°ÃÂ)
+		-- ÃÂžÃ‘ÂÃÂ½ÃÂ¾ÃÂ²ÃÂ½ÃÂ°Ã‘Â ÃÂºÃÂ½ÃÂ¾ÃÂ¿ÃÂºÃÂ° (ÃÂ¿ÃÂµÃ‘Â€ÃÂµÃ‘Â‚ÃÂ°Ã‘ÂÃÂºÃÂ¸ÃÂ²ÃÂ°ÃÂµÃÂ¼ÃÂ°Ã‘Â)
 		local Button = MakeDrag(Create("ImageButton", ScreenGui, {
 			Size             = UDim2.fromOffset(BtnSize, BtnSize),
 			Position         = BtnPos,
@@ -2940,7 +2864,7 @@ function redzlib:MakeWindow(Configs)
 		local BtnCornerInst = Make("Corner", Button, BtnCorner)
 		Make("Stroke", Button)
 
-		-- Hover-ÃÂÃÂÃÂÃÂµÃÂºÃÂ
+		-- Hover-Ã‘ÂÃ‘Â„Ã‘Â„ÃÂµÃÂºÃ‘Â‚
 		Button.MouseEnter:Connect(function()
 			CreateTween({Button, "ImageColor3", Color3.fromRGB(255,255,255), 0.18})
 			CreateTween({Button, "BackgroundTransparency", math.max(BtnTrans - 0.15, 0), 0.18})
@@ -2950,10 +2874,10 @@ function redzlib:MakeWindow(Configs)
 			CreateTween({Button, "BackgroundTransparency", BtnTrans, 0.18})
 		end)
 
-		-- ÃÂÃÂ»ÃÂ¸ÃÂº Ã¢ÂÂ ÃÂ¿ÃÂ¾ÃÂºÃÂ°ÃÂ·ÃÂ°ÃÂÃÂ/ÃÂÃÂºÃÂÃÂÃÂÃÂ ÃÂ³ÃÂ»ÃÂ°ÃÂ²ÃÂ½ÃÂÃÂ¹ ÃÂÃÂÃÂµÃÂ¹ÃÂ¼
+		-- ÃÂšÃÂ»ÃÂ¸ÃÂº Ã¢Â€Â” ÃÂ¿ÃÂ¾ÃÂºÃÂ°ÃÂ·ÃÂ°Ã‘Â‚Ã‘ÂŒ/Ã‘ÂÃÂºÃ‘Â€Ã‘Â‹Ã‘Â‚Ã‘ÂŒ ÃÂ³ÃÂ»ÃÂ°ÃÂ²ÃÂ½Ã‘Â‹ÃÂ¹ Ã‘Â„Ã‘Â€ÃÂµÃÂ¹ÃÂ¼
 		Button.Activated:Connect(Window.Minimize)
 
-		-- ÃÂ¡ÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂµ ÃÂ¿ÃÂ¾ÃÂ·ÃÂ¸ÃÂÃÂ¸ÃÂ¸ ÃÂ¿ÃÂ¾ÃÂÃÂ»ÃÂµ ÃÂ¿ÃÂµÃÂÃÂµÃÂÃÂ°ÃÂÃÂºÃÂ¸ÃÂ²ÃÂ°ÃÂ½ÃÂ¸ÃÂ
+		-- ÃÂ¡ÃÂ¾Ã‘Â…Ã‘Â€ÃÂ°ÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂµ ÃÂ¿ÃÂ¾ÃÂ·ÃÂ¸Ã‘Â†ÃÂ¸ÃÂ¸ ÃÂ¿ÃÂ¾Ã‘ÂÃÂ»ÃÂµ ÃÂ¿ÃÂµÃ‘Â€ÃÂµÃ‘Â‚ÃÂ°Ã‘ÂÃÂºÃÂ¸ÃÂ²ÃÂ°ÃÂ½ÃÂ¸Ã‘Â
 		local savePosDebounce = false
 		Button:GetPropertyChangedSignal("Position"):Connect(function()
 			if savePosDebounce then return end
@@ -2969,7 +2893,7 @@ function redzlib:MakeWindow(Configs)
 		end)
 
 		-- =================================================================
-		-- ÃÂÃÂ°ÃÂ½ÃÂµÃÂ»ÃÂ ÃÂ½ÃÂ°ÃÂÃÂÃÂÃÂ¾ÃÂµÃÂº (ÃÂ¾ÃÂÃÂºÃÂÃÂÃÂ²ÃÂ°ÃÂµÃÂÃÂÃÂ ÃÂ¿ÃÂ¾ ÃÂÃÂÃÂ)
+		-- ÃÂŸÃÂ°ÃÂ½ÃÂµÃÂ»Ã‘ÂŒ ÃÂ½ÃÂ°Ã‘ÂÃ‘Â‚Ã‘Â€ÃÂ¾ÃÂµÃÂº (ÃÂ¾Ã‘Â‚ÃÂºÃ‘Â€Ã‘Â‹ÃÂ²ÃÂ°ÃÂµÃ‘Â‚Ã‘ÂÃ‘Â ÃÂ¿ÃÂ¾ ÃÂŸÃÂšÃÂœ)
 		-- =================================================================
 		local PanelOpen = false
 		local Panel = Create("Frame", ScreenGui, {
@@ -3048,14 +2972,14 @@ function redzlib:MakeWindow(Configs)
 			return track, fill, knob
 		end
 
-		MkLabel("Ã°ÂÂÂ¼  IMAGE (rbxassetid / url)", 1)
+		MkLabel("Ã°ÂŸÂ–Â¼  IMAGE (rbxassetid / url)", 1)
 		local _, ImageInput = MkInput("rbxassetid://...", 2)
-		MkLabel("Ã°ÂÂÂ  SIZE  (20 Ã¢ÂÂ 120)", 3)
+		MkLabel("Ã°ÂŸÂ“Â  SIZE  (20 Ã¢Â€Â“ 120)", 3)
 		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
-		local _, SizeInput = MkInput("20 Ã¢ÂÂ 120", 5)
-		MkLabel("Ã°ÂÂÂ§  TRANSPARENCY  (0.0 Ã¢ÂÂ 1.0)", 6)
+		local _, SizeInput = MkInput("20 Ã¢Â€Â“ 120", 5)
+		MkLabel("Ã°ÂŸÂ’Â§  TRANSPARENCY  (0.0 Ã¢Â€Â“ 1.0)", 6)
 		local TransTrack, TransFill, TransKnob = MkSlider(7)
-		local _, TransInput = MkInput("0.0 Ã¢ÂÂ 1.0", 8)
+		local _, TransInput = MkInput("0.0 Ã¢Â€Â“ 1.0", 8)
 
 		local ClosePanel = Create("TextButton", Panel, {
 			Size = UDim2.fromOffset(14, 14),
@@ -3065,7 +2989,7 @@ function redzlib:MakeWindow(Configs)
 			Font = Enum.Font.GothamBold,
 			TextSize = 12,
 			TextColor3 = Theme["Color Dark Text"],
-			Text = "Ã¢ÂÂ",
+			Text = "Ã¢ÂœÂ•",
 			ZIndex = 25
 		})
 
@@ -3112,12 +3036,12 @@ function redzlib:MakeWindow(Configs)
 			if PanelOpen then CloseP() else OpenPanel() end
 		end)
 
-		-- ÃÂÃÂÃÂ¸ÃÂ¼ÃÂµÃÂ½ÃÂ¸ÃÂÃÂ ÃÂÃÂÃÂ½ÃÂºÃÂÃÂ¸ÃÂ¸
+		-- ÃÂŸÃ‘Â€ÃÂ¸ÃÂ¼ÃÂµÃÂ½ÃÂ¸Ã‘Â‚Ã‘ÂŒ Ã‘Â„Ã‘ÂƒÃÂ½ÃÂºÃ‘Â†ÃÂ¸ÃÂ¸
 		local function ApplyImage(raw)
 			local id = NormalizeImageUrl(raw)
 			if id == "" then return end
 			Button.Image = id
-			-- ÃÂÃÂ¾ÃÂ´ÃÂ´ÃÂµÃÂÃÂ¶ÃÂºÃÂ° ÃÂ»ÃÂÃÂ±ÃÂ¾ÃÂ³ÃÂ¾ ÃÂÃÂ°ÃÂ·ÃÂ¼ÃÂµÃÂÃÂ° ÃÂºÃÂ°ÃÂÃÂÃÂ¸ÃÂ½ÃÂºÃÂ¸
+			-- ÃÂŸÃÂ¾ÃÂ´ÃÂ´ÃÂµÃ‘Â€ÃÂ¶ÃÂºÃÂ° ÃÂ»Ã‘ÂŽÃÂ±ÃÂ¾ÃÂ³ÃÂ¾ Ã‘Â€ÃÂ°ÃÂ·ÃÂ¼ÃÂµÃ‘Â€ÃÂ° ÃÂºÃÂ°Ã‘Â€Ã‘Â‚ÃÂ¸ÃÂ½ÃÂºÃÂ¸
 			Button.ScaleType = Enum.ScaleType.Stretch
 			BtnImage = id
 			SaveBtn()
@@ -3154,7 +3078,7 @@ function redzlib:MakeWindow(Configs)
 			if n then ApplyTrans(n) end
 		end)
 
-		-- ÃÂ¡ÃÂ»ÃÂ°ÃÂ¹ÃÂ´ÃÂµÃÂ-ÃÂ»ÃÂ¾ÃÂ³ÃÂ¸ÃÂºÃÂ°
+		-- ÃÂ¡ÃÂ»ÃÂ°ÃÂ¹ÃÂ´ÃÂµÃ‘Â€-ÃÂ»ÃÂ¾ÃÂ³ÃÂ¸ÃÂºÃÂ°
 		local function SliderDrag(track, fill, knob, onValue, minV, maxV)
 			track.InputBegan:Connect(function(inp)
 				if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
@@ -3173,7 +3097,7 @@ function redzlib:MakeWindow(Configs)
 		SliderDrag(SizeTrack, SizeFill, SizeKnob, ApplySize, 20, 120)
 		SliderDrag(TransTrack, TransFill, TransKnob, ApplyTrans, 0, 1)
 
-		-- ÃÂÃÂ°ÃÂºÃÂÃÂÃÂÃÂ ÃÂ¿ÃÂ°ÃÂ½ÃÂµÃÂ»ÃÂ ÃÂ¿ÃÂÃÂ¸ ÃÂºÃÂ»ÃÂ¸ÃÂºÃÂµ ÃÂ²ÃÂ½ÃÂµ
+		-- ÃÂ—ÃÂ°ÃÂºÃ‘Â€Ã‘Â‹Ã‘Â‚Ã‘ÂŒ ÃÂ¿ÃÂ°ÃÂ½ÃÂµÃÂ»Ã‘ÂŒ ÃÂ¿Ã‘Â€ÃÂ¸ ÃÂºÃÂ»ÃÂ¸ÃÂºÃÂµ ÃÂ²ÃÂ½ÃÂµ
 		UserInputService.InputBegan:Connect(function(inp)
 			if inp.UserInputType == Enum.UserInputType.MouseButton1 and PanelOpen then
 				local m  = UserInputService:GetMouseLocation()
@@ -3189,7 +3113,7 @@ function redzlib:MakeWindow(Configs)
 
 		if Cfg.Button then SetProps(Button, Cfg.Button) end
 
-		-- ÃÂÃÂ½ÃÂ¸ÃÂÃÂ¸ÃÂ°ÃÂ»ÃÂ¸ÃÂ·ÃÂ°ÃÂÃÂ¸ÃÂ SaveBtn ÃÂ¿ÃÂ¾ÃÂÃÂ»ÃÂµ ÃÂÃÂ¾ÃÂ·ÃÂ´ÃÂ°ÃÂ½ÃÂ¸ÃÂ Button
+		-- ÃÂ˜ÃÂ½ÃÂ¸Ã‘Â†ÃÂ¸ÃÂ°ÃÂ»ÃÂ¸ÃÂ·ÃÂ°Ã‘Â†ÃÂ¸Ã‘Â SaveBtn ÃÂ¿ÃÂ¾Ã‘ÂÃÂ»ÃÂµ Ã‘ÂÃÂ¾ÃÂ·ÃÂ´ÃÂ°ÃÂ½ÃÂ¸Ã‘Â Button
 		SaveBtn = function()
 			local p = Button.Position
 			redzlib.Save.MinimizeButtons[BtnId] = {
@@ -3236,7 +3160,7 @@ function redzlib:MakeWindow(Configs)
 		local DIcon    = Configs.Icon or ""
 		local DType    = Configs.Type or "default" -- "default" | "theme" | "image"
 
-		-- ÃÂÃÂÃÂ¿ÃÂ¾ÃÂ¼ÃÂ¾ÃÂ³ÃÂ°ÃÂÃÂµÃÂ»ÃÂÃÂ½ÃÂ°ÃÂ ÃÂÃÂÃÂ½ÃÂºÃÂÃÂ¸ÃÂ ÃÂ½ÃÂ¾ÃÂÃÂ¼ÃÂ°ÃÂ»ÃÂ¸ÃÂ·ÃÂ°ÃÂÃÂ¸ÃÂ¸ rbxassetid/catbox
+		-- ÃÂ’Ã‘ÂÃÂ¿ÃÂ¾ÃÂ¼ÃÂ¾ÃÂ³ÃÂ°Ã‘Â‚ÃÂµÃÂ»Ã‘ÂŒÃÂ½ÃÂ°Ã‘Â Ã‘Â„Ã‘ÂƒÃÂ½ÃÂºÃ‘Â†ÃÂ¸Ã‘Â ÃÂ½ÃÂ¾Ã‘Â€ÃÂ¼ÃÂ°ÃÂ»ÃÂ¸ÃÂ·ÃÂ°Ã‘Â†ÃÂ¸ÃÂ¸ rbxassetid/catbox
 		local function NormalizeImageId(raw)
 			raw = tostring(raw or ""):gsub("^%s+",""):gsub("%s+$","")
 			if raw == "" then return "" end
@@ -3246,7 +3170,7 @@ function redzlib:MakeWindow(Configs)
 			return "rbxassetid://" .. raw
 		end
 
-		-- Ã¢ÂÂÃ¢ÂÂ ÃÂ ÃÂ°ÃÂ·ÃÂ¼ÃÂµÃÂ ÃÂÃÂÃÂµÃÂ¹ÃÂ¼ÃÂ° ÃÂ·ÃÂ°ÃÂ²ÃÂ¸ÃÂÃÂ¸ÃÂ ÃÂ¾ÃÂ ÃÂÃÂ¸ÃÂ¿ÃÂ° Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+		-- Ã¢Â”Â€Ã¢Â”Â€ ÃÂ ÃÂ°ÃÂ·ÃÂ¼ÃÂµÃ‘Â€ Ã‘Â„Ã‘Â€ÃÂµÃÂ¹ÃÂ¼ÃÂ° ÃÂ·ÃÂ°ÃÂ²ÃÂ¸Ã‘ÂÃÂ¸Ã‘Â‚ ÃÂ¾Ã‘Â‚ Ã‘Â‚ÃÂ¸ÃÂ¿ÃÂ° Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€
 		local baseW = DType == "theme" and 310 or DType == "image" and 290 or 270
 		local baseH = DType == "theme" and 220 or DType == "image" and 200 or 160
 
@@ -3272,7 +3196,7 @@ function redzlib:MakeWindow(Configs)
 		Make("Corner", Frame)
 		Make("Stroke", Frame)
 
-		-- Ã¢ÂÂÃ¢ÂÂ ÃÂÃÂºÃÂ¾ÃÂ½ÃÂºÃÂ° ÃÂÃÂ¸ÃÂ¿ÃÂ° ÃÂ´ÃÂ¸ÃÂ°ÃÂ»ÃÂ¾ÃÂ³ÃÂ° (ÃÂÃÂ»ÃÂµÃÂ²ÃÂ° ÃÂ¾ÃÂ ÃÂ·ÃÂ°ÃÂ³ÃÂ¾ÃÂ»ÃÂ¾ÃÂ²ÃÂºÃÂ°) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+		-- Ã¢Â”Â€Ã¢Â”Â€ ÃÂ˜ÃÂºÃÂ¾ÃÂ½ÃÂºÃÂ° Ã‘Â‚ÃÂ¸ÃÂ¿ÃÂ° ÃÂ´ÃÂ¸ÃÂ°ÃÂ»ÃÂ¾ÃÂ³ÃÂ° (Ã‘ÂÃÂ»ÃÂµÃÂ²ÃÂ° ÃÂ¾Ã‘Â‚ ÃÂ·ÃÂ°ÃÂ³ÃÂ¾ÃÂ»ÃÂ¾ÃÂ²ÃÂºÃÂ°) Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€
 		local iconMap = {
 			info    = "rbxassetid://10723415903",
 			warning = "rbxassetid://10709753149",
@@ -3311,7 +3235,7 @@ function redzlib:MakeWindow(Configs)
 			TextTruncate = "AtEnd"
 		}), "Text")
 
-		-- ÃÂÃÂ½ÃÂ¾ÃÂ¿ÃÂºÃÂ° ÃÂ·ÃÂ°ÃÂºÃÂÃÂÃÂÃÂ¸ÃÂ ÃÂºÃÂÃÂµÃÂÃÂÃÂ¸ÃÂºÃÂ¾ÃÂ¼
+		-- ÃÂšÃÂ½ÃÂ¾ÃÂ¿ÃÂºÃÂ° ÃÂ·ÃÂ°ÃÂºÃ‘Â€Ã‘Â‹Ã‘Â‚ÃÂ¸Ã‘Â ÃÂºÃ‘Â€ÃÂµÃ‘ÂÃ‘Â‚ÃÂ¸ÃÂºÃÂ¾ÃÂ¼
 		local XBtn = Create("ImageButton", TopBar, {
 			Size = UDim2.fromOffset(14, 14),
 			Position = UDim2.new(1, -10, 0.5),
@@ -3322,14 +3246,14 @@ function redzlib:MakeWindow(Configs)
 			AutoButtonColor = false
 		})
 
-		-- ÃÂ ÃÂ°ÃÂ·ÃÂ´ÃÂµÃÂ»ÃÂ¸ÃÂÃÂµÃÂ»ÃÂ
+		-- ÃÂ ÃÂ°ÃÂ·ÃÂ´ÃÂµÃÂ»ÃÂ¸Ã‘Â‚ÃÂµÃÂ»Ã‘ÂŒ
 		InsertTheme(Create("Frame", Frame, {
 			Size = UDim2.new(1, -24, 0, 1),
 			Position = UDim2.fromOffset(12, 36),
 			BackgroundColor3 = Theme["Color Stroke"]
 		}), "Stroke")
 
-		-- Ã¢ÂÂÃ¢ÂÂ ÃÂ¢ÃÂµÃÂºÃÂÃÂ ÃÂ¾ÃÂ¿ÃÂ¸ÃÂÃÂ°ÃÂ½ÃÂ¸ÃÂ Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+		-- Ã¢Â”Â€Ã¢Â”Â€ ÃÂ¢ÃÂµÃÂºÃ‘ÂÃ‘Â‚ ÃÂ¾ÃÂ¿ÃÂ¸Ã‘ÂÃÂ°ÃÂ½ÃÂ¸Ã‘Â Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€
 		InsertTheme(Create("TextLabel", Frame, {
 			Font = Enum.Font.GothamMedium,
 			Size = UDim2.new(1, -24, 0, 0),
@@ -3344,11 +3268,11 @@ function redzlib:MakeWindow(Configs)
 			RichText = true
 		}), "DarkText")
 
-		-- Ã¢ÂÂÃ¢ÂÂ ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢: Theme / Image / Default Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+		-- Ã¢Â”Â€Ã¢Â”Â€ ÃÂšÃÂžÃÂÃÂ¢ÃÂ•ÃÂÃÂ¢: Theme / Image / Default Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€
 		local ContentY = 44
 
 		if DType == "theme" then
-			-- ÃÂ¡ÃÂ¿ÃÂ¸ÃÂÃÂ¾ÃÂº ÃÂÃÂµÃÂ¼ ÃÂ² ÃÂ²ÃÂ¸ÃÂ´ÃÂµ ÃÂÃÂµÃÂÃÂºÃÂ¸
+			-- ÃÂ¡ÃÂ¿ÃÂ¸Ã‘ÂÃÂ¾ÃÂº Ã‘Â‚ÃÂµÃÂ¼ ÃÂ² ÃÂ²ÃÂ¸ÃÂ´ÃÂµ Ã‘ÂÃÂµÃ‘Â‚ÃÂºÃÂ¸
 			ContentY = 95
 			local themeNames = {}
 			for k in pairs(redzlib.Themes) do table.insert(themeNames, k) end
@@ -3400,7 +3324,7 @@ function redzlib:MakeWindow(Configs)
 				if isActive then Make("Stroke", TBtn) end
 				TBtn.Activated:Connect(function()
 					redzlib:SetTheme(tname)
-					-- ÃÂÃÂ±ÃÂ½ÃÂ¾ÃÂ²ÃÂ»ÃÂÃÂµÃÂ¼ ÃÂ¿ÃÂ¾ÃÂ´ÃÂÃÂ²ÃÂµÃÂÃÂºÃÂ
+					-- ÃÂžÃÂ±ÃÂ½ÃÂ¾ÃÂ²ÃÂ»Ã‘ÂÃÂµÃÂ¼ ÃÂ¿ÃÂ¾ÃÂ´Ã‘ÂÃÂ²ÃÂµÃ‘Â‚ÃÂºÃ‘Âƒ
 					for _, ch in ipairs(ThemeScroll:GetChildren()) do
 						if ch:IsA("TextButton") then
 							ch.TextColor3 = ch.Name == tname and Theme["Color Theme"] or Theme["Color Text"]
@@ -3409,7 +3333,7 @@ function redzlib:MakeWindow(Configs)
 				end)
 			end
 
-			-- ÃÂÃÂ¾ÃÂ»ÃÂµ ÃÂ²ÃÂ²ÃÂ¾ÃÂ´ÃÂ° rbxassetid/catbox ÃÂ´ÃÂ»ÃÂ ÃÂºÃÂ°ÃÂÃÂÃÂ¾ÃÂ¼ÃÂ½ÃÂ¾ÃÂ³ÃÂ¾ ÃÂÃÂ²ÃÂµÃÂÃÂ° ÃÂÃÂµÃÂ¼ÃÂ
+			-- ÃÂŸÃÂ¾ÃÂ»ÃÂµ ÃÂ²ÃÂ²ÃÂ¾ÃÂ´ÃÂ° rbxassetid/catbox ÃÂ´ÃÂ»Ã‘Â ÃÂºÃÂ°Ã‘ÂÃ‘Â‚ÃÂ¾ÃÂ¼ÃÂ½ÃÂ¾ÃÂ³ÃÂ¾ Ã‘Â†ÃÂ²ÃÂµÃ‘Â‚ÃÂ° Ã‘Â‚ÃÂµÃÂ¼Ã‘Â‹
 			InsertTheme(Create("TextLabel", Frame, {
 				Font = Enum.Font.GothamBold,
 				Size = UDim2.new(1, -24, 0, 14),
@@ -3458,7 +3382,7 @@ function redzlib:MakeWindow(Configs)
 				if id ~= "" then
 					ThemePreview.Image = id
 					ThemePreview.Visible = true
-					-- ÃÂÃÂÃÂ¸ÃÂ¼ÃÂµÃÂ½ÃÂÃÂµÃÂ¼ ÃÂº MainFrame ÃÂºÃÂ°ÃÂº ÃÂÃÂ¾ÃÂ½ÃÂ¾ÃÂ²ÃÂ¾ÃÂµ ÃÂ¸ÃÂ·ÃÂ¾ÃÂ±ÃÂÃÂ°ÃÂ¶ÃÂµÃÂ½ÃÂ¸ÃÂµ
+					-- ÃÂŸÃ‘Â€ÃÂ¸ÃÂ¼ÃÂµÃÂ½Ã‘ÂÃÂµÃÂ¼ ÃÂº MainFrame ÃÂºÃÂ°ÃÂº Ã‘Â„ÃÂ¾ÃÂ½ÃÂ¾ÃÂ²ÃÂ¾ÃÂµ ÃÂ¸ÃÂ·ÃÂ¾ÃÂ±Ã‘Â€ÃÂ°ÃÂ¶ÃÂµÃÂ½ÃÂ¸ÃÂµ
 					if MainFrame then
 						MainFrame.Image = id
 						MainFrame.ImageTransparency = 0.1
@@ -3533,7 +3457,7 @@ function redzlib:MakeWindow(Configs)
 				TextXAlignment = "Left"
 			}), "Text")
 
-			-- ÃÂÃÂÃÂµÃÂ²ÃÂÃÂ
+			-- ÃÂŸÃ‘Â€ÃÂµÃÂ²Ã‘ÂŒÃ‘ÂŽ
 			local Preview = Create("ImageLabel", Frame, {
 				Size = UDim2.fromOffset(40, 40),
 				Position = UDim2.new(0.5, 0, 0, 162),
@@ -3552,11 +3476,11 @@ function redzlib:MakeWindow(Configs)
 				if id == "" then return end
 				Preview.Image = id
 				Preview.Visible = true
-				-- ÃÂÃÂÃÂ¸ÃÂ¼ÃÂµÃÂ½ÃÂÃÂµÃÂ¼ ÃÂº MinimizeButton ÃÂÃÂµÃÂÃÂµÃÂ· ÃÂÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂÃÂ½ÃÂ½ÃÂÃÂµ ÃÂ´ÃÂ°ÃÂ½ÃÂ½ÃÂÃÂµ
+				-- ÃÂŸÃ‘Â€ÃÂ¸ÃÂ¼ÃÂµÃÂ½Ã‘ÂÃÂµÃÂ¼ ÃÂº MinimizeButton Ã‘Â‡ÃÂµÃ‘Â€ÃÂµÃÂ· Ã‘ÂÃÂ¾Ã‘Â…Ã‘Â€ÃÂ°ÃÂ½Ã‘Â‘ÃÂ½ÃÂ½Ã‘Â‹ÃÂµ ÃÂ´ÃÂ°ÃÂ½ÃÂ½Ã‘Â‹ÃÂµ
 				if MinimizeButton then
 					MinimizeButton.Image = id
 				end
-				-- ÃÂ¢ÃÂ°ÃÂºÃÂ¶ÃÂµ ÃÂÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂÃÂµÃÂ¼ ÃÂ² MinimizeButtons default
+				-- ÃÂ¢ÃÂ°ÃÂºÃÂ¶ÃÂµ Ã‘ÂÃÂ¾Ã‘Â…Ã‘Â€ÃÂ°ÃÂ½Ã‘ÂÃÂµÃÂ¼ ÃÂ² MinimizeButtons default
 				if redzlib.Save.MinimizeButtons then
 					for _, btn in pairs(redzlib.Save.MinimizeButtons) do
 						btn.image = id
@@ -3580,7 +3504,7 @@ function redzlib:MakeWindow(Configs)
 			MainImgInput.FocusLost:Connect(function() ApplyMain(MainImgInput.Text) end)
 		end
 
-		-- Ã¢ÂÂÃ¢ÂÂ ÃÂÃÂ½ÃÂ¾ÃÂ¿ÃÂºÃÂ¸ Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+		-- Ã¢Â”Â€Ã¢Â”Â€ ÃÂšÃÂ½ÃÂ¾ÃÂ¿ÃÂºÃÂ¸ Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€
 		local ButtonsHolder = Create("Frame", Frame, {
 			Size = UDim2.new(1, -20, 0, 30),
 			Position = UDim2.new(0, 10, 1, -10),
@@ -3603,7 +3527,7 @@ function redzlib:MakeWindow(Configs)
 		function Dialog:Button(Cfg)
 			local Name = Cfg[1] or Cfg.Name or Cfg.Title or ""
 			local Callback = Cfg[2] or Cfg.Callback or function()end
-			local BtnColor = Cfg.Color -- ÃÂ¾ÃÂ¿ÃÂÃÂ¸ÃÂ¾ÃÂ½ÃÂ°ÃÂ»ÃÂÃÂ½ÃÂÃÂ¹ ÃÂÃÂ²ÃÂµÃÂ ÃÂºÃÂ½ÃÂ¾ÃÂ¿ÃÂºÃÂ¸
+			local BtnColor = Cfg.Color -- ÃÂ¾ÃÂ¿Ã‘Â†ÃÂ¸ÃÂ¾ÃÂ½ÃÂ°ÃÂ»Ã‘ÂŒÃÂ½Ã‘Â‹ÃÂ¹ Ã‘Â†ÃÂ²ÃÂµÃ‘Â‚ ÃÂºÃÂ½ÃÂ¾ÃÂ¿ÃÂºÃÂ¸
 			ButtonCount = ButtonCount + 1
 			local Btn = Make("Button", ButtonsHolder)
 			Make("Corner", Btn, UDim.new(0, 5))
@@ -3654,7 +3578,7 @@ function redzlib:MakeWindow(Configs)
 		end
 	end
 
-	-- SetTransparency ÃÂ´ÃÂ¾ÃÂÃÂÃÂÃÂ¿ÃÂ½ÃÂ° ÃÂÃÂµÃÂÃÂµÃÂ· Window
+	-- SetTransparency ÃÂ´ÃÂ¾Ã‘ÂÃ‘Â‚Ã‘ÂƒÃÂ¿ÃÂ½ÃÂ° Ã‘Â‡ÃÂµÃ‘Â€ÃÂµÃÂ· Window
 	function Window:SetTransparency(value)
 		redzlib:SetTransparency(value)
 	end
@@ -3665,16 +3589,9 @@ function redzlib:MakeWindow(Configs)
 		redzlib:ClearBackground()
 	end
 
-	-- SetTheme ÃÂ´ÃÂ¾ÃÂÃÂÃÂÃÂ¿ÃÂ½ÃÂ° ÃÂÃÂµÃÂÃÂµÃÂ· Window
+	-- SetTheme ÃÂ´ÃÂ¾Ã‘ÂÃ‘Â‚Ã‘ÂƒÃÂ¿ÃÂ½ÃÂ° Ã‘Â‡ÃÂµÃ‘Â€ÃÂµÃÂ· Window
 	function Window:SetTheme(name)
 		redzlib:SetTheme(name)
-	end
-
-	-- SetElementTheme: Ð¿ÑÐ¸Ð¼ÐµÐ½Ð¸ÑÑ ÑÐµÐ¼Ñ ÑÐ¾Ð»ÑÐºÐ¾ Ðº ÐºÐ¾Ð½ÐºÑÐµÑÐ½Ð¾Ð¼Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÑ
-	-- Ð­Ð»ÐµÐ¼ÐµÐ½ÑÑ: "Tab", "Section", "Dropdown", "Slider", "TextBox", "Toggle", "Button"
-	-- Ð¡Ð±ÑÐ¾Ñ: Window:SetElementTheme("Slider", nil) â Ð²ÐµÑÐ½ÑÑ Ð³Ð»Ð¾Ð±Ð°Ð»ÑÐ½ÑÑ ÑÐµÐ¼Ñ
-	function Window:SetElementTheme(elementKey, themeName)
-		redzlib:SetElementTheme(elementKey, themeName)
 	end
 
 	local ContainerList = {}
@@ -3702,7 +3619,7 @@ function redzlib:MakeWindow(Configs)
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextTransparency = (FirstTab and 0.3) or 0,
 			TextTruncate = "AtEnd"
-		}), "Text", "Tab")
+		}), "Text")
 
 		local LabelIcon = InsertTheme(Create("ImageLabel", TabSelect, {
 			Position = UDim2.new(0, 8, 0.5),
@@ -3711,7 +3628,7 @@ function redzlib:MakeWindow(Configs)
 			Image = TIcon or "",
 			BackgroundTransparency = 1,
 			ImageTransparency = (FirstTab and 0.3) or 0
-		}), "Text", "Tab")
+		}), "Text")
 
 		local Selected = InsertTheme(Create("Frame", TabSelect, {
 			Size = FirstTab and UDim2.new(0, 4, 0, 4) or UDim2.new(0, 4, 0, 13),
@@ -3719,7 +3636,7 @@ function redzlib:MakeWindow(Configs)
 			AnchorPoint = Vector2.new(0, 0.5),
 			BackgroundColor3 = Theme["Color Theme"],
 			BackgroundTransparency = FirstTab and 1 or 0
-		}), "Theme", "Tab")
+		}), "Theme")
 		Make("Corner", Selected, UDim.new(0.5, 0))
 
 		local Container = InsertTheme(Create("ScrollingFrame", {
@@ -3743,7 +3660,7 @@ function redzlib:MakeWindow(Configs)
 				PaddingBottom = UDim.new(0, 10)
 			}),
 			Create("UIListLayout", { Padding = UDim.new(0, 5) })
-		}), "ScrollBar", "Tab")
+		}), "ScrollBar")
 
 		table.insert(ContainerList, Container)
 		if not FirstTab then Container.Parent = Containers end
@@ -3811,7 +3728,7 @@ function redzlib:MakeWindow(Configs)
 				TextTruncate = "AtEnd",
 				TextSize = 14,
 				TextXAlignment = "Left"
-			}), "Text", "Section")
+			}), "Text")
 
 			local Section = {}
 			table.insert(redzlib.Options, {type = "Section", Name = SectionName, func = Section})
@@ -3908,7 +3825,7 @@ function redzlib:MakeWindow(Configs)
 				Position = UDim2.new(1, -10, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke", "Toggle")
+			}), "Stroke")
 			Make("Corner", ToggleHolder, UDim.new(0.5, 0))
 
 			local Slider = Create("Frame", ToggleHolder, {
@@ -3923,7 +3840,7 @@ function redzlib:MakeWindow(Configs)
 				Position = UDim2.new(0, 0, 0.5),
 				AnchorPoint = Vector2.new(0, 0.5),
 				BackgroundColor3 = Theme["Color Theme"]
-			}), "Theme", "Toggle")
+			}), "Theme")
 			Make("Corner", ToggleKnob, UDim.new(0.5, 0))
 
 			local WaitToggle
@@ -3971,7 +3888,7 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		-- ================================================================
-		-- AddDropdown Ã¢ÂÂ ÃÂ ÃÂ¿ÃÂ¾ÃÂ¸ÃÂÃÂºÃÂ¾ÃÂ²ÃÂ¾ÃÂ¹ ÃÂÃÂÃÂÃÂ¾ÃÂºÃÂ¾ÃÂ¹ + ÃÂ¸ÃÂÃÂ¿ÃÂÃÂ°ÃÂ²ÃÂ»ÃÂµÃÂ½ÃÂ½ÃÂ¾ÃÂµ ÃÂÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂµ MultiSelect
+		-- AddDropdown Ã¢Â€Â” Ã‘Â ÃÂ¿ÃÂ¾ÃÂ¸Ã‘ÂÃÂºÃÂ¾ÃÂ²ÃÂ¾ÃÂ¹ Ã‘ÂÃ‘Â‚Ã‘Â€ÃÂ¾ÃÂºÃÂ¾ÃÂ¹ + ÃÂ¸Ã‘ÂÃÂ¿Ã‘Â€ÃÂ°ÃÂ²ÃÂ»ÃÂµÃÂ½ÃÂ½ÃÂ¾ÃÂµ Ã‘ÂÃÂ¾Ã‘Â…Ã‘Â€ÃÂ°ÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂµ MultiSelect
 		-- ================================================================
 		function Tab:AddDropdown(Configs)
 			local DName = Configs[1] or Configs.Name or Configs.Title or "Dropdown"
@@ -3989,7 +3906,7 @@ function redzlib:MakeWindow(Configs)
 				Position = UDim2.new(1, -10, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke", "Dropdown")
+			}), "Stroke")
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
 
 			local ActiveLabel = InsertTheme(Create("TextLabel", SelectedFrame, {
@@ -4001,7 +3918,7 @@ function redzlib:MakeWindow(Configs)
 				TextScaled = true,
 				TextColor3 = Theme["Color Text"],
 				Text = "..."
-			}), "Text", "Dropdown")
+			}), "Text")
 
 			local Arrow = Create("ImageLabel", SelectedFrame, {
 				Size = UDim2.new(0, 15, 0, 15),
@@ -4032,13 +3949,13 @@ function redzlib:MakeWindow(Configs)
 			Make("Stroke", DropFrame)
 			Make("Gradient", DropFrame, {Rotation = 60})
 
-			-- ÃÂÃÂ¾ÃÂ¸ÃÂÃÂºÃÂ¾ÃÂ²ÃÂ°ÃÂ ÃÂÃÂÃÂÃÂ¾ÃÂºÃÂ°
+			-- ÃÂŸÃÂ¾ÃÂ¸Ã‘ÂÃÂºÃÂ¾ÃÂ²ÃÂ°Ã‘Â Ã‘ÂÃ‘Â‚Ã‘Â€ÃÂ¾ÃÂºÃÂ°
 			local SearchHolder = InsertTheme(Create("Frame", DropFrame, {
 				Size = UDim2.new(1, -10, 0, 22),
 				Position = UDim2.new(0, 5, 0, 4),
 				BackgroundColor3 = Theme["Color Stroke"],
 				Name = "SearchHolder"
-			}), "Stroke", "Dropdown")
+			}), "Stroke")
 			Make("Corner", SearchHolder, UDim.new(0, 4))
 
 			local SearchIcon = Create("ImageLabel", SearchHolder, {
@@ -4062,7 +3979,7 @@ function redzlib:MakeWindow(Configs)
 				Text = "",
 				ClearTextOnFocus = false,
 				TextXAlignment = "Left"
-			}), "Text", "Dropdown")
+			}), "Text")
 
 			local ScrollFrame = InsertTheme(Create("ScrollingFrame", DropFrame, {
 				ScrollBarImageColor3 = Theme["Color Theme"],
@@ -4083,7 +4000,7 @@ function redzlib:MakeWindow(Configs)
 					PaddingBottom = UDim.new(0, 5)
 				}),
 				Create("UIListLayout", { Padding = UDim.new(0, 4) })
-			}), "ScrollBar", "Dropdown")
+			}), "ScrollBar")
 
 			local ScrollSize, WaitDrop = 5
 
@@ -4147,18 +4064,18 @@ function redzlib:MakeWindow(Configs)
 				CreateTween({DropFrame, "Position", NewPos, 0.1})
 			end
 
-			-- --- ÃÂÃÂ½ÃÂÃÂÃÂÃÂµÃÂ½ÃÂ½ÃÂÃÂ ÃÂ»ÃÂ¾ÃÂ³ÃÂ¸ÃÂºÃÂ° ÃÂ²ÃÂÃÂ±ÃÂ¾ÃÂÃÂ° ÃÂ¸ ÃÂÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂ ---
+			-- --- ÃÂ’ÃÂ½Ã‘ÂƒÃ‘Â‚Ã‘Â€ÃÂµÃÂ½ÃÂ½Ã‘ÂÃ‘Â ÃÂ»ÃÂ¾ÃÂ³ÃÂ¸ÃÂºÃÂ° ÃÂ²Ã‘Â‹ÃÂ±ÃÂ¾Ã‘Â€ÃÂ° ÃÂ¸ Ã‘ÂÃÂ¾Ã‘Â…Ã‘Â€ÃÂ°ÃÂ½ÃÂµÃÂ½ÃÂ¸Ã‘Â ---
 			local AddNewOptions, GetOptions, AddOption, RemoveOption, Selected do
-				-- ÃÂÃÂ°ÃÂ³ÃÂÃÂÃÂ¶ÃÂ°ÃÂµÃÂ¼ ÃÂÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂÃÂ½ÃÂ½ÃÂÃÂµ ÃÂ·ÃÂ½ÃÂ°ÃÂÃÂµÃÂ½ÃÂ¸ÃÂ ÃÂÃÂ»ÃÂ°ÃÂ³ÃÂ°
+				-- ÃÂ—ÃÂ°ÃÂ³Ã‘Â€Ã‘ÂƒÃÂ¶ÃÂ°ÃÂµÃÂ¼ Ã‘ÂÃÂ¾Ã‘Â…Ã‘Â€ÃÂ°ÃÂ½Ã‘Â‘ÃÂ½ÃÂ½Ã‘Â‹ÃÂµ ÃÂ·ÃÂ½ÃÂ°Ã‘Â‡ÃÂµÃÂ½ÃÂ¸Ã‘Â Ã‘Â„ÃÂ»ÃÂ°ÃÂ³ÃÂ°
 				local savedFlag = CheckFlag(Flag) and GetFlag(Flag) or nil
 				local Default = type(OpDefault) ~= "table" and {OpDefault} or OpDefault
 				local MultiSelect = DMultiSelect
 				local Options = {}
 
-				-- Selected: ÃÂ´ÃÂ»ÃÂ MultiSelect Ã¢ÂÂ ÃÂÃÂ°ÃÂ±ÃÂ»ÃÂ¸ÃÂÃÂ° {name=bool}, ÃÂ´ÃÂ»ÃÂ Single Ã¢ÂÂ ÃÂÃÂÃÂÃÂ¾ÃÂºÃÂ°
+				-- Selected: ÃÂ´ÃÂ»Ã‘Â MultiSelect Ã¢Â€Â” Ã‘Â‚ÃÂ°ÃÂ±ÃÂ»ÃÂ¸Ã‘Â†ÃÂ° {name=bool}, ÃÂ´ÃÂ»Ã‘Â Single Ã¢Â€Â” Ã‘ÂÃ‘Â‚Ã‘Â€ÃÂ¾ÃÂºÃÂ°
 				if MultiSelect then
 					Selected = {}
-					-- ÃÂÃÂ°ÃÂ³ÃÂÃÂÃÂ¶ÃÂ°ÃÂµÃÂ¼ ÃÂ¸ÃÂ· ÃÂÃÂ»ÃÂ°ÃÂ³ÃÂ° (ÃÂ¼ÃÂ°ÃÂÃÂÃÂ¸ÃÂ² ÃÂÃÂÃÂÃÂ¾ÃÂº) ÃÂ¸ÃÂ»ÃÂ¸ ÃÂ¸ÃÂ· Default
+					-- ÃÂ—ÃÂ°ÃÂ³Ã‘Â€Ã‘ÂƒÃÂ¶ÃÂ°ÃÂµÃÂ¼ ÃÂ¸ÃÂ· Ã‘Â„ÃÂ»ÃÂ°ÃÂ³ÃÂ° (ÃÂ¼ÃÂ°Ã‘ÂÃ‘ÂÃÂ¸ÃÂ² Ã‘ÂÃ‘Â‚Ã‘Â€ÃÂ¾ÃÂº) ÃÂ¸ÃÂ»ÃÂ¸ ÃÂ¸ÃÂ· Default
 					local source = savedFlag or Default
 					if type(source) == "table" then
 						for _, v in ipairs(source) do
@@ -4168,7 +4085,7 @@ function redzlib:MakeWindow(Configs)
 						end
 					end
 				else
-					-- ÃÂÃÂ»ÃÂ Single: ÃÂÃÂ»ÃÂ°ÃÂ³ Ã¢ÂÂ ÃÂÃÂÃÂÃÂ¾ÃÂºÃÂ°
+					-- ÃÂ”ÃÂ»Ã‘Â Single: Ã‘Â„ÃÂ»ÃÂ°ÃÂ³ Ã¢Â€Â” Ã‘ÂÃ‘Â‚Ã‘Â€ÃÂ¾ÃÂºÃÂ°
 					if type(savedFlag) == "string" then
 						Selected = savedFlag
 					else
@@ -4176,7 +4093,7 @@ function redzlib:MakeWindow(Configs)
 					end
 				end
 
-				-- SelectedValues ÃÂ´ÃÂ»ÃÂ MultiSelect Ã¢ÂÂ ÃÂÃÂ¿ÃÂ¾ÃÂÃÂÃÂ´ÃÂ¾ÃÂÃÂµÃÂ½ÃÂ½ÃÂÃÂ¹ ÃÂ¼ÃÂ°ÃÂÃÂÃÂ¸ÃÂ² ÃÂ²ÃÂÃÂ±ÃÂÃÂ°ÃÂ½ÃÂ½ÃÂÃÂ ÃÂ¸ÃÂ¼ÃÂÃÂ½
+				-- SelectedValues ÃÂ´ÃÂ»Ã‘Â MultiSelect Ã¢Â€Â” Ã‘ÂƒÃÂ¿ÃÂ¾Ã‘Â€Ã‘ÂÃÂ´ÃÂ¾Ã‘Â‡ÃÂµÃÂ½ÃÂ½Ã‘Â‹ÃÂ¹ ÃÂ¼ÃÂ°Ã‘ÂÃ‘ÂÃÂ¸ÃÂ² ÃÂ²Ã‘Â‹ÃÂ±Ã‘Â€ÃÂ°ÃÂ½ÃÂ½Ã‘Â‹Ã‘Â… ÃÂ¸ÃÂ¼Ã‘Â‘ÃÂ½
 				local SelectedValues = {}
 				if MultiSelect then
 					for k, v in pairs(Selected) do
@@ -4186,7 +4103,7 @@ function redzlib:MakeWindow(Configs)
 
 				local function CallbackSelected()
 					if MultiSelect then
-						-- ÃÂ¡ÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂÃÂµÃÂ¼ ÃÂºÃÂ°ÃÂº ÃÂ¼ÃÂ°ÃÂÃÂÃÂ¸ÃÂ² ÃÂÃÂÃÂÃÂ¾ÃÂº
+						-- ÃÂ¡ÃÂ¾Ã‘Â…Ã‘Â€ÃÂ°ÃÂ½Ã‘ÂÃÂµÃÂ¼ ÃÂºÃÂ°ÃÂº ÃÂ¼ÃÂ°Ã‘ÂÃ‘ÂÃÂ¸ÃÂ² Ã‘ÂÃ‘Â‚Ã‘Â€ÃÂ¾ÃÂº
 						SetFlag(Flag, SelectedValues)
 						Funcs:FireCallback(Callback, SelectedValues)
 					else
@@ -4255,7 +4172,7 @@ function redzlib:MakeWindow(Configs)
 
 					if MultiSelect then
 						if Selected[Name] == nil then Selected[Name] = false end
-						-- ÃÂÃÂÃÂ»ÃÂ¸ ÃÂÃÂ»ÃÂ°ÃÂ³ ÃÂ³ÃÂ¾ÃÂ²ÃÂ¾ÃÂÃÂ¸ÃÂ ÃÂÃÂÃÂ¾ ÃÂ²ÃÂÃÂ±ÃÂÃÂ°ÃÂ½ÃÂ¾, ÃÂ¾ÃÂÃÂÃÂ°ÃÂ¶ÃÂ°ÃÂµÃÂ¼
+						-- ÃÂ•Ã‘ÂÃÂ»ÃÂ¸ Ã‘Â„ÃÂ»ÃÂ°ÃÂ³ ÃÂ³ÃÂ¾ÃÂ²ÃÂ¾Ã‘Â€ÃÂ¸Ã‘Â‚ Ã‘Â‡Ã‘Â‚ÃÂ¾ ÃÂ²Ã‘Â‹ÃÂ±Ã‘Â€ÃÂ°ÃÂ½ÃÂ¾, ÃÂ¾Ã‘Â‚Ã‘Â€ÃÂ°ÃÂ¶ÃÂ°ÃÂµÃÂ¼
 						local on = Selected[Name]
 						if on and not table.find(SelectedValues, Name) then
 							table.insert(SelectedValues, Name)
@@ -4274,7 +4191,7 @@ function redzlib:MakeWindow(Configs)
 						BackgroundColor3 = Theme["Color Theme"],
 						BackgroundTransparency = 1,
 						AnchorPoint = Vector2.new(0, 0.5)
-					}), "Theme", "Dropdown")
+					}), "Theme")
 					Make("Corner", IsSelectedDot, UDim.new(0.5, 0))
 
 					local OptLabel = InsertTheme(Create("TextLabel", Btn, {
@@ -4286,7 +4203,7 @@ function redzlib:MakeWindow(Configs)
 						TextXAlignment = "Left",
 						BackgroundTransparency = 1,
 						TextTransparency = 0.4
-					}), "Text", "Dropdown")
+					}), "Text")
 
 					Btn.Activated:Connect(function()
 						SelectOpt(Options[Name])
@@ -4317,7 +4234,7 @@ function redzlib:MakeWindow(Configs)
 
 				AddNewOptions = function(List, Clear)
 					if Clear then
-						-- ÃÂ£ÃÂ´ÃÂ°ÃÂ»ÃÂÃÂµÃÂ¼ ÃÂ²ÃÂÃÂµ UI-ÃÂÃÂ»ÃÂµÃÂ¼ÃÂµÃÂ½ÃÂÃÂ ÃÂ¾ÃÂ¿ÃÂÃÂ¸ÃÂ¹
+						-- ÃÂ£ÃÂ´ÃÂ°ÃÂ»Ã‘ÂÃÂµÃÂ¼ ÃÂ²Ã‘ÂÃÂµ UI-Ã‘ÂÃÂ»ÃÂµÃÂ¼ÃÂµÃÂ½Ã‘Â‚Ã‘Â‹ ÃÂ¾ÃÂ¿Ã‘Â†ÃÂ¸ÃÂ¹
 						for k, v in pairs(Options) do
 							if v.nodes and v.nodes[1] then
 								v.nodes[1]:Destroy()
@@ -4326,7 +4243,7 @@ function redzlib:MakeWindow(Configs)
 							Options[k] = nil
 						end
 						table.clear(Options)
-						-- ÃÂÃÂ¾ÃÂ»ÃÂ½ÃÂ¾ÃÂÃÂÃÂÃÂ ÃÂÃÂ±ÃÂÃÂ°ÃÂÃÂÃÂ²ÃÂ°ÃÂµÃÂ¼ ÃÂ²ÃÂÃÂ±ÃÂ¾ÃÂ
+						-- ÃÂŸÃÂ¾ÃÂ»ÃÂ½ÃÂ¾Ã‘ÂÃ‘Â‚Ã‘ÂŒÃ‘ÂŽ Ã‘ÂÃÂ±Ã‘Â€ÃÂ°Ã‘ÂÃ‘Â‹ÃÂ²ÃÂ°ÃÂµÃÂ¼ ÃÂ²Ã‘Â‹ÃÂ±ÃÂ¾Ã‘Â€
 						if MultiSelect then
 							table.clear(Selected)
 							table.clear(SelectedValues)
@@ -4344,7 +4261,7 @@ function redzlib:MakeWindow(Configs)
 				CallbackSelected()
 				UpdateSelected()
 
-				-- ÃÂ¤ÃÂ¸ÃÂ»ÃÂÃÂÃÂÃÂ°ÃÂÃÂ¸ÃÂ ÃÂ¿ÃÂ¾ÃÂ¸ÃÂÃÂºÃÂ°
+				-- ÃÂ¤ÃÂ¸ÃÂ»Ã‘ÂŒÃ‘Â‚Ã‘Â€ÃÂ°Ã‘Â†ÃÂ¸Ã‘Â ÃÂ¿ÃÂ¾ÃÂ¸Ã‘ÂÃÂºÃÂ°
 				SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
 					local query = SearchBox.Text:lower()
 					for Name, Opt in pairs(Options) do
@@ -4436,7 +4353,7 @@ function redzlib:MakeWindow(Configs)
 						end
 					end
 				end
-				-- ÃÂÃÂ±ÃÂ½ÃÂ¾ÃÂ²ÃÂ»ÃÂÃÂµÃÂ¼ ÃÂ±ÃÂµÃÂ· ÃÂ²ÃÂÃÂ·ÃÂ¾ÃÂ²ÃÂ° CallbackSelected ÃÂÃÂÃÂ¾ÃÂ±ÃÂ ÃÂ½ÃÂµ ÃÂ±ÃÂÃÂ»ÃÂ¾ ÃÂ´ÃÂ²ÃÂ¾ÃÂ¹ÃÂ½ÃÂ¾ÃÂ³ÃÂ¾ ÃÂÃÂÃÂ°ÃÂ±ÃÂ°ÃÂÃÂÃÂ²ÃÂ°ÃÂ½ÃÂ¸ÃÂ
+				-- ÃÂžÃÂ±ÃÂ½ÃÂ¾ÃÂ²ÃÂ»Ã‘ÂÃÂµÃÂ¼ ÃÂ±ÃÂµÃÂ· ÃÂ²Ã‘Â‹ÃÂ·ÃÂ¾ÃÂ²ÃÂ° CallbackSelected Ã‘Â‡Ã‘Â‚ÃÂ¾ÃÂ±Ã‘Â‹ ÃÂ½ÃÂµ ÃÂ±Ã‘Â‹ÃÂ»ÃÂ¾ ÃÂ´ÃÂ²ÃÂ¾ÃÂ¹ÃÂ½ÃÂ¾ÃÂ³ÃÂ¾ Ã‘ÂÃ‘Â€ÃÂ°ÃÂ±ÃÂ°Ã‘Â‚Ã‘Â‹ÃÂ²ÃÂ°ÃÂ½ÃÂ¸Ã‘Â
 				local Options2 = GetOptions()
 				if not DMultiSelect then
 					for _, v in pairs(Options2) do
@@ -4475,7 +4392,7 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		-- ================================================================
-		-- AddSlider Ã¢ÂÂ ÃÂ¸ÃÂÃÂ¿ÃÂÃÂ°ÃÂ²ÃÂ»ÃÂµÃÂ½ ÃÂºÃÂ¾ÃÂ½ÃÂÃÂ»ÃÂ¸ÃÂºÃÂ ÃÂ¼ÃÂµÃÂ¶ÃÂ´ÃÂ ÃÂÃÂ»ÃÂ°ÃÂ¹ÃÂ´ÃÂµÃÂÃÂ°ÃÂ¼ÃÂ¸, ÃÂ¿ÃÂ¾ÃÂ»ÃÂµ ÃÂ²ÃÂ²ÃÂ¾ÃÂ´ÃÂ° ÃÂÃÂ°ÃÂ±ÃÂ¾ÃÂÃÂ°ÃÂµÃÂ
+		-- AddSlider Ã¢Â€Â” ÃÂ¸Ã‘ÂÃÂ¿Ã‘Â€ÃÂ°ÃÂ²ÃÂ»ÃÂµÃÂ½ ÃÂºÃÂ¾ÃÂ½Ã‘Â„ÃÂ»ÃÂ¸ÃÂºÃ‘Â‚ ÃÂ¼ÃÂµÃÂ¶ÃÂ´Ã‘Âƒ Ã‘ÂÃÂ»ÃÂ°ÃÂ¹ÃÂ´ÃÂµÃ‘Â€ÃÂ°ÃÂ¼ÃÂ¸, ÃÂ¿ÃÂ¾ÃÂ»ÃÂµ ÃÂ²ÃÂ²ÃÂ¾ÃÂ´ÃÂ° Ã‘Â€ÃÂ°ÃÂ±ÃÂ¾Ã‘Â‚ÃÂ°ÃÂµÃ‘Â‚
 		-- ================================================================
 		function Tab:AddSlider(Configs)
 			local SName = Configs[1] or Configs.Name or Configs.Title or "Slider!"
@@ -4491,7 +4408,7 @@ function redzlib:MakeWindow(Configs)
 
 			local Button, LabelFunc = ButtonFrame(Container, SName, SDesc, UDim2.new(1, -180))
 
-			-- SliderHolder Ã¢ÂÂ ÃÂ¾ÃÂ±ÃÂ»ÃÂ°ÃÂÃÂÃÂ ÃÂ·ÃÂ°ÃÂÃÂ²ÃÂ°ÃÂÃÂ° ÃÂ¼ÃÂÃÂÃÂ¸
+			-- SliderHolder Ã¢Â€Â” ÃÂ¾ÃÂ±ÃÂ»ÃÂ°Ã‘ÂÃ‘Â‚Ã‘ÂŒ ÃÂ·ÃÂ°Ã‘Â…ÃÂ²ÃÂ°Ã‘Â‚ÃÂ° ÃÂ¼Ã‘Â‹Ã‘ÂˆÃÂ¸
 			local SliderHolder = Create("TextButton", Button, {
 				Size = UDim2.new(0, 110, 1, 0),
 				Position = UDim2.new(1, -10, 0, 0),
@@ -4506,14 +4423,14 @@ function redzlib:MakeWindow(Configs)
 				Size = UDim2.new(1, -20, 0, 6),
 				Position = UDim2.new(0.5, 0, 0.5),
 				AnchorPoint = Vector2.new(0.5, 0.5)
-			}), "Stroke", "Slider")
+			}), "Stroke")
 			Make("Corner", SliderBar)
 
 			local Indicator = InsertTheme(Create("Frame", SliderBar, {
 				BackgroundColor3 = Theme["Color Theme"],
 				Size = UDim2.fromScale(0, 1),
 				BorderSizePixel = 0
-			}), "Theme", "Slider")
+			}), "Theme")
 			Make("Corner", Indicator)
 
 			local SliderIcon = Create("Frame", SliderBar, {
@@ -4525,13 +4442,13 @@ function redzlib:MakeWindow(Configs)
 			})
 			Make("Corner", SliderIcon)
 
-			-- ÃÂÃÂ¾ÃÂ»ÃÂµ ÃÂ²ÃÂ²ÃÂ¾ÃÂ´ÃÂ°
+			-- ÃÂŸÃÂ¾ÃÂ»ÃÂµ ÃÂ²ÃÂ²ÃÂ¾ÃÂ´ÃÂ°
 			local InputHolder = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 38, 0, 18),
 				Position = UDim2.new(1, -125, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke", "Slider")
+			}), "Stroke")
 			Make("Corner", InputHolder, UDim.new(0, 4))
 
 			local ValueInput = InsertTheme(Create("TextBox", InputHolder, {
@@ -4545,33 +4462,33 @@ function redzlib:MakeWindow(Configs)
 				Text = tostring(Default),
 				ClearTextOnFocus = true,
 				TextXAlignment = "Center"
-			}), "Text", "Slider")
+			}), "Text")
 
-			-- ÃÂÃÂ¾ÃÂºÃÂ°ÃÂ»ÃÂÃÂ½ÃÂÃÂµ ÃÂ¿ÃÂµÃÂÃÂµÃÂ¼ÃÂµÃÂ½ÃÂ½ÃÂÃÂµ ÃÂÃÂ¾ÃÂ»ÃÂÃÂºÃÂ¾ ÃÂ´ÃÂ»ÃÂ ÃÂÃÂÃÂ¾ÃÂ³ÃÂ¾ ÃÂÃÂ»ÃÂ°ÃÂ¹ÃÂ´ÃÂµÃÂÃÂ°
+			-- ÃÂ›ÃÂ¾ÃÂºÃÂ°ÃÂ»Ã‘ÂŒÃÂ½Ã‘Â‹ÃÂµ ÃÂ¿ÃÂµÃ‘Â€ÃÂµÃÂ¼ÃÂµÃÂ½ÃÂ½Ã‘Â‹ÃÂµ Ã‘Â‚ÃÂ¾ÃÂ»Ã‘ÂŒÃÂºÃÂ¾ ÃÂ´ÃÂ»Ã‘Â Ã‘ÂÃ‘Â‚ÃÂ¾ÃÂ³ÃÂ¾ Ã‘ÂÃÂ»ÃÂ°ÃÂ¹ÃÂ´ÃÂµÃ‘Â€ÃÂ°
 			local currentValue = Default
 			local isFocused = false
 
-			-- ÃÂÃÂ¾ÃÂ½ÃÂ²ÃÂµÃÂÃÂÃÂ°ÃÂÃÂ¸ÃÂ ÃÂ·ÃÂ½ÃÂ°ÃÂÃÂµÃÂ½ÃÂ¸ÃÂµ -> ÃÂÃÂºÃÂ°ÃÂ»ÃÂ° [0..1]
+			-- ÃÂšÃÂ¾ÃÂ½ÃÂ²ÃÂµÃ‘Â€Ã‘Â‚ÃÂ°Ã‘Â†ÃÂ¸Ã‘Â ÃÂ·ÃÂ½ÃÂ°Ã‘Â‡ÃÂµÃÂ½ÃÂ¸ÃÂµ -> Ã‘ÂˆÃÂºÃÂ°ÃÂ»ÃÂ° [0..1]
 			local function ValueToScale(v)
 				if Max == Min then return 0 end
 				return (v - Min) / (Max - Min)
 			end
 
-			-- ÃÂÃÂ¾ÃÂ½ÃÂ²ÃÂµÃÂÃÂÃÂ°ÃÂÃÂ¸ÃÂ ÃÂÃÂºÃÂ°ÃÂ»ÃÂ° [0..1] -> ÃÂ·ÃÂ½ÃÂ°ÃÂÃÂµÃÂ½ÃÂ¸ÃÂµ ÃÂ ÃÂÃÂ°ÃÂ³ÃÂ¾ÃÂ¼
+			-- ÃÂšÃÂ¾ÃÂ½ÃÂ²ÃÂµÃ‘Â€Ã‘Â‚ÃÂ°Ã‘Â†ÃÂ¸Ã‘Â Ã‘ÂˆÃÂºÃÂ°ÃÂ»ÃÂ° [0..1] -> ÃÂ·ÃÂ½ÃÂ°Ã‘Â‡ÃÂµÃÂ½ÃÂ¸ÃÂµ Ã‘Â Ã‘ÂˆÃÂ°ÃÂ³ÃÂ¾ÃÂ¼
 			local function ScaleToValue(s)
 				local raw = s * (Max - Min) + Min
 				local stepped = math.floor(raw / Increase + 0.5) * Increase
 				return math.clamp(stepped, Min, Max)
 			end
 
-			-- ÃÂÃÂ±ÃÂ½ÃÂ¾ÃÂ²ÃÂ¸ÃÂÃÂ ÃÂ²ÃÂ¸ÃÂ·ÃÂÃÂ°ÃÂ» (ÃÂ±ÃÂµÃÂ· signal, ÃÂ±ÃÂµÃÂ· tween ÃÂºÃÂ¾ÃÂ½ÃÂÃÂ»ÃÂ¸ÃÂºÃÂÃÂ¾ÃÂ²)
+			-- ÃÂžÃÂ±ÃÂ½ÃÂ¾ÃÂ²ÃÂ¸Ã‘Â‚Ã‘ÂŒ ÃÂ²ÃÂ¸ÃÂ·Ã‘ÂƒÃÂ°ÃÂ» (ÃÂ±ÃÂµÃÂ· signal, ÃÂ±ÃÂµÃÂ· tween ÃÂºÃÂ¾ÃÂ½Ã‘Â„ÃÂ»ÃÂ¸ÃÂºÃ‘Â‚ÃÂ¾ÃÂ²)
 			local function ApplyVisual(scale)
 				local c = math.clamp(scale, 0, 1)
 				SliderIcon.Position = UDim2.new(c, 0, 0.5, 0)
 				Indicator.Size = UDim2.fromScale(c, 1)
 			end
 
-			-- ÃÂÃÂ»ÃÂ°ÃÂ²ÃÂ½ÃÂ°ÃÂ ÃÂÃÂÃÂ½ÃÂºÃÂÃÂ¸ÃÂ ÃÂÃÂÃÂÃÂ°ÃÂ½ÃÂ¾ÃÂ²ÃÂºÃÂ¸ ÃÂ·ÃÂ½ÃÂ°ÃÂÃÂµÃÂ½ÃÂ¸ÃÂ
+			-- ÃÂ“ÃÂ»ÃÂ°ÃÂ²ÃÂ½ÃÂ°Ã‘Â Ã‘Â„Ã‘ÂƒÃÂ½ÃÂºÃ‘Â†ÃÂ¸Ã‘Â Ã‘ÂƒÃ‘ÂÃ‘Â‚ÃÂ°ÃÂ½ÃÂ¾ÃÂ²ÃÂºÃÂ¸ ÃÂ·ÃÂ½ÃÂ°Ã‘Â‡ÃÂµÃÂ½ÃÂ¸Ã‘Â
 			local function SetSlider(newVal, skipCallback)
 				if type(newVal) ~= "number" then return end
 				newVal = math.clamp(newVal, Min, Max)
@@ -4587,7 +4504,7 @@ function redzlib:MakeWindow(Configs)
 				end
 			end
 
-			-- ÃÂÃÂµÃÂÃÂµÃÂÃÂ°ÃÂÃÂºÃÂ¸ÃÂ²ÃÂ°ÃÂ½ÃÂ¸ÃÂµ ÃÂ¼ÃÂÃÂÃÂÃÂ
+			-- ÃÂŸÃÂµÃ‘Â€ÃÂµÃ‘Â‚ÃÂ°Ã‘ÂÃÂºÃÂ¸ÃÂ²ÃÂ°ÃÂ½ÃÂ¸ÃÂµ ÃÂ¼Ã‘Â‹Ã‘ÂˆÃ‘ÂŒÃ‘ÂŽ
 			local function ControlPos()
 				local mouseX = Player:GetMouse().X
 				local barLeft = SliderBar.AbsolutePosition.X
@@ -4606,7 +4523,7 @@ function redzlib:MakeWindow(Configs)
 				Container.ScrollingEnabled = true
 			end)
 
-			-- ÃÂÃÂ¾ÃÂ»ÃÂµ ÃÂ²ÃÂ²ÃÂ¾ÃÂ´ÃÂ°: ÃÂÃÂ¸ÃÂÃÂÃÂ¸ÃÂ¼ ÃÂ½ÃÂµÃÂ»ÃÂµÃÂÃÂ°ÃÂ»ÃÂÃÂ½ÃÂÃÂµ ÃÂÃÂ¸ÃÂ¼ÃÂ²ÃÂ¾ÃÂ»ÃÂ
+			-- ÃÂŸÃÂ¾ÃÂ»ÃÂµ ÃÂ²ÃÂ²ÃÂ¾ÃÂ´ÃÂ°: Ã‘Â‡ÃÂ¸Ã‘ÂÃ‘Â‚ÃÂ¸ÃÂ¼ ÃÂ½ÃÂµÃÂ»ÃÂµÃ‘Â‚ÃÂ°ÃÂ»Ã‘ÂŒÃÂ½Ã‘Â‹ÃÂµ Ã‘ÂÃÂ¸ÃÂ¼ÃÂ²ÃÂ¾ÃÂ»Ã‘Â‹
 			ValueInput:GetPropertyChangedSignal("Text"):Connect(function()
 				local clean = ValueInput.Text:gsub("[^%d%.%-]", "")
 				if clean ~= ValueInput.Text then
@@ -4630,7 +4547,7 @@ function redzlib:MakeWindow(Configs)
 				end
 			end)
 
-			-- ÃÂÃÂ½ÃÂ¸ÃÂÃÂ¸ÃÂ°ÃÂ»ÃÂ¸ÃÂ·ÃÂ°ÃÂÃÂ¸ÃÂ
+			-- ÃÂ˜ÃÂ½ÃÂ¸Ã‘Â†ÃÂ¸ÃÂ°ÃÂ»ÃÂ¸ÃÂ·ÃÂ°Ã‘Â†ÃÂ¸Ã‘Â
 			local loadedFromFlag = CheckFlag(Flag)
 			SetSlider(Default, not loadedFromFlag)
 			ValueInput.Text = tostring(Default)
@@ -4667,7 +4584,7 @@ function redzlib:MakeWindow(Configs)
 			local Callback = Funcs:GetCallback(Configs, 4)
 			local Flag = Configs.Flag or Configs[6] or false
 
-			-- ÃÂÃÂ°ÃÂ³ÃÂÃÂÃÂ¶ÃÂ°ÃÂµÃÂ¼ ÃÂÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂÃÂ½ÃÂ½ÃÂ¾ÃÂµ ÃÂ·ÃÂ½ÃÂ°ÃÂÃÂµÃÂ½ÃÂ¸ÃÂµ ÃÂ¸ÃÂ· ÃÂÃÂ»ÃÂ°ÃÂ³ÃÂ°
+			-- ÃÂ—ÃÂ°ÃÂ³Ã‘Â€Ã‘ÂƒÃÂ¶ÃÂ°ÃÂµÃÂ¼ Ã‘ÂÃÂ¾Ã‘Â…Ã‘Â€ÃÂ°ÃÂ½Ã‘Â‘ÃÂ½ÃÂ½ÃÂ¾ÃÂµ ÃÂ·ÃÂ½ÃÂ°Ã‘Â‡ÃÂµÃÂ½ÃÂ¸ÃÂµ ÃÂ¸ÃÂ· Ã‘Â„ÃÂ»ÃÂ°ÃÂ³ÃÂ°
 			if CheckFlag(Flag) then
 				local saved = GetFlag(Flag)
 				if type(saved) == "string" then TDefault = saved end
@@ -4682,7 +4599,7 @@ function redzlib:MakeWindow(Configs)
 				Position = UDim2.new(1, -10, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke", "TextBox")
+			}), "Stroke")
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
 
 			local TextBoxInput = InsertTheme(Create("TextBox", SelectedFrame, {
@@ -4696,7 +4613,7 @@ function redzlib:MakeWindow(Configs)
 				ClearTextOnFocus = TClearText,
 				PlaceholderText = TPlaceholderText,
 				Text = TDefault
-			}), "Text", "TextBox")
+			}), "Text")
 
 			local Pencil = Create("ImageLabel", SelectedFrame, {
 				Size = UDim2.new(0, 12, 0, 12),
@@ -4713,14 +4630,14 @@ function redzlib:MakeWindow(Configs)
 					if TextBox.OnChanging then Text = TextBox.OnChanging(Text) or Text end
 					Funcs:FireCallback(Callback, Text)
 					TextBoxInput.Text = Text
-					-- ÃÂ¡ÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂÃÂµÃÂ¼ ÃÂ² ÃÂÃÂ»ÃÂ°ÃÂ³
+					-- ÃÂ¡ÃÂ¾Ã‘Â…Ã‘Â€ÃÂ°ÃÂ½Ã‘ÂÃÂµÃÂ¼ ÃÂ² Ã‘Â„ÃÂ»ÃÂ°ÃÂ³
 					SetFlag(Flag, Text)
 				end
 			end
 
 			TextBoxInput.FocusLost:Connect(Input)
 
-			-- ÃÂÃÂÃÂ¸ÃÂ¼ÃÂµÃÂ½ÃÂÃÂµÃÂ¼ ÃÂ´ÃÂµÃÂÃÂ¾ÃÂ»ÃÂ/ÃÂ·ÃÂ°ÃÂ³ÃÂÃÂÃÂ¶ÃÂµÃÂ½ÃÂ½ÃÂ¾ÃÂµ ÃÂ·ÃÂ½ÃÂ°ÃÂÃÂµÃÂ½ÃÂ¸ÃÂµ
+			-- ÃÂŸÃ‘Â€ÃÂ¸ÃÂ¼ÃÂµÃÂ½Ã‘ÂÃÂµÃÂ¼ ÃÂ´ÃÂµÃ‘Â„ÃÂ¾ÃÂ»Ã‘Â‚/ÃÂ·ÃÂ°ÃÂ³Ã‘Â€Ã‘ÂƒÃÂ¶ÃÂµÃÂ½ÃÂ½ÃÂ¾ÃÂµ ÃÂ·ÃÂ½ÃÂ°Ã‘Â‡ÃÂµÃÂ½ÃÂ¸ÃÂµ
 			if TDefault ~= "" then
 				task.defer(function()
 					Funcs:FireCallback(Callback, TDefault)
