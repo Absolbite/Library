@@ -2691,7 +2691,22 @@ function redzlib:MakeWindow(Configs)
 		}), "DarkText")
 	}), "Text")
 
-	local MainScroll = InsertTheme(Create("ScrollingFrame", Components, {
+	-- TagHolder ÐºÑÐµÐ¿Ð¸ÑÑÑ Ðº Title: ÑÐ°ÑÐ¿Ð¾Ð»Ð°Ð³Ð°ÐµÑÑÑ Ð¿ÑÐ°Ð²ÐµÐµ SubTitle
+	local TagHolder = Create("Frame", Title, {
+		AnchorPoint = Vector2.new(0, 1),
+		Position = UDim2.new(1, 5, 0.9),
+		Size = UDim2.new(0, 0, 0, 8),
+		AutomaticSize = "X",
+		BackgroundTransparency = 1,
+		Name = "TagHolder"
+	}, {
+		Create("UIListLayout", {
+			FillDirection = Enum.FillDirection.Horizontal,
+			VerticalAlignment = Enum.VerticalAlignment.Center,
+			Padding = UDim.new(0, 4),
+			SortOrder = Enum.SortOrder.LayoutOrder
+		})
+	}) = InsertTheme(Create("ScrollingFrame", Components, {
 		Size = UDim2.new(0, redzlib.Save.TabSize, 1, -TopBar.Size.Y.Offset),
 		ScrollBarImageColor3 = Theme["Color Theme"],
 		Position = UDim2.new(0, 0, 1, 0),
@@ -2783,25 +2798,6 @@ function redzlib:MakeWindow(Configs)
 	})
 
 	SetChildren(ButtonsFolder, { CloseButton, MinimizeButton })
-
-	-- ================================================================
-	-- Tag Container (TopBar center)
-	-- ================================================================
-	local TagHolder = Create("Frame", TopBar, {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.new(0.5, 0, 0.5, 0),
-		Size = UDim2.new(0, 0, 0, 20),
-		AutomaticSize = "X",
-		BackgroundTransparency = 1,
-		Name = "TagHolder"
-	}, {
-		Create("UIListLayout", {
-			FillDirection = Enum.FillDirection.Horizontal,
-			VerticalAlignment = Enum.VerticalAlignment.Center,
-			Padding = UDim.new(0, 4),
-			SortOrder = Enum.SortOrder.LayoutOrder
-		})
-	})
 
 	local Minimized, SaveSize, WaitClick
 	local Window, FirstTab = {}, false
@@ -3615,45 +3611,28 @@ function redzlib:MakeWindow(Configs)
 
 	local ContainerList = {}
 	-- ================================================================
-	-- Window:AddTag  â  Ð´Ð¾Ð±Ð°Ð²Ð»ÑÐµÑ ÑÐµÐ³ Ð² ÑÐµÐ½ÑÑ TopBar
+	-- Window:AddTag  â  Ð´Ð¾Ð±Ð°Ð²Ð»ÑÐµÑ ÑÐµÐ³ ÑÑÐ´Ð¾Ð¼ Ñ SubTitle
 	-- Configs:
 	--   [1] / Title   â ÑÐµÐºÑÑ ÑÐµÐ³Ð° (Ð¿Ð¾ ÑÐ¼Ð¾Ð»ÑÐ°Ð½Ð¸Ñ "Tag")
-	--   Color         â Color3 ÑÐ²ÐµÑ ÑÐµÐºÑÑÐ° (Ð¿Ð¾ ÑÐ¼Ð¾Ð»ÑÐ°Ð½Ð¸Ñ Color Theme)
-	--   Radius        â ÑÐºÑÑÐ³Ð»ÐµÐ½Ð¸Ðµ (Ð¿Ð¾ ÑÐ¼Ð¾Ð»ÑÐ°Ð½Ð¸Ñ 999 = pill)
+	--   Color         â Color3 ÑÐ²ÐµÑ ÑÐµÐºÑÑÐ° (Ð¿Ð¾ ÑÐ¼Ð¾Ð»ÑÐ°Ð½Ð¸Ñ Color Dark Text Ð¾Ñ ÑÐµÐ¼Ñ)
 	-- ================================================================
 	function Window:AddTag(Configs)
 		Configs = Configs or {}
 		local TTitle   = Configs[1] or Configs.Title or Configs.Name or "Tag"
-		local TTextClr = Configs.Color or Theme["Color Theme"]
-		local TRadius  = Configs.Radius or 999
+		local TColor   = Configs.Color or Theme["Color Dark Text"]
 
-		-- Ð¤ÑÐµÐ¹Ð¼ Ð¿Ð¸Ð»ÑÐ»Ð¸ ÑÐµÐ³Ð° (Ð¿ÑÐ¾Ð·ÑÐ°ÑÐ½ÑÐ¹ ÑÐ¾Ð½)
-		local TagFrame = Create("Frame", TagHolder, {
-			Size = UDim2.new(0, 0, 0, 20),
-			AutomaticSize = "X",
-			BackgroundTransparency = 1,
-			Name = "Tag_" .. TTitle,
-			ClipsDescendants = false,
-		})
-		Make("Corner", TagFrame, UDim.new(0, TRadius))
-		Create("UIPadding", TagFrame, {
-			PaddingLeft  = UDim.new(0, 8),
-			PaddingRight = UDim.new(0, 8),
-		})
-		Create("UIListLayout", TagFrame, {
-			FillDirection = Enum.FillDirection.Horizontal,
-			VerticalAlignment = Enum.VerticalAlignment.Center,
-		})
-
-		local TagLabel = Create("TextLabel", TagFrame, {
+		-- ÐÐµÑÐºÐ° ÑÐµÐ³Ð°, ÑÑÐ¸Ð»Ñ ÐºÐ°Ðº Ñ SubTitle
+		local TagLabel = InsertTheme(Create("TextLabel", TagHolder, {
 			Size = UDim2.new(0, 0, 1, 0),
 			AutomaticSize = "X",
 			BackgroundTransparency = 1,
-			Font = Enum.Font.GothamBold,
-			TextSize = 10,
-			TextColor3 = TTextClr,
+			Font = Enum.Font.Gotham,
+			TextSize = 8,
+			TextYAlignment = Enum.TextYAlignment.Bottom,
+			TextColor3 = TColor,
 			Text = TTitle,
-		})
+			Name = "Tag_" .. TTitle,
+		}), Configs.Color and "" or "DarkText")
 
 		local Tag = {}
 
@@ -3668,11 +3647,11 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		function Tag:Visible(Bool)
-			TagFrame.Visible = Bool ~= nil and Bool or not TagFrame.Visible
+			TagLabel.Visible = Bool ~= nil and Bool or not TagLabel.Visible
 		end
 
 		function Tag:Destroy()
-			TagFrame:Destroy()
+			TagLabel:Destroy()
 		end
 
 		return Tag
