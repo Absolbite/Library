@@ -3614,11 +3614,6 @@ function redzlib:MakeWindow(Configs)
 	end
 
 	local ContainerList = {}
-	function Window:MakeTab(paste, Configs)
-		if type(paste) == "table" then Configs = paste end
-		local TName = Configs[1] or Configs.Title or "Tab!"
-		local TIcon = Configs[2] or Configs.Icon or ""
-
 	-- ================================================================
 	-- Window:AddTag  â  Ð´Ð¾Ð±Ð°Ð²Ð»ÑÐµÑ ÑÐµÐ³ Ð² ÑÐµÐ½ÑÑ TopBar
 	-- Configs:
@@ -3701,6 +3696,10 @@ function redzlib:MakeWindow(Configs)
 		return Tag
 	end
 
+	function Window:MakeTab(paste, Configs)
+		if type(paste) == "table" then Configs = paste end
+		local TName = Configs[1] or Configs.Title or "Tab!"
+		local TIcon = Configs[2] or Configs.Icon or ""
 
 		TIcon = redzlib:GetIcon(TIcon)
 		if not TIcon:find("rbxassetid://") or TIcon:gsub("rbxassetid://", ""):len() < 6 then
