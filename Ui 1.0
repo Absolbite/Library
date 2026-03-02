@@ -2674,28 +2674,28 @@ function redzlib:MakeWindow(Configs)
 		BackgroundTransparency = 1,
 		Font = Enum.Font.GothamMedium,
 		Name = "Title"
-	}, {
-		InsertTheme(Create("TextLabel", {
-			Size = UDim2.fromScale(0, 1),
-			AutomaticSize = "X",
-			AnchorPoint = Vector2.new(0, 1),
-			Position = UDim2.new(1, 5, 0.9),
-			Text = WMiniText,
-			TextColor3 = Theme["Color Dark Text"],
-			BackgroundTransparency = 1,
-			TextXAlignment = "Left",
-			TextYAlignment = "Bottom",
-			TextSize = 8,
-			Font = Enum.Font.Gotham,
-			Name = "SubTitle"
-		}), "DarkText")
 	}), "Text")
 
-	-- TagHolder ÐºÑÐµÐ¿Ð¸ÑÑÑ Ðº Title: ÑÐ°ÑÐ¿Ð¾Ð»Ð°Ð³Ð°ÐµÑÑÑ Ð¿ÑÐ°Ð²ÐµÐµ SubTitle
-	local TagHolder = Create("Frame", Title, {
+	local SubTitle = InsertTheme(Create("TextLabel", Title, {
+		Size = UDim2.fromScale(0, 1),
+		AutomaticSize = "X",
 		AnchorPoint = Vector2.new(0, 1),
 		Position = UDim2.new(1, 5, 0.9),
-		Size = UDim2.new(0, 0, 0, 8),
+		Text = WMiniText,
+		TextColor3 = Theme["Color Dark Text"],
+		BackgroundTransparency = 1,
+		TextXAlignment = "Left",
+		TextYAlignment = "Bottom",
+		TextSize = 8,
+		Font = Enum.Font.Gotham,
+		Name = "SubTitle"
+	}), "DarkText")
+
+	-- TagHolder ÐºÑÐµÐ¿Ð¸ÑÑÑ Ðº SubTitle: ÑÐ°ÑÐ¿Ð¾Ð»Ð°Ð³Ð°ÐµÑÑÑ Ð¿ÑÐ°Ð²ÐµÐµ Ð½ÐµÐ³Ð¾ Ð¸ Ð¿Ð¾Ð´ÑÑÑÐ°Ð¸Ð²Ð°ÐµÑÑÑ Ð¿Ð¾Ð´ ÐµÐ³Ð¾ ÑÐ°Ð·Ð¼ÐµÑ
+	local TagHolder = Create("Frame", SubTitle, {
+		AnchorPoint = Vector2.new(0, 0.5),
+		Position = UDim2.new(1, 5, 0.5, 0),
+		Size = UDim2.new(0, 0, 1, 0),
 		AutomaticSize = "X",
 		BackgroundTransparency = 1,
 		Name = "TagHolder"
