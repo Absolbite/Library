@@ -2613,8 +2613,12 @@ function redzlib:ClearBackground()
 end
 
 function redzlib:SetScale(NewScale)
-	NewScale = ViewportSize.Y / math.clamp(NewScale, 300, 2000)
-	UIScale, ScreenGui.Scale.Scale = NewScale, NewScale
+    NewScale = ViewportSize.Y / math.clamp(NewScale, 300, 800)
+    UIScale = NewScale
+    local scaleObj = ScreenGui:FindFirstChild("Scale")
+    if scaleObj then
+        scaleObj.Scale = NewScale
+    end
 end
 
 function redzlib:MakeWindow(Configs)
