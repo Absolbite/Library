@@ -1222,6 +1222,7 @@ local redzlib = {
 		TabSize = 160,
 		Theme = "Darker",
 		Transparency = 0.03,
+		Scale = 450,
 		MinimizeButtons = {}
 	},
 	Settings = {},
@@ -2056,7 +2057,7 @@ local redzlib = {
 }
 
 local ViewportSize = workspace.CurrentCamera.ViewportSize
-local UIScale = ViewportSize.Y / 450
+local UIScale = ViewportSize.Y / math.clamp(redzlib.Save.Scale or 450, 300, 2000)
 
 local Settings = redzlib.Settings
 local Flags = redzlib.Flags
@@ -2115,6 +2116,7 @@ local SetProps, SetChildren, InsertTheme, Create do
 				if rawget(decode, "TabSize") then redzlib.Save["TabSize"] = decode["TabSize"] end
 				if rawget(decode, "Theme") and VerifyTheme(decode["Theme"]) then redzlib.Save["Theme"] = decode["Theme"] end
 				if rawget(decode, "Transparency") then redzlib.Save["Transparency"] = decode["Transparency"] end
+				if rawget(decode, "Scale") then redzlib.Save["Scale"] = decode["Scale"] end
 				if rawget(decode, "MinimizeButtons") then redzlib.Save["MinimizeButtons"] = decode["MinimizeButtons"] end
 			end
 		end
@@ -2255,15 +2257,13 @@ local GetFlag, SetFlag, CheckFlag do
 	end)
 end
 
-local UIScaleObject = Create("UIScale", {
-	Scale = UIScale,
-	Name = "Scale"
-})
-
 local ScreenGui = Create("ScreenGui", CoreGui, {
 	Name = "redz Library V5",
 }, {
-	UIScaleObject
+	Create("UIScale", {
+		Scale = UIScale,
+		Name = "Scale"
+	})
 })
 
 local ScreenFind = CoreGui:FindFirstChild(ScreenGui.Name)
@@ -2615,9 +2615,11 @@ function redzlib:ClearBackground()
 end
 
 function redzlib:SetScale(NewScale)
-	NewScale = ViewportSize.Y / math.clamp(NewScale, 300, 2000)
-	UIScale = NewScale
-	UIScaleObject.Scale = NewScale
+	NewScale = math.clamp(tonumber(NewScale) or 450, 300, 2000)
+	redzlib.Save.Scale = NewScale
+	SaveJson("redz library V5.json", redzlib.Save)
+	local computed = ViewportSize.Y / NewScale
+	UIScale, ScreenGui.Scale.Scale = computed, computed
 end
 
 function redzlib:MakeWindow(Configs)
