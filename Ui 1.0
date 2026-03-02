@@ -3618,33 +3618,20 @@ function redzlib:MakeWindow(Configs)
 	-- Window:AddTag  â  Ð´Ð¾Ð±Ð°Ð²Ð»ÑÐµÑ ÑÐµÐ³ Ð² ÑÐµÐ½ÑÑ TopBar
 	-- Configs:
 	--   [1] / Title   â ÑÐµÐºÑÑ ÑÐµÐ³Ð° (Ð¿Ð¾ ÑÐ¼Ð¾Ð»ÑÐ°Ð½Ð¸Ñ "Tag")
-	--   Color         â Color3 ÑÐ²ÐµÑ ÑÐ¾Ð½Ð° (Ð¿Ð¾ ÑÐ¼Ð¾Ð»ÑÐ°Ð½Ð¸Ñ Color Theme)
-	--   TextColor     â Color3 ÑÐ²ÐµÑ ÑÐµÐºÑÑÐ° (Ð°Ð²ÑÐ¾ ÐµÑÐ»Ð¸ Ð½Ðµ ÑÐºÐ°Ð·Ð°Ð½)
+	--   Color         â Color3 ÑÐ²ÐµÑ ÑÐµÐºÑÑÐ° (Ð¿Ð¾ ÑÐ¼Ð¾Ð»ÑÐ°Ð½Ð¸Ñ Color Theme)
 	--   Radius        â ÑÐºÑÑÐ³Ð»ÐµÐ½Ð¸Ðµ (Ð¿Ð¾ ÑÐ¼Ð¾Ð»ÑÐ°Ð½Ð¸Ñ 999 = pill)
 	-- ================================================================
 	function Window:AddTag(Configs)
 		Configs = Configs or {}
 		local TTitle   = Configs[1] or Configs.Title or Configs.Name or "Tag"
-		local TColor   = Configs.Color or Theme["Color Theme"]
+		local TTextClr = Configs.Color or Theme["Color Theme"]
 		local TRadius  = Configs.Radius or 999
-		local TTextClr = Configs.TextColor
 
-		-- ÐÐ²ÑÐ¾-ÑÐ²ÐµÑ ÑÐµÐºÑÑÐ° Ð¿Ð¾ ÑÑÐºÐ¾ÑÑÐ¸ ÑÐ¾Ð½Ð°
-		local function AutoTextColor(c)
-			local br = 0.299 * c.R + 0.587 * c.G + 0.114 * c.B
-			return br > 0.5
-				and Color3.fromRGB(20, 20, 20)
-				or  Color3.fromRGB(240, 240, 240)
-		end
-		if not TTextClr then
-			TTextClr = AutoTextColor(TColor)
-		end
-
-		-- Ð¤ÑÐµÐ¹Ð¼ Ð¿Ð¸Ð»ÑÐ»Ð¸ ÑÐµÐ³Ð°
+		-- Ð¤ÑÐµÐ¹Ð¼ Ð¿Ð¸Ð»ÑÐ»Ð¸ ÑÐµÐ³Ð° (Ð¿ÑÐ¾Ð·ÑÐ°ÑÐ½ÑÐ¹ ÑÐ¾Ð½)
 		local TagFrame = Create("Frame", TagHolder, {
 			Size = UDim2.new(0, 0, 0, 20),
 			AutomaticSize = "X",
-			BackgroundColor3 = TColor,
+			BackgroundTransparency = 1,
 			Name = "Tag_" .. TTitle,
 			ClipsDescendants = false,
 		})
@@ -3676,12 +3663,7 @@ function redzlib:MakeWindow(Configs)
 
 		function Tag:SetColor(New)
 			if typeof(New) == "Color3" then
-				CreateTween({TagFrame, "BackgroundColor3", New, 0.15})
-				if not Configs.TextColor then
-					local br = 0.299 * New.R + 0.587 * New.G + 0.114 * New.B
-					local tc = br > 0.5 and Color3.fromRGB(20,20,20) or Color3.fromRGB(240,240,240)
-					CreateTween({TagLabel, "TextColor3", tc, 0.15})
-				end
+				CreateTween({TagLabel, "TextColor3", New, 0.15})
 			end
 		end
 
