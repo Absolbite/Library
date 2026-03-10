@@ -2769,7 +2769,7 @@ function redzlib:MakeWindow(Configs)
 	-- TagHolder: ÑÑÐ´Ð¾Ð¼ Ñ ÐºÐ½Ð¾Ð¿ÐºÐ¾Ð¹ Ð¼Ð¸Ð½Ð¸Ð¼Ð¸Ð·Ð°ÑÐ¸Ð¸ (*-*)
 	local TagHolder = Create("Frame", TopBar, {
 		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -50, 0.5, 0),
+		Position = UDim2.new(1, -65, 0.5, 0),
 		Size = UDim2.new(0, 0, 0, 14),
 		AutomaticSize = "X",
 		BackgroundTransparency = 1,
@@ -3628,9 +3628,9 @@ function redzlib:MakeWindow(Configs)
 			Size = UDim2.new(0, 0, 1, 0),
 			AutomaticSize = "X",
 			BackgroundTransparency = 1,
-			Font = Enum.Font.Gotham,
-			TextSize = 8,
-			TextYAlignment = Enum.TextYAlignment.Bottom,
+			Font = Enum.Font.GothamMedium,
+			TextSize = 12,
+			TextYAlignment = Enum.TextYAlignment.Center,
 			TextColor3 = TColor,
 			Text = TTitle,
 			Name = "Tag_" .. TTitle,
