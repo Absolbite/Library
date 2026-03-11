@@ -2691,23 +2691,6 @@ function redzlib:MakeWindow(Configs)
 		Name = "SubTitle"
 	}), "DarkText")
 
-	-- TagHolder ÑÑÐ´Ð¾Ð¼ Ñ SubTitle
-	local TagHolder = Create("Frame", SubTitle, {
-		AnchorPoint = Vector2.new(0, 0.5),
-		Position = UDim2.new(1, 8, 0.5, 0),
-		Size = UDim2.new(0, 0, 1, 0),
-		AutomaticSize = "X",
-		BackgroundTransparency = 1,
-		Name = "TagHolder"
-	}, {
-		Create("UIListLayout", {
-			FillDirection = Enum.FillDirection.Horizontal,
-			VerticalAlignment = Enum.VerticalAlignment.Center,
-			Padding = UDim.new(0, 4),
-			SortOrder = Enum.SortOrder.LayoutOrder
-		})
-	})
-
 	local MainScroll = InsertTheme(Create("ScrollingFrame", Components, {
 		Size = UDim2.new(0, redzlib.Save.TabSize, 1, -TopBar.Size.Y.Offset),
 		ScrollBarImageColor3 = Theme["Color Theme"],
@@ -2783,6 +2766,22 @@ function redzlib:MakeWindow(Configs)
 
 	local ButtonsFolder = Create("Folder", TopBar, { Name = "Buttons" })
 
+	-- TagHolder: ÃÂÃÂÃÂ´ÃÂ¾ÃÂ¼ ÃÂ ÃÂºÃÂ½ÃÂ¾ÃÂ¿ÃÂºÃÂ¾ÃÂ¹ ÃÂ¼ÃÂ¸ÃÂ½ÃÂ¸ÃÂ¼ÃÂ¸ÃÂ·ÃÂ°ÃÂÃÂ¸ÃÂ¸ (*-*)
+	local TagHolder = Create("Frame", TopBar, {
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -65, 0.5, 0),
+		Size = UDim2.new(0, 0, 0, 14),
+		AutomaticSize = "X",
+		BackgroundTransparency = 1,
+		Name = "TagHolder"
+	}, {
+		Create("UIListLayout", {
+			FillDirection = Enum.FillDirection.Horizontal,
+			VerticalAlignment = Enum.VerticalAlignment.Center,
+			Padding = UDim.new(0, 4),
+			SortOrder = Enum.SortOrder.LayoutOrder
+		})
+	})
 
 	local CloseButton = Create("ImageButton", {
 		Size = UDim2.new(0, 14, 0, 14),
@@ -4337,20 +4336,8 @@ function redzlib:MakeWindow(Configs)
 			end
 
 			Button.Activated:Connect(Minimize)
-			NoClickFrame.MouseButton1Down:Connect(function()
-				local mouse = PlayerMouse
-				local sh = SearchHolder.AbsolutePosition
-				local ss = SearchHolder.AbsoluteSize
-				if mouse.X >= sh.X and mouse.X <= sh.X + ss.X and mouse.Y >= sh.Y and mouse.Y <= sh.Y + ss.Y then return end
-				Disable()
-			end)
-			NoClickFrame.MouseButton1Click:Connect(function()
-				local mouse = PlayerMouse
-				local sh = SearchHolder.AbsolutePosition
-				local ss = SearchHolder.AbsoluteSize
-				if mouse.X >= sh.X and mouse.X <= sh.X + ss.X and mouse.Y >= sh.Y and mouse.Y <= sh.Y + ss.Y then return end
-				Disable()
-			end)
+			NoClickFrame.MouseButton1Down:Connect(Disable)
+			NoClickFrame.MouseButton1Click:Connect(Disable)
 			MainFrame:GetPropertyChangedSignal("Visible"):Connect(Disable)
 			SelectedFrame:GetPropertyChangedSignal("AbsolutePosition"):Connect(CalculatePos)
 			Button.Activated:Connect(CalculateSize)
