@@ -2676,43 +2676,29 @@ function redzlib:MakeWindow(Configs)
 		Name = "Title"
 	}), "Text")
 
-	-- SubTitleRow: SubTitle Ð¸ TagHolder ÑÑÐ´Ð¾Ð¼
-	local SubTitleRow = Create("Frame", Title, {
-		Size = UDim2.new(0, 0, 0, 0),
-		AutomaticSize = "XY",
+	local SubTitle = InsertTheme(Create("TextLabel", Title, {
+		Size = UDim2.fromScale(0, 1),
+		AutomaticSize = "X",
 		AnchorPoint = Vector2.new(0, 1),
-		Position = UDim2.new(1, 5, 1, 0),
-		BackgroundTransparency = 1,
-		Name = "SubTitleRow"
-	}, {
-		Create("UIListLayout", {
-			FillDirection = Enum.FillDirection.Horizontal,
-			VerticalAlignment = Enum.VerticalAlignment.Bottom,
-			Padding = UDim.new(0, 4),
-			SortOrder = Enum.SortOrder.LayoutOrder
-		})
-	})
-
-	local SubTitle = InsertTheme(Create("TextLabel", SubTitleRow, {
-		Size = UDim2.new(0, 0, 0, 0),
-		AutomaticSize = "XY",
+		Position = UDim2.new(1, 5, 0.9),
+		Text = WMiniText,
+		TextColor3 = Theme["Color Dark Text"],
 		BackgroundTransparency = 1,
 		TextXAlignment = "Left",
 		TextYAlignment = "Bottom",
 		TextSize = 8,
 		Font = Enum.Font.Gotham,
-		Text = WMiniText,
-		TextColor3 = Theme["Color Dark Text"],
-		Name = "SubTitle",
-		LayoutOrder = 0,
+		Name = "SubTitle"
 	}), "DarkText")
 
-	local TagHolder = Create("Frame", SubTitleRow, {
-		Size = UDim2.new(0, 0, 0, 0),
-		AutomaticSize = "XY",
+	-- TagHolder ÑÑÐ´Ð¾Ð¼ Ñ SubTitle
+	local TagHolder = Create("Frame", SubTitle, {
+		AnchorPoint = Vector2.new(0, 0.5),
+		Position = UDim2.new(1, 4, 0.5, 0),
+		Size = UDim2.new(0, 0, 1, 0),
+		AutomaticSize = "X",
 		BackgroundTransparency = 1,
-		Name = "TagHolder",
-		LayoutOrder = 1,
+		Name = "TagHolder"
 	}, {
 		Create("UIListLayout", {
 			FillDirection = Enum.FillDirection.Horizontal,
@@ -3177,7 +3163,7 @@ function redzlib:MakeWindow(Configs)
 	function Window:Set(Val1, Val2)
 		if type(Val1) == "string" and type(Val2) == "string" then
 			Title.Text = Val1
-			Title.SubTitleRow.SubTitle.Text = Val2
+			Title.SubTitle.Text = Val2
 		elseif type(Val1) == "string" then
 			Title.Text = Val1
 		end
@@ -4352,22 +4338,17 @@ function redzlib:MakeWindow(Configs)
 
 			Button.Activated:Connect(Minimize)
 			NoClickFrame.MouseButton1Down:Connect(function()
-				-- ÐÐµ Ð·Ð°ÐºÑÑÐ²Ð°ÑÑ ÐµÑÐ»Ð¸ ÐºÐ»Ð¸Ðº Ð¿Ð¾Ð¿Ð°Ð» Ð½Ð° SearchHolder (ÑÑÑÐ¾ÐºÐ° Ð¿Ð¾Ð¸ÑÐºÐ°)
 				local mouse = PlayerMouse
 				local sh = SearchHolder.AbsolutePosition
 				local ss = SearchHolder.AbsoluteSize
-				if mouse.X >= sh.X and mouse.X <= sh.X + ss.X and mouse.Y >= sh.Y and mouse.Y <= sh.Y + ss.Y then
-					return
-				end
+				if mouse.X >= sh.X and mouse.X <= sh.X + ss.X and mouse.Y >= sh.Y and mouse.Y <= sh.Y + ss.Y then return end
 				Disable()
 			end)
 			NoClickFrame.MouseButton1Click:Connect(function()
 				local mouse = PlayerMouse
 				local sh = SearchHolder.AbsolutePosition
 				local ss = SearchHolder.AbsoluteSize
-				if mouse.X >= sh.X and mouse.X <= sh.X + ss.X and mouse.Y >= sh.Y and mouse.Y <= sh.Y + ss.Y then
-					return
-				end
+				if mouse.X >= sh.X and mouse.X <= sh.X + ss.X and mouse.Y >= sh.Y and mouse.Y <= sh.Y + ss.Y then return end
 				Disable()
 			end)
 			MainFrame:GetPropertyChangedSignal("Visible"):Connect(Disable)
