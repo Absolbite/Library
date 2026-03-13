@@ -2664,8 +2664,8 @@ function redzlib:MakeWindow(Configs)
 	})
 
 	local Title = InsertTheme(Create("TextLabel", TopBar, {
-		Position = UDim2.new(0, 15, 0.5),
-		AnchorPoint = Vector2.new(0, 0.5),
+		Position = UDim2.new(0, 15, 0, 4),
+		AnchorPoint = Vector2.new(0, 0),
 		AutomaticSize = "XY",
 		Text = WTitle,
 		TextXAlignment = "Left",
@@ -2676,25 +2676,25 @@ function redzlib:MakeWindow(Configs)
 		Name = "Title"
 	}), "Text")
 
-	local SubTitle = InsertTheme(Create("TextLabel", Title, {
-		Size = UDim2.fromScale(0, 1),
+	local SubTitle = InsertTheme(Create("TextLabel", TopBar, {
+		Size = UDim2.new(0, 0, 0, 10),
 		AutomaticSize = "X",
-		AnchorPoint = Vector2.new(0, 1),
-		Position = UDim2.new(1, 5, 0.9),
+		AnchorPoint = Vector2.new(0, 0),
+		Position = UDim2.new(0, 15, 0, 17),
 		Text = WMiniText,
 		TextColor3 = Theme["Color Dark Text"],
 		BackgroundTransparency = 1,
 		TextXAlignment = "Left",
-		TextYAlignment = "Bottom",
+		TextYAlignment = "Top",
 		TextSize = 8,
 		Font = Enum.Font.Gotham,
 		Name = "SubTitle"
 	}), "DarkText")
 
-	-- TagHolder Ð´Ð¾ÑÐµÑÐ½Ð¸Ð¹ Title, Ð¿Ð¾Ð·Ð¸ÑÐ¸Ñ ÑÑÐ°Ð·Ñ Ð¿Ð¾ÑÐ»Ðµ SubTitle
+	-- TagHolder Ð´Ð¾ÑÐµÑÐ½Ð¸Ð¹ Title, Ð¿Ð¾Ð·Ð¸ÑÐ¸Ñ ÑÑÐ°Ð·Ñ Ð¿ÑÐ°Ð²ÐµÐµ Title
 	local TagHolder = Create("Frame", Title, {
 		AnchorPoint = Vector2.new(0, 0.5),
-		Position = UDim2.new(1, 5, 0.5, 0),
+		Position = UDim2.new(1, 6, 0.5, 0),
 		Size = UDim2.new(0, 0, 0, 14),
 		AutomaticSize = "X",
 		BackgroundTransparency = 1,
@@ -3163,7 +3163,7 @@ function redzlib:MakeWindow(Configs)
 	function Window:Set(Val1, Val2)
 		if type(Val1) == "string" and type(Val2) == "string" then
 			Title.Text = Val1
-			Title.SubTitle.Text = Val2
+			SubTitle.Text = Val2
 		elseif type(Val1) == "string" then
 			Title.Text = Val1
 		end
