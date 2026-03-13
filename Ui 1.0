@@ -2691,10 +2691,10 @@ function redzlib:MakeWindow(Configs)
 		Name = "SubTitle"
 	}), "DarkText")
 
-	-- TagHolder Ð² TopBar, Ð½ÐµÐ·Ð°Ð²Ð¸ÑÐ¸Ð¼Ð¾ Ð¾Ñ SubTitle
-	local TagHolder = Create("Frame", TopBar, {
+	-- TagHolder Ð´Ð¾ÑÐµÑÐ½Ð¸Ð¹ Title, Ð¿Ð¾Ð·Ð¸ÑÐ¸Ñ ÑÑÐ°Ð·Ñ Ð¿Ð¾ÑÐ»Ðµ SubTitle
+	local TagHolder = Create("Frame", Title, {
 		AnchorPoint = Vector2.new(0, 0.5),
-		Position = UDim2.new(0, 15, 0.5, 0),
+		Position = UDim2.new(1, 5, 0.5, 0),
 		Size = UDim2.new(0, 0, 0, 14),
 		AutomaticSize = "X",
 		BackgroundTransparency = 1,
@@ -2707,15 +2707,6 @@ function redzlib:MakeWindow(Configs)
 			SortOrder = Enum.SortOrder.LayoutOrder
 		})
 	})
-
-	-- Ð¡Ð¼ÐµÑÐ°ÐµÐ¼ TagHolder Ð²Ð¿ÑÐ°Ð²Ð¾ Ð¾Ñ Title+SubTitle Ð¿Ð¾ÑÐ»Ðµ ÑÐµÐ½Ð´ÐµÑÐ°
-	task.defer(function()
-		local titleEnd = Title.AbsolutePosition.X + Title.AbsoluteSize.X
-		local subEnd = SubTitle.AbsolutePosition.X + SubTitle.AbsoluteSize.X
-		local rightEdge = math.max(titleEnd, subEnd)
-		local topBarLeft = TopBar.AbsolutePosition.X
-		TagHolder.Position = UDim2.new(0, (rightEdge - topBarLeft) + 8, 0.5, 0)
-	end)
 
 	local MainScroll = InsertTheme(Create("ScrollingFrame", Components, {
 		Size = UDim2.new(0, redzlib.Save.TabSize, 1, -TopBar.Size.Y.Offset),
