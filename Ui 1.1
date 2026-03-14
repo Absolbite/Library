@@ -2646,7 +2646,7 @@ function redzlib:MakeWindow(Configs)
 		Name = "Hub"
 	}), "Main")
 
-	-- ÃÂÃÂÃÂÃÂ¡ÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂµÃÂÃÂÃÂÃÂ¼ ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ»ÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂ´ÃÂÃÂÃÂÃÂ»ÃÂÃÂÃÂÃÂ SetTransparency
+	-- Ð¡Ð¾ÑÑÐ°Ð½ÑÐµÐ¼ ÑÑÑÐ»ÐºÑ Ð´Ð»Ñ SetTransparency
 	_MainFrame = MainFrame
 
 	Make("Gradient", MainFrame, { Rotation = 45 })
@@ -2654,28 +2654,80 @@ function redzlib:MakeWindow(Configs)
 
 	local MainCorner = Make("Corner", MainFrame)
 
+	-- ââ Ð¢Ð¾Ð½ÐºÐ°Ñ ÑÐ²ÐµÑÐ½Ð°Ñ Ð¿Ð¾Ð»Ð¾ÑÐ°-Ð°ÐºÑÐµÐ½Ñ Ð¿Ð¾ Ð²ÐµÑÑÐ½ÐµÐ¼Ñ ÐºÑÐ°Ñ ââ
+	local TopAccent = InsertTheme(Create("Frame", MainFrame, {
+		Size = UDim2.new(1, 0, 0, 2),
+		BackgroundColor3 = Theme["Color Theme"],
+		BorderSizePixel = 0,
+		ZIndex = 5,
+		Name = "TopAccent"
+	}), "Theme")
+	Make("Corner", TopAccent, UDim.new(0, 7))
+	Create("Frame", TopAccent, {
+		Size = UDim2.new(1, 0, 0.6, 1),
+		Position = UDim2.new(0, 0, 0.4, 0),
+		BackgroundColor3 = Theme["Color Theme"],
+		BorderSizePixel = 0,
+		ZIndex = 4, Name = "_cover"
+	})
+
 	local Components = Create("Folder", MainFrame, { Name = "Components" })
 	local DropdownHolder = Create("Folder", ScreenGui, { Name = "Dropdown" })
 
-	local TopBar = Create("Frame", Components, {
-		Size = UDim2.new(1, 0, 0, 28),
-		BackgroundTransparency = 1,
+	-- ââ TopBar (Ð²ÑÑÐ¾ÑÐ° 38, Ð¿Ð¾Ð»ÑÐ¿ÑÐ¾Ð·ÑÐ°ÑÐ½ÑÐ¹ ÑÐ¾Ð½) ââ
+	local TopBar = InsertTheme(Create("Frame", Components, {
+		Size = UDim2.new(1, 0, 0, 38),
+		BackgroundColor3 = Theme["Color Hub 2"],
+		BackgroundTransparency = 0.3,
+		BorderSizePixel = 0,
+		ZIndex = 2,
 		Name = "Top Bar"
-	})
+	}), "Frame")
+	Make("Corner", TopBar, UDim.new(0, 7))
+	InsertTheme(Create("Frame", TopBar, {
+		Size = UDim2.new(1, 0, 0.5, 1),
+		Position = UDim2.new(0, 0, 0.5, 0),
+		BackgroundColor3 = Theme["Color Hub 2"],
+		BackgroundTransparency = 0.3,
+		BorderSizePixel = 0,
+		ZIndex = 1, Name = "_cover"
+	}), "Frame")
 
+	-- ââ ÐÐ¾Ð³Ð¾ÑÐ¸Ð¿-Ð¸ÐºÐ¾Ð½ÐºÐ° ÑÐ»ÐµÐ²Ð° ââ
+	local LogoFrame = InsertTheme(Create("Frame", TopBar, {
+		Size = UDim2.new(0, 26, 0, 26),
+		Position = UDim2.new(0, 8, 0.5),
+		AnchorPoint = Vector2.new(0, 0.5),
+		BackgroundColor3 = Theme["Color Theme"],
+		BackgroundTransparency = 0.75,
+		ZIndex = 3, Name = "LogoFrame"
+	}), "Theme")
+	Make("Corner", LogoFrame, UDim.new(0, 6))
+	InsertTheme(Create("ImageLabel", LogoFrame, {
+		Size = UDim2.new(0, 14, 0, 14),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		BackgroundTransparency = 1,
+		Image = "rbxassetid://10734924532",
+		ZIndex = 4
+	}), "Theme")
+
+	-- ââ ÐÐ°Ð³Ð¾Ð»Ð¾Ð²Ð¾Ðº ââ
 	local Title = InsertTheme(Create("TextLabel", TopBar, {
-		Position = UDim2.new(0, 15, 0.5),
+		Position = UDim2.new(0, 42, 0.5),
 		AnchorPoint = Vector2.new(0, 0.5),
 		AutomaticSize = "XY",
 		Text = WTitle,
 		TextXAlignment = "Left",
-		TextSize = 12,
+		TextSize = 13,
 		TextColor3 = Theme["Color Text"],
 		BackgroundTransparency = 1,
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamBold,
+		ZIndex = 3,
 		Name = "Title"
 	}), "Text")
 
+	-- ââ SubTitle ââ
 	local SubTitle = InsertTheme(Create("TextLabel", Title, {
 		Size = UDim2.fromScale(0, 1),
 		AutomaticSize = "X",
@@ -2688,6 +2740,7 @@ function redzlib:MakeWindow(Configs)
 		TextYAlignment = "Bottom",
 		TextSize = 8,
 		Font = Enum.Font.Gotham,
+		ZIndex = 3,
 		Name = "SubTitle"
 	}), "DarkText")
 
@@ -2698,6 +2751,7 @@ function redzlib:MakeWindow(Configs)
 		Size = UDim2.new(0, 0, 1, 0),
 		AutomaticSize = "X",
 		BackgroundTransparency = 1,
+		ZIndex = 3,
 		Name = "TagHolder"
 	}, {
 		Create("UIListLayout", {
@@ -2708,11 +2762,36 @@ function redzlib:MakeWindow(Configs)
 		})
 	})
 
+	-- ââ ÐÐ¾ÑÐ¸Ð·Ð¾Ð½ÑÐ°Ð»ÑÐ½Ð°Ñ Ð»Ð¸Ð½Ð¸Ñ Ð¿Ð¾Ð´ TopBar ââ
+	InsertTheme(Create("Frame", Components, {
+		Size = UDim2.new(1, 0, 0, 1),
+		Position = UDim2.new(0, 0, 0, 38),
+		BackgroundColor3 = Theme["Color Stroke"],
+		BorderSizePixel = 0, ZIndex = 2, Name = "TopDivider"
+	}), "Stroke")
+
+	-- ââ Ð¤Ð¾Ð½ Ð±Ð¾ÐºÐ¾Ð²Ð¾Ð¹ Ð¿Ð°Ð½ÐµÐ»Ð¸ ÑÐ°Ð±Ð¾Ð² ââ
+	InsertTheme(Create("Frame", Components, {
+		Size = UDim2.new(0, redzlib.Save.TabSize, 1, -39),
+		Position = UDim2.new(0, 0, 0, 39),
+		BackgroundColor3 = Theme["Color Hub 2"],
+		BackgroundTransparency = 0.55,
+		BorderSizePixel = 0, ZIndex = 1, Name = "SidePanel"
+	}), "Frame")
+
+	-- ââ ÐÐµÑÑÐ¸ÐºÐ°Ð»ÑÐ½ÑÐ¹ ÑÐ°Ð·Ð´ÐµÐ»Ð¸ÑÐµÐ»Ñ Ð±Ð¾ÐºÐ¾Ð²Ð°Ñ / ÐºÐ¾Ð½ÑÐµÐ½Ñ ââ
+	local SideDivider = InsertTheme(Create("Frame", Components, {
+		Size = UDim2.new(0, 1, 1, -39),
+		Position = UDim2.new(0, redzlib.Save.TabSize, 0, 39),
+		BackgroundColor3 = Theme["Color Stroke"],
+		BorderSizePixel = 0, ZIndex = 2, Name = "SideDivider"
+	}), "Stroke")
+
+	-- ââ Ð¡Ð¿Ð¸ÑÐ¾Ðº ÑÐ°Ð±Ð¾Ð² (ScrollingFrame) ââ
 	local MainScroll = InsertTheme(Create("ScrollingFrame", Components, {
-		Size = UDim2.new(0, redzlib.Save.TabSize, 1, -TopBar.Size.Y.Offset),
+		Size = UDim2.new(0, redzlib.Save.TabSize, 1, -39),
 		ScrollBarImageColor3 = Theme["Color Theme"],
-		Position = UDim2.new(0, 0, 1, 0),
-		AnchorPoint = Vector2.new(0, 1),
+		Position = UDim2.new(0, 0, 0, 39),
 		ScrollBarThickness = 1.5,
 		BackgroundTransparency = 1,
 		ScrollBarImageTransparency = 0.2,
@@ -2720,26 +2799,28 @@ function redzlib:MakeWindow(Configs)
 		AutomaticCanvasSize = "Y",
 		ScrollingDirection = "Y",
 		BorderSizePixel = 0,
+		ZIndex = 3,
 		Name = "Tab Scroll"
 	}, {
 		Create("UIPadding", {
-			PaddingLeft = UDim.new(0, 10),
-			PaddingRight = UDim.new(0, 10),
-			PaddingTop = UDim.new(0, 10),
-			PaddingBottom = UDim.new(0, 10)
+			PaddingLeft = UDim.new(0, 8),
+			PaddingRight = UDim.new(0, 8),
+			PaddingTop = UDim.new(0, 8),
+			PaddingBottom = UDim.new(0, 8)
 		}),
-		Create("UIListLayout", { Padding = UDim.new(0, 5) })
+		Create("UIListLayout", { Padding = UDim.new(0, 4) })
 	}), "ScrollBar")
 
+	-- ââ ÐÐ±Ð»Ð°ÑÑÑ ÐºÐ¾Ð½ÑÐµÐ½ÑÐ° (ÑÐ¿ÑÐ°Ð²Ð° Ð¾Ñ ÑÐ°Ð±Ð¾Ð²) ââ
 	local Containers = Create("Frame", Components, {
-		Size = UDim2.new(1, -MainScroll.Size.X.Offset, 1, -TopBar.Size.Y.Offset),
-		AnchorPoint = Vector2.new(1, 1),
-		Position = UDim2.new(1, 0, 1, 0),
+		Size = UDim2.new(1, -MainScroll.Size.X.Offset - 1, 1, -39),
+		Position = UDim2.new(0, MainScroll.Size.X.Offset + 1, 0, 39),
 		BackgroundTransparency = 1,
 		ClipsDescendants = true,
-		Name = "Containers"
+		ZIndex = 1, Name = "Containers"
 	})
 
+	-- ââ Drag-ÑÑÐ½Ð´Ð»Ñ Ð´Ð»Ñ resize ââ
 	local ControlSize1 = MakeDrag(Create("ImageButton", MainFrame, {
 		Size = UDim2.new(0, 35, 0, 35),
 		Position = MainFrame.Size,
@@ -2761,8 +2842,11 @@ function redzlib:MakeWindow(Configs)
 		local Pos1, Pos2 = ControlSize1.Position, ControlSize2.Position
 		ControlSize1.Position = UDim2.fromOffset(math.clamp(Pos1.X.Offset, 430, 1000), math.clamp(Pos1.Y.Offset, 200, 500))
 		ControlSize2.Position = UDim2.new(0, math.clamp(Pos2.X.Offset, 135, 250), 1, 0)
-		MainScroll.Size = UDim2.new(0, ControlSize2.Position.X.Offset, 1, -TopBar.Size.Y.Offset)
-		Containers.Size = UDim2.new(1, -MainScroll.Size.X.Offset, 1, -TopBar.Size.Y.Offset)
+		local tw = ControlSize2.Position.X.Offset
+		MainScroll.Size = UDim2.new(0, tw, 1, -39)
+		SideDivider.Position = UDim2.new(0, tw, 0, 39)
+		Containers.Size = UDim2.new(1, -tw - 1, 1, -39)
+		Containers.Position = UDim2.new(0, tw + 1, 0, 39)
 		MainFrame.Size = ControlSize1.Position
 	end
 
@@ -2783,22 +2867,61 @@ function redzlib:MakeWindow(Configs)
 
 	local ButtonsFolder = Create("Folder", TopBar, { Name = "Buttons" })
 
-
-	local CloseButton = Create("ImageButton", {
+	-- ââ ÐÐ½Ð¾Ð¿ÐºÐ° Ð·Ð°ÐºÑÑÑÐ¸Ñ (ÐºÑÐ°ÑÐ½ÑÐ¹ ÐºÑÑÐ¶Ð¾Ðº) ââ
+	local CloseButton = Create("TextButton", TopBar, {
 		Size = UDim2.new(0, 14, 0, 14),
-		Position = UDim2.new(1, -10, 0.5),
+		Position = UDim2.new(1, -12, 0.5),
 		AnchorPoint = Vector2.new(1, 0.5),
+		BackgroundColor3 = Color3.fromRGB(255, 80, 80),
+		BackgroundTransparency = 0.25,
+		Text = "", AutoButtonColor = false,
+		ZIndex = 5, Name = "Close"
+	})
+	Make("Corner", CloseButton, UDim.new(0.5, 0))
+	local CloseX = Create("ImageLabel", CloseButton, {
+		Size = UDim2.new(0, 8, 0, 8),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
 		BackgroundTransparency = 1,
 		Image = "rbxassetid://10747384394",
-		AutoButtonColor = false,
-		Name = "Close"
+		ImageTransparency = 1, ZIndex = 6
 	})
+	CloseButton.MouseEnter:Connect(function()
+		CreateTween({CloseX, "ImageTransparency", 0, 0.15})
+		CreateTween({CloseButton, "BackgroundTransparency", 0, 0.15})
+	end)
+	CloseButton.MouseLeave:Connect(function()
+		CreateTween({CloseX, "ImageTransparency", 1, 0.15})
+		CreateTween({CloseButton, "BackgroundTransparency", 0.25, 0.15})
+	end)
 
-	local MinimizeButton = SetProps(CloseButton:Clone(), {
-		Position = UDim2.new(1, -35, 0.5),
-		Image = "rbxassetid://10734896206",
-		Name = "Minimize"
+	-- ââ ÐÐ½Ð¾Ð¿ÐºÐ° Ð¼Ð¸Ð½Ð¸Ð¼Ð¸Ð·Ð°ÑÐ¸Ð¸ (Ð¶ÑÐ»ÑÑÐ¹ ÐºÑÑÐ¶Ð¾Ðº) ââ
+	local MinimizeButton = Create("TextButton", TopBar, {
+		Size = UDim2.new(0, 14, 0, 14),
+		Position = UDim2.new(1, -32, 0.5),
+		AnchorPoint = Vector2.new(1, 0.5),
+		BackgroundColor3 = Color3.fromRGB(255, 190, 40),
+		BackgroundTransparency = 0.25,
+		Text = "", AutoButtonColor = false,
+		ZIndex = 5, Name = "Minimize"
 	})
+	Make("Corner", MinimizeButton, UDim.new(0.5, 0))
+	local MinimizeIcon = Create("ImageLabel", MinimizeButton, {
+		Size = UDim2.new(0, 8, 0, 8),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		BackgroundTransparency = 1,
+		Image = "rbxassetid://10734896206",
+		ImageTransparency = 1, ZIndex = 6
+	})
+	MinimizeButton.MouseEnter:Connect(function()
+		CreateTween({MinimizeIcon, "ImageTransparency", 0, 0.15})
+		CreateTween({MinimizeButton, "BackgroundTransparency", 0, 0.15})
+	end)
+	MinimizeButton.MouseLeave:Connect(function()
+		CreateTween({MinimizeIcon, "ImageTransparency", 1, 0.15})
+		CreateTween({MinimizeButton, "BackgroundTransparency", 0.25, 0.15})
+	end)
 
 	SetChildren(ButtonsFolder, { CloseButton, MinimizeButton })
 
@@ -2819,17 +2942,17 @@ function redzlib:MakeWindow(Configs)
 		if WaitClick then return end
 		WaitClick = true
 		if Minimized then
-			MinimizeButton.Image = "rbxassetid://10734896206"
+			MinimizeIcon.Image = "rbxassetid://10734896206"
 			CreateTween({MainFrame, "Size", SaveSize, 0.25, true})
 			ControlSize1.Visible = true
 			ControlSize2.Visible = true
 			Minimized = false
 		else
-			MinimizeButton.Image = "rbxassetid://10734924532"
+			MinimizeIcon.Image = "rbxassetid://10734924532"
 			SaveSize = MainFrame.Size
 			ControlSize1.Visible = false
 			ControlSize2.Visible = false
-			CreateTween({MainFrame, "Size", UDim2.fromOffset(MainFrame.Size.X.Offset, 28), 0.25, true})
+			CreateTween({MainFrame, "Size", UDim2.fromOffset(MainFrame.Size.X.Offset, 38), 0.25, true})
 			Minimized = true
 		end
 		WaitClick = false
@@ -3670,39 +3793,41 @@ function redzlib:MakeWindow(Configs)
 			TIcon = false
 		end
 
-		local TabSelect = Make("Button", MainScroll, { Size = UDim2.new(1, 0, 0, 24) })
-		Make("Corner", TabSelect)
+		local TabSelect = Make("Button", MainScroll, { Size = UDim2.new(1, 0, 0, 28) })
+		Make("Corner", TabSelect, UDim.new(0, 5))
 
 		local LabelTitle = InsertTheme(Create("TextLabel", TabSelect, {
-			Size = UDim2.new(1, TIcon and -25 or -15, 1),
-			Position = UDim2.fromOffset(TIcon and 25 or 15),
+			Size = UDim2.new(1, TIcon and -30 or -18, 1),
+			Position = UDim2.fromOffset(TIcon and 30 or 18),
 			BackgroundTransparency = 1,
 			Font = Enum.Font.GothamMedium,
 			Text = TName,
 			TextColor3 = Theme["Color Text"],
-			TextSize = 10,
+			TextSize = 11,
 			TextXAlignment = Enum.TextXAlignment.Left,
-			TextTransparency = (FirstTab and 0.3) or 0,
+			TextTransparency = (FirstTab and 0.45) or 0,
 			TextTruncate = "AtEnd"
 		}), "Text")
 
 		local LabelIcon = InsertTheme(Create("ImageLabel", TabSelect, {
-			Position = UDim2.new(0, 8, 0.5),
-			Size = UDim2.new(0, 13, 0, 13),
+			Position = UDim2.new(0, 9, 0.5),
+			Size = UDim2.new(0, 14, 0, 14),
 			AnchorPoint = Vector2.new(0, 0.5),
 			Image = TIcon or "",
 			BackgroundTransparency = 1,
-			ImageTransparency = (FirstTab and 0.3) or 0
+			ImageTransparency = (FirstTab and 0.45) or 0
 		}), "Text")
 
+		-- ÐÐµÐ²ÑÐ¹ Ð°ÐºÑÐµÐ½Ñ-Ð¿Ð¾Ð»Ð¾ÑÐºÐ° Ð°ÐºÑÐ¸Ð²Ð½Ð¾Ð³Ð¾ ÑÐ°Ð±Ð°
 		local Selected = InsertTheme(Create("Frame", TabSelect, {
-			Size = FirstTab and UDim2.new(0, 4, 0, 4) or UDim2.new(0, 4, 0, 13),
-			Position = UDim2.new(0, 1, 0.5),
+			Size = FirstTab and UDim2.new(0, 3, 0, 4) or UDim2.new(0, 3, 0, 14),
+			Position = UDim2.new(0, 0, 0.5),
 			AnchorPoint = Vector2.new(0, 0.5),
 			BackgroundColor3 = Theme["Color Theme"],
 			BackgroundTransparency = FirstTab and 1 or 0
 		}), "Theme")
 		Make("Corner", Selected, UDim.new(0.5, 0))
+
 
 		local Container = InsertTheme(Create("ScrollingFrame", {
 			Size = UDim2.new(1, 0, 1, 0),
@@ -3757,9 +3882,17 @@ function redzlib:MakeWindow(Configs)
 		table.insert(redzlib.Tabs, {TabInfo = {Name = TName, Icon = TIcon}, func = Tab, Cont = Container})
 		Tab.Cont = Container
 
+		-- ÐÐºÑÐ¸Ð²Ð½ÑÐ¹ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ ÑÐµÐºÑÐ¸Ð¸: nil = Ð¿ÑÑÐ¼Ð¾ Ð² Tab, Ð¸Ð½Ð°ÑÐµ = SectionAdd Ð¿Ð¾ÑÐ»ÐµÐ´Ð½ÐµÐ¹ ÑÐµÐºÑÐ¸Ð¸
+		local ActiveSectionContainer = nil
+
+		-- ÐÐ¾Ð·Ð²ÑÐ°ÑÐ°ÐµÑ ÑÐµÐºÑÑÐ¸Ð¹ Ð°ÐºÑÐ¸Ð²Ð½ÑÐ¹ ÑÐ¾Ð´Ð¸ÑÐµÐ»Ñ Ð´Ð»Ñ Ð½Ð¾Ð²ÑÑ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð²
+		local function GetActiveContainer()
+			return ActiveSectionContainer or Container
+		end
+
 		function Tab:Disable()
 			Container.Parent = nil
-			CreateTween({LabelTitle, "TextTransparency", 0.3, 0.35})
+			CreateTween({LabelTitle, "TextTransparency", 0.45, 0.35})
 			CreateTween({LabelIcon, "ImageTransparency", 0.3, 0.35})
 			CreateTween({Selected, "Size", UDim2.new(0, 4, 0, 4), 0.35})
 			CreateTween({Selected, "BackgroundTransparency", 1, 0.35})
@@ -3796,6 +3929,7 @@ function redzlib:MakeWindow(Configs)
 			-- STYLE 2  â  Ð¿ÑÐ¾ÑÑÐ¾Ð¹ ÑÐµÐºÑÑÐ¾Ð²ÑÐ¹ ÑÐ°Ð·Ð´ÐµÐ»Ð¸ÑÐµÐ»Ñ (ÑÑÐ°ÑÑÐ¹ ÑÑÐ¸Ð»Ñ)
 			-- âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 			if SStyle == 2 then
+				ActiveSectionContainer = nil  -- ÑÐ±ÑÐ¾Ñ: ÑÐ»ÐµÐ´ÑÑÑÐ¸Ðµ ÑÐ»ÐµÐ¼ÐµÐ½ÑÑ Ð¸Ð´ÑÑ Ð² Tab
 				local SectionFrame = Create("Frame", Container, {
 					Size = UDim2.new(1, 0, 0, 20),
 					BackgroundTransparency = 1,
@@ -3826,6 +3960,9 @@ function redzlib:MakeWindow(Configs)
 			-- âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 			-- STYLE 1  â  V2.2-ÑÑÐ¸Ð»Ñ: ÐºÐ¾Ð»Ð»Ð°Ð¿ÑÐ¸ÑÑÐµÐ¼Ð°Ñ ÑÐµÐºÑÐ¸Ñ
 			-- âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+
+			-- Ð¡Ð±ÑÐ¾Ñ Ð¿ÑÐµÐ´ÑÐ´ÑÑÐµÐ¹ ÑÐµÐºÑÐ¸Ð¸: ÑÐ¾Ð·Ð´Ð°ÑÐ¼ Ð½Ð¾Ð²ÑÑ
+			ActiveSectionContainer = nil
 
 			-- ÐÐ½ÐµÑÐ½Ð¸Ð¹ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ (ClipsDescendants Ð´Ð»Ñ collapse-Ð°Ð½Ð¸Ð¼Ð°ÑÐ¸Ð¸)
 			local SectionFrame = Create("Frame", Container, {
@@ -3984,6 +4121,9 @@ function redzlib:MakeWindow(Configs)
 			local Section = {}
 			table.insert(redzlib.Options, {type = "Section", Name = SectionName, func = Section})
 
+			-- ÐÑÐµ Ð¿Ð¾ÑÐ»ÐµÐ´ÑÑÑÐ¸Ðµ Tab:AddXxx Ð¸Ð´ÑÑ ÑÑÐ´Ð° Ð´Ð¾ ÑÐ»ÐµÐ´ÑÑÑÐµÐ¹ AddSection
+			ActiveSectionContainer = SectionAdd
+
 			function Section:Visible(Bool)
 				if Bool == nil then SectionFrame.Visible = not SectionFrame.Visible return end
 				SectionFrame.Visible = Bool
@@ -3997,25 +4137,6 @@ function redzlib:MakeWindow(Configs)
 				if OpenSection then OpenSection = false CloseAnim() end
 			end
 
-			-- ÐÑÐ¾ÐºÐ¸Ð´ÑÐ²Ð°ÐµÐ¼ Ð¼ÐµÑÐ¾Ð´Ñ Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð¸Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð² (ÑÐ¾Ð´Ð¸ÑÐµÐ»Ñ = SectionAdd)
-			local _origContainer = Container
-			local function WithSec(fn)
-				Container = SectionAdd
-				local r = fn()
-				Container = _origContainer
-				return r
-			end
-
-			function Section:AddToggle(Cfg)      return WithSec(function() return Tab:AddToggle(Cfg) end) end
-			function Section:AddButton(Cfg)      return WithSec(function() return Tab:AddButton(Cfg) end) end
-			function Section:AddSlider(Cfg)      return WithSec(function() return Tab:AddSlider(Cfg) end) end
-			function Section:AddDropdown(Cfg)    return WithSec(function() return Tab:AddDropdown(Cfg) end) end
-			function Section:AddTextBox(Cfg)     return WithSec(function() return Tab:AddTextBox(Cfg) end) end
-			function Section:AddParagraph(Cfg)   return WithSec(function() return Tab:AddParagraph(Cfg) end) end
-			function Section:AddColorPicker(Cfg) return WithSec(function() return Tab:AddColorPicker(Cfg) end) end
-			function Section:AddKeybind(Cfg)     return WithSec(function() return Tab:AddKeybind(Cfg) end) end
-			function Section:AddDiscordInvite(Cfg) return WithSec(function() return Tab:AddDiscordInvite(Cfg) end) end
-
 			return Section
 		end
 
@@ -4027,7 +4148,7 @@ function redzlib:MakeWindow(Configs)
 			local PName = Configs[1] or Configs.Title or "Paragraph"
 			local PDesc = Configs[2] or Configs.Text or ""
 
-			local Frame, LabelFunc = ButtonFrame(Container, PName, PDesc, UDim2.new(1, -20))
+			local Frame, LabelFunc = ButtonFrame(GetActiveContainer(), PName, PDesc, UDim2.new(1, -20))
 
 			local Paragraph = {}
 			function Paragraph:Visible(...) Funcs:ToggleVisible(Frame, ...) end
@@ -4053,7 +4174,7 @@ function redzlib:MakeWindow(Configs)
 			local BDescription = Configs.Desc or Configs.Description or ""
 			local Callback = Funcs:GetCallback(Configs, 2)
 
-			local FButton, LabelFunc = ButtonFrame(Container, BName, BDescription, UDim2.new(1, -20))
+			local FButton, LabelFunc = ButtonFrame(GetActiveContainer(), BName, BDescription, UDim2.new(1, -20))
 
 			local ButtonIcon = Create("ImageLabel", FButton, {
 				Size = UDim2.new(0, 14, 0, 14),
@@ -4094,7 +4215,7 @@ function redzlib:MakeWindow(Configs)
 			local Default = Configs[2] or Configs.Default or false
 			if CheckFlag(Flag) then Default = GetFlag(Flag) end
 
-			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -38))
+			local Button, LabelFunc = ButtonFrame(GetActiveContainer(), TName, TDesc, UDim2.new(1, -38))
 
 			local ToggleHolder = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 35, 0, 18),
@@ -4175,7 +4296,7 @@ function redzlib:MakeWindow(Configs)
 			local DMultiSelect = Configs.MultiSelect or false
 			local Callback = Funcs:GetCallback(Configs, 4)
 
-			local Button, LabelFunc = ButtonFrame(Container, DName, DDesc, UDim2.new(1, -180))
+			local Button, LabelFunc = ButtonFrame(GetActiveContainer(), DName, DDesc, UDim2.new(1, -180))
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 150, 0, 18),
@@ -4691,7 +4812,7 @@ function redzlib:MakeWindow(Configs)
 			if CheckFlag(Flag) then Default = GetFlag(Flag) end
 			Default = math.clamp(tonumber(Default) or Min, Min, Max)
 
-			local Button, LabelFunc = ButtonFrame(Container, SName, SDesc, UDim2.new(1, -180))
+			local Button, LabelFunc = ButtonFrame(GetActiveContainer(), SName, SDesc, UDim2.new(1, -180))
 
 			-- SliderHolder ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ±ÃÂÃÂÃÂÃÂ»ÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂ·ÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ²ÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ° ÃÂÃÂÃÂÃÂ¼ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¸
 			local SliderHolder = Create("TextButton", Button, {
@@ -4877,7 +4998,7 @@ function redzlib:MakeWindow(Configs)
 
 			if type(TDefault) ~= "string" then TDefault = "" end
 
-			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -38))
+			local Button, LabelFunc = ButtonFrame(GetActiveContainer(), TName, TDesc, UDim2.new(1, -38))
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 150, 0, 18),
@@ -4961,7 +5082,7 @@ function redzlib:MakeWindow(Configs)
 			local Logo = Configs[2] or Configs.Logo or ""
 			local Invite = Configs[3] or Configs.Invite or ""
 
-			local InviteHolder = Create("Frame", Container, {
+			local InviteHolder = Create("Frame", GetActiveContainer(), {
 				Size = UDim2.new(1, 0, 0, 80),
 				Name = "Option",
 				BackgroundTransparency = 1
