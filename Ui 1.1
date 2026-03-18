@@ -2120,7 +2120,7 @@ local SetProps, SetChildren, InsertTheme, Create do
 		end
 	end
 
-	pcall(Save, "redz library V5.json")
+	pcall(Save, "smooth library.json")
 end
 
 local Funcs = {} do
@@ -2256,7 +2256,7 @@ local GetFlag, SetFlag, CheckFlag do
 end
 
 local ScreenGui = Create("ScreenGui", CoreGui, {
-	Name = "redz Library V5",
+	Name = "smooth library",
 }, {
 	Create("UIScale", {
 		Scale = UIScale,
@@ -2539,7 +2539,7 @@ function redzlib:SetTheme(NewTheme)
 	if not VerifyTheme(NewTheme) then return end
 
 	redzlib.Save.Theme = NewTheme
-	SaveJson("redz library V5.json", redzlib.Save)
+	SaveJson("smooth library.json", redzlib.Save)
 	Theme = redzlib.Themes[NewTheme]
 
 	Connection:FireConnection("ThemeChanged", NewTheme)
@@ -2577,7 +2577,7 @@ function redzlib:SetTransparency(value)
 	value = math.clamp(tonumber(value) or 0, 0, 0.95)
 	CurrentTransparency = value
 	redzlib.Save.Transparency = value
-	SaveJson("redz library V5.json", redzlib.Save)
+	SaveJson("smooth library.json", redzlib.Save)
 	if _MainFrame then
 		_MainFrame.BackgroundTransparency = value
 	end
@@ -2618,10 +2618,25 @@ function redzlib:SetScale(NewScale)
 end
 
 function redzlib:MakeWindow(Configs)
-	local WTitle = Configs[1] or Configs.Name or Configs.Title or "redz Library V5"
+	local WTitle = Configs[1] or Configs.Name or Configs.Title or "smooth library"
 	local WMiniText = Configs[2] or Configs.SubTitle or "by : redz9999"
 
-	Settings.ScriptFile = Configs[3] or Configs.SaveFolder or false
+	local SaveFolder = Configs[3] or Configs.SaveFolder or false
+
+	local function BuildScriptFile()
+		if not SaveFolder then return false end
+		if not makefolder or not isfolder or not writefile then return false end
+		local PlayerName = Player.Name
+		local Root = "smoothlib"
+		local GameFolder = Root .. "/" .. tostring(SaveFolder)
+		local PlayerFolder = GameFolder .. "/" .. PlayerName
+		if not isfolder(Root) then makefolder(Root) end
+		if not isfolder(GameFolder) then makefolder(GameFolder) end
+		if not isfolder(PlayerFolder) then makefolder(PlayerFolder) end
+		return PlayerFolder .. "/flags.json"
+	end
+
+	Settings.ScriptFile = BuildScriptFile()
 
 	local function LoadFile()
 		local File = Settings.ScriptFile
@@ -2691,11 +2706,11 @@ function redzlib:MakeWindow(Configs)
 		Name = "SubTitle"
 	}), "DarkText")
 
-	-- TagHolder ÑÑÐ´Ð¾Ð¼ Ñ SubTitle (Ð¿Ð°ÑÐµÐ½ÑÐ¾Ð²Ð°Ð½ Ðº Title, Ð½Ðµ Ðº SubTitle)
-	local TagHolder = Create("Frame", Title, {
+	-- TagHolder ÑÑÐ´Ð¾Ð¼ Ñ SubTitle
+	local TagHolder = Create("Frame", SubTitle, {
 		AnchorPoint = Vector2.new(0, 0.5),
-		Position = UDim2.new(1, 5, 0.5, 0),
-		Size = UDim2.new(0, 0, 0, 14),
+		Position = UDim2.new(1, 8, 0.5, 0),
+		Size = UDim2.new(0, 0, 1, 0),
 		AutomaticSize = "X",
 		BackgroundTransparency = 1,
 		Name = "TagHolder"
@@ -2772,13 +2787,13 @@ function redzlib:MakeWindow(Configs)
 	ConnectSave(ControlSize1, function()
 		if not Minimized then
 			redzlib.Save.UISize = {MainFrame.Size.X.Offset, MainFrame.Size.Y.Offset}
-			SaveJson("redz library V5.json", redzlib.Save)
+			SaveJson("smooth library.json", redzlib.Save)
 		end
 	end)
 
 	ConnectSave(ControlSize2, function()
 		redzlib.Save.TabSize = MainScroll.Size.X.Offset
-		SaveJson("redz library V5.json", redzlib.Save)
+		SaveJson("smooth library.json", redzlib.Save)
 	end)
 
 	local ButtonsFolder = Create("Folder", TopBar, { Name = "Buttons" })
@@ -2863,7 +2878,7 @@ function redzlib:MakeWindow(Configs)
 				posX  = Button and Button.Position.X.Offset or nil,
 				posY  = Button and Button.Position.Y.Offset or nil,
 			}
-			SaveJson("redz library V5.json", redzlib.Save)
+			SaveJson("smooth library.json", redzlib.Save)
 		end
 
 		-- ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ²ÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ° (ÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂµÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂµÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ¸ÃÂÃÂÃÂÃÂ²ÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂµÃÂÃÂÃÂÃÂ¼ÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂ)
@@ -2906,7 +2921,7 @@ function redzlib:MakeWindow(Configs)
 				redzlib.Save.MinimizeButtons[BtnId] = redzlib.Save.MinimizeButtons[BtnId] or {}
 				redzlib.Save.MinimizeButtons[BtnId].posX = p.X.Offset
 				redzlib.Save.MinimizeButtons[BtnId].posY = p.Y.Offset
-				SaveJson("redz library V5.json", redzlib.Save)
+				SaveJson("smooth library.json", redzlib.Save)
 			end)
 		end)
 
@@ -3141,7 +3156,7 @@ function redzlib:MakeWindow(Configs)
 				posX  = p.X.Offset ~= 0 and p.X.Offset or nil,
 				posY  = p.Y.Offset ~= 0 and p.Y.Offset or nil,
 			}
-			SaveJson("redz library V5.json", redzlib.Save)
+			SaveJson("smooth library.json", redzlib.Save)
 		end
 
 		return {
@@ -3503,7 +3518,7 @@ function redzlib:MakeWindow(Configs)
 					for _, btn in pairs(redzlib.Save.MinimizeButtons) do
 						btn.image = id
 					end
-					SaveJson("redz library V5.json", redzlib.Save)
+					SaveJson("smooth library.json", redzlib.Save)
 				end
 			end
 
