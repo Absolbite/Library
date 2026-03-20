@@ -4760,421 +4760,711 @@ function redzlib:MakeWindow(Configs)
 		function Tab:AddGlobalChat(Configs)
 			Configs = Configs or {}
 			local Topic  = Configs.Topic or Configs[1] or "redzlib_global_chat"
-			local MaxMsg = Configs.MaxMessages  -- nil = unlimited
+			local MaxMsg = Configs.MaxMessages
 
 			local MessagingService = game:GetService("MessagingService")
 			local PlayerName    = Player.Name
 			local PlayerDisplay = Player.DisplayName
-			local PlayerUserId  = Player.UserId
+			local PlayerUserId  = tostring(Player.UserId)
 
-			-- Unique name colours derived from display name hash
+			-- ââ Helpers ââââââââââââââââââââââââââââââââââââââââââââââââââââ
 			local NameColors = {
-				Color3.fromRGB(99,  155, 255),
-				Color3.fromRGB(60,  220, 130),
-				Color3.fromRGB(255, 140,  60),
-				Color3.fromRGB(255,  90, 155),
-				Color3.fromRGB(0,   195, 235),
-				Color3.fromRGB(255, 215,  60),
-				Color3.fromRGB(120, 255, 200),
-				Color3.fromRGB(210, 110, 255),
-				Color3.fromRGB(255, 100, 100),
-				Color3.fromRGB(80,  210, 170),
+				Color3.fromRGB(99,155,255), Color3.fromRGB(60,220,130),
+				Color3.fromRGB(255,140,60), Color3.fromRGB(255,90,155),
+				Color3.fromRGB(0,195,235),  Color3.fromRGB(255,215,60),
+				Color3.fromRGB(120,255,200),Color3.fromRGB(210,110,255),
+				Color3.fromRGB(255,100,100),Color3.fromRGB(80,210,170),
 			}
 			local function GetNameColor(name)
 				local s = 0
 				for i = 1, #name do s = s + string.byte(name, i) end
 				return NameColors[(s % #NameColors) + 1]
 			end
-
-			-- Avatar thumbnail URL from userId
-			local function GetAvatarUrl(userId)
-				return "https://www.roblox.com/headshot-thumbnail/image?userId=" .. tostring(userId) .. "&width=48&height=48&format=png"
-			end
-
-			-- Timestamp  â  "14:05"
 			local function GetTime()
 				local t = os.time()
-				return string.format("%02d:%02d", math.floor(t / 3600) % 24, math.floor(t / 60) % 60)
+				return string.format("%02d:%02d", math.floor(t/3600)%24, math.floor(t/60)%60)
 			end
 
-			-- Online counter (unique userIds seen recently)
-			local OnlineSeen = {}   -- [userId] = true
-			local OnlineCount = 0
-			local OnlineLabel  -- declared below after UI build
-
-			local function MarkOnline(userId)
-				if userId and not OnlineSeen[userId] then
-					OnlineSeen[userId] = true
+			-- ââ Online registry  [uid] = {display, name} ââââââââââââââââââ
+			local OnlineUsers  = {}   -- uid â {display=, name=}
+			local OnlineCount  = 0
+			local OnlineLabel  -- set after UI build
+			local function MarkOnline(uid, display, name)
+				if not uid then return end
+				uid = tostring(uid)
+				if not OnlineUsers[uid] then
+					OnlineUsers[uid] = { display = display or uid, name = name or uid }
 					OnlineCount = OnlineCount + 1
-					if OnlineLabel then
-						OnlineLabel.Text = OnlineCount .. " online"
-					end
+					if OnlineLabel then OnlineLabel.Text = OnlineCount .. " online" end
 				end
 			end
+			MarkOnline(PlayerUserId, PlayerDisplay, PlayerName)
 
-			-- Mark self immediately
-			MarkOnline(tostring(PlayerUserId))
+			-- avatar cache
+			local avatarCache = {}
+			local function LoadAvatar(img, uid)
+				if not uid then return end
+				uid = tostring(uid)
+				if avatarCache[uid] then img.Image = avatarCache[uid]; return end
+				task.spawn(function()
+					local ok, res = pcall(function()
+						return Players:GetUserThumbnailAsync(
+							tonumber(uid),
+							Enum.ThumbnailType.HeadShot,
+							Enum.ThumbnailSize.Size48x48
+						)
+					end)
+					if ok and res then
+						avatarCache[uid] = res
+						if img and img.Parent then img.Image = res end
+					end
+				end)
+			end
 
-			-- ââ Strip tab padding ââââââââââââââââââââââââââââââââââââââââââ
+			-- ââ Strip tab container padding ââââââââââââââââââââââââââââââââ
 			for _, ch in ipairs(Container:GetChildren()) do
 				if ch:IsA("UIPadding") or ch:IsA("UIListLayout") then ch:Destroy() end
 			end
 			Container.AutomaticCanvasSize = Enum.AutomaticSize.None
-			Container.CanvasSize          = UDim2.new()
-			Container.ScrollBarThickness  = 0
+			Container.CanvasSize = UDim2.new()
+			Container.ScrollBarThickness = 0
 
-			-- ââ Root wrapper âââââââââââââââââââââââââââââââââââââââââââââââ
 			local Wrapper = Create("Frame", Container, {
-				Size             = UDim2.new(1, 0, 1, 0),
+				Size = UDim2.new(1,0,1,0),
 				BackgroundTransparency = 1,
 				ClipsDescendants = true,
-				Name             = "ChatWrapper"
+				Name = "ChatWrapper"
 			})
 
-			-- Bottom bar height: 36px input + 18px status = 54px total
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			--  TOP BAR:  [ Public Chat ]  [ Private Chat ]
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			local TAB_H   = 26
 			local BOTTOM_H = 54
 
-			-- ââ Message scroll area ââââââââââââââââââââââââââââââââââââââââ
-			local MsgArea = InsertTheme(Create("ScrollingFrame", Wrapper, {
-				Size                   = UDim2.new(1, 0, 1, -BOTTOM_H),
-				Position               = UDim2.new(0, 0, 0, 0),
+			local TopTabBar = Create("Frame", Wrapper, {
+				Size = UDim2.new(1,0,0,TAB_H),
 				BackgroundTransparency = 1,
-				ScrollBarThickness     = 3,
-				ScrollBarImageColor3   = Theme["Color Theme"],
-				ScrollBarImageTransparency = 0.5,
-				BorderSizePixel        = 0,
-				CanvasSize             = UDim2.new(),
-				AutomaticCanvasSize    = "Y",
-				ScrollingDirection     = "Y",
-				Name                   = "MsgArea"
-			}, {
-				Create("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = "LayoutOrder" }),
-				Create("UIPadding", {
-					PaddingLeft   = UDim.new(0, 8),
-					PaddingRight  = UDim.new(0, 10),
-					PaddingTop    = UDim.new(0, 8),
-					PaddingBottom = UDim.new(0, 4)
-				})
-			}), "ScrollBar")
+				Name = "TopTabBar"
+			})
 
-			-- ââ Thin divider âââââââââââââââââââââââââââââââââââââââââââââââ
+			local function MakeTabBtn(text, xScale, xOffset)
+				local Btn = InsertTheme(Create("TextButton", TopTabBar, {
+					Size = UDim2.new(0.5,-4,1,-4),
+					Position = UDim2.new(xScale, xOffset, 0, 2),
+					BackgroundColor3 = Theme["Color Hub 2"],
+					Font = Enum.Font.GothamBold,
+					Text = text,
+					TextSize = 10,
+					TextColor3 = Theme["Color Dark Text"],
+					AutoButtonColor = false,
+					Name = text
+				}), "Frame")
+				Make("Corner", Btn, UDim.new(0,6))
+				return Btn
+			end
+
+			local BtnPublic  = MakeTabBtn("Public Chat",  0, 2)
+			local BtnPrivate = MakeTabBtn("Private Chat", 0.5, 2)
+
+			-- divider under top bar
 			InsertTheme(Create("Frame", Wrapper, {
-				Size             = UDim2.new(1, -16, 0, 1),
-				Position         = UDim2.new(0, 8, 1, -BOTTOM_H),
+				Size = UDim2.new(1,-16,0,1),
+				Position = UDim2.new(0,8,0,TAB_H+1),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
 
-			-- ââ Status bar (18px): connection dot + label | online count âââ
-			local StatusBar = Create("Frame", Wrapper, {
-				Size               = UDim2.new(1, 0, 0, 18),
-				Position           = UDim2.new(0, 0, 1, -BOTTOM_H),
-				BackgroundTransparency = 1,
-				Name               = "StatusBar"
-			})
-			local StatusDot = Create("Frame", StatusBar, {
-				Size             = UDim2.fromOffset(6, 6),
-				Position         = UDim2.new(0, 8, 0.5),
-				AnchorPoint      = Vector2.new(0, 0.5),
-				BackgroundColor3 = Color3.fromRGB(120, 120, 120),
-			})
-			Make("Corner", StatusDot, UDim.new(1, 0))
+			-- content area sits below top bar
+			local CONTENT_Y = TAB_H + 3
+			local CONTENT_H = -(CONTENT_Y + BOTTOM_H)
 
-			local StatusLabel = InsertTheme(Create("TextLabel", StatusBar, {
-				Size           = UDim2.new(0.5, -20, 1, 0),
-				Position       = UDim2.fromOffset(20, 0),
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			--  PUBLIC PANEL
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			local PublicPanel = Create("Frame", Wrapper, {
+				Size = UDim2.new(1,0,1,CONTENT_H),
+				Position = UDim2.new(0,0,0,CONTENT_Y),
 				BackgroundTransparency = 1,
-				Font           = Enum.Font.Gotham,
-				TextSize       = 8,
-				TextColor3     = Theme["Color Dark Text"],
+				Name = "PublicPanel"
+			})
+
+			local PubMsgArea = InsertTheme(Create("ScrollingFrame", PublicPanel, {
+				Size = UDim2.new(1,0,1,0),
+				BackgroundTransparency = 1,
+				ScrollBarThickness = 3,
+				ScrollBarImageColor3 = Theme["Color Theme"],
+				ScrollBarImageTransparency = 0.5,
+				BorderSizePixel = 0,
+				CanvasSize = UDim2.new(),
+				AutomaticCanvasSize = "Y",
+				ScrollingDirection = "Y",
+				Name = "PubMsgArea"
+			},{
+				Create("UIListLayout",{Padding=UDim.new(0,4),SortOrder="LayoutOrder"}),
+				Create("UIPadding",{
+					PaddingLeft=UDim.new(0,8),PaddingRight=UDim.new(0,10),
+					PaddingTop=UDim.new(0,8),PaddingBottom=UDim.new(0,4)
+				})
+			}), "ScrollBar")
+
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			--  PRIVATE PANEL
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			local PrivatePanel = Create("Frame", Wrapper, {
+				Size = UDim2.new(1,0,1,CONTENT_H),
+				Position = UDim2.new(0,0,0,CONTENT_Y),
+				BackgroundTransparency = 1,
+				Visible = false,
+				Name = "PrivatePanel"
+			})
+
+			-- Left: player list (35% wide)
+			local LIST_W = 90
+			local PlayerListFrame = InsertTheme(Create("ScrollingFrame", PrivatePanel, {
+				Size = UDim2.new(0,LIST_W,1,0),
+				BackgroundTransparency = 1,
+				ScrollBarThickness = 2,
+				ScrollBarImageColor3 = Theme["Color Theme"],
+				ScrollBarImageTransparency = 0.5,
+				BorderSizePixel = 0,
+				CanvasSize = UDim2.new(),
+				AutomaticCanvasSize = "Y",
+				ScrollingDirection = "Y",
+				Name = "PlayerList"
+			},{
+				Create("UIListLayout",{Padding=UDim.new(0,3),SortOrder="LayoutOrder"}),
+				Create("UIPadding",{
+					PaddingLeft=UDim.new(0,4),PaddingRight=UDim.new(0,4),
+					PaddingTop=UDim.new(0,6),PaddingBottom=UDim.new(0,4)
+				})
+			}), "ScrollBar")
+
+			-- Vertical divider
+			InsertTheme(Create("Frame", PrivatePanel, {
+				Size = UDim2.new(0,1,1,-8),
+				Position = UDim2.new(0,LIST_W+2,0,4),
+				BackgroundColor3 = Theme["Color Stroke"]
+			}), "Stroke")
+
+			-- Right: DM area
+			local DmPanel = Create("Frame", PrivatePanel, {
+				Size = UDim2.new(1,-(LIST_W+6),1,0),
+				Position = UDim2.fromOffset(LIST_W+6,0),
+				BackgroundTransparency = 1,
+				Name = "DmPanel"
+			})
+
+			-- DM header label
+			local DmHeader = InsertTheme(Create("TextLabel", DmPanel, {
+				Size = UDim2.new(1,0,0,18),
+				BackgroundTransparency = 1,
+				Font = Enum.Font.GothamBold,
+				TextSize = 9,
+				TextColor3 = Theme["Color Dark Text"],
 				TextXAlignment = "Left",
-				TextTruncate   = "AtEnd",
-				Text           = "Connecting..."
+				Text = "Select a player",
+				Name = "DmHeader"
 			}), "DarkText")
 
-			-- Online count label (right side of status bar)
-			OnlineLabel = InsertTheme(Create("TextLabel", StatusBar, {
-				Size           = UDim2.new(0.5, -8, 1, 0),
-				Position       = UDim2.new(0.5, 0, 0, 0),
+			local DmMsgArea = InsertTheme(Create("ScrollingFrame", DmPanel, {
+				Size = UDim2.new(1,0,1,-18),
+				Position = UDim2.fromOffset(0,18),
 				BackgroundTransparency = 1,
-				Font           = Enum.Font.GothamBold,
-				TextSize       = 8,
-				TextColor3     = Theme["Color Theme"],
+				ScrollBarThickness = 3,
+				ScrollBarImageColor3 = Theme["Color Theme"],
+				ScrollBarImageTransparency = 0.5,
+				BorderSizePixel = 0,
+				CanvasSize = UDim2.new(),
+				AutomaticCanvasSize = "Y",
+				ScrollingDirection = "Y",
+				Name = "DmMsgArea"
+			},{
+				Create("UIListLayout",{Padding=UDim.new(0,4),SortOrder="LayoutOrder"}),
+				Create("UIPadding",{
+					PaddingLeft=UDim.new(0,4),PaddingRight=UDim.new(0,6),
+					PaddingTop=UDim.new(0,4),PaddingBottom=UDim.new(0,4)
+				})
+			}), "ScrollBar")
+
+			-- DM conversations  [targetUid] = { {display,text,ts,isSelf}, ... }
+			local DmHistory    = {}
+			local ActiveDmUid  = nil
+
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			--  STATUS BAR  +  INPUT ROW  (shared)
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			InsertTheme(Create("Frame", Wrapper, {
+				Size = UDim2.new(1,-16,0,1),
+				Position = UDim2.new(0,8,1,-BOTTOM_H),
+				BackgroundColor3 = Theme["Color Stroke"]
+			}), "Stroke")
+
+			local StatusBar = Create("Frame", Wrapper, {
+				Size = UDim2.new(1,0,0,18),
+				Position = UDim2.new(0,0,1,-BOTTOM_H),
+				BackgroundTransparency = 1,
+				Name = "StatusBar"
+			})
+			local StatusDot = Create("Frame", StatusBar, {
+				Size = UDim2.fromOffset(6,6),
+				Position = UDim2.new(0,8,0.5),
+				AnchorPoint = Vector2.new(0,0.5),
+				BackgroundColor3 = Color3.fromRGB(120,120,120),
+			})
+			Make("Corner", StatusDot, UDim.new(1,0))
+			local StatusLabel = InsertTheme(Create("TextLabel", StatusBar, {
+				Size = UDim2.new(0.6,-20,1,0),
+				Position = UDim2.fromOffset(20,0),
+				BackgroundTransparency = 1,
+				Font = Enum.Font.Gotham,
+				TextSize = 8,
+				TextColor3 = Theme["Color Dark Text"],
+				TextXAlignment = "Left",
+				TextTruncate = "AtEnd",
+				Text = "Connecting..."
+			}), "DarkText")
+			OnlineLabel = InsertTheme(Create("TextLabel", StatusBar, {
+				Size = UDim2.new(0.4,-8,1,0),
+				Position = UDim2.new(0.6,0,0,0),
+				BackgroundTransparency = 1,
+				Font = Enum.Font.GothamBold,
+				TextSize = 8,
+				TextColor3 = Theme["Color Theme"],
 				TextXAlignment = "Right",
-				Text           = "1 online"
+				Text = "1 online"
 			}), "Theme")
 
-			-- ââ Input row (36px) âââââââââââââââââââââââââââââââââââââââââââ
 			local InputRow = Create("Frame", Wrapper, {
-				Size               = UDim2.new(1, 0, 0, 36),
-				Position           = UDim2.new(0, 0, 1, -36),
+				Size = UDim2.new(1,0,0,36),
+				Position = UDim2.new(0,0,1,-36),
 				BackgroundTransparency = 1,
-				Name               = "InputRow"
+				Name = "InputRow"
 			})
-
-			-- Input box  (leaves room for send button on the right)
 			local InputHolder = InsertTheme(Create("Frame", InputRow, {
-				Size             = UDim2.new(1, -44, 1, -8),
-				Position         = UDim2.new(0, 8, 0.5),
-				AnchorPoint      = Vector2.new(0, 0.5),
+				Size = UDim2.new(1,-44,1,-8),
+				Position = UDim2.new(0,8,0.5),
+				AnchorPoint = Vector2.new(0,0.5),
 				BackgroundColor3 = Theme["Color Stroke"],
-				Name             = "InputHolder"
 			}), "Stroke")
-			Make("Corner", InputHolder, UDim.new(0, 8))
-
+			Make("Corner", InputHolder, UDim.new(0,8))
 			local ChatInput = InsertTheme(Create("TextBox", InputHolder, {
-				Size              = UDim2.new(1, -10, 1, 0),
-				Position          = UDim2.fromOffset(8, 0),
+				Size = UDim2.new(1,-10,1,0),
+				Position = UDim2.fromOffset(8,0),
 				BackgroundTransparency = 1,
-				Font              = Enum.Font.Gotham,
-				TextSize          = 11,
-				TextColor3        = Theme["Color Text"],
-				PlaceholderText   = "Type a message...",
+				Font = Enum.Font.Gotham,
+				TextSize = 11,
+				TextColor3 = Theme["Color Text"],
+				PlaceholderText = "Type a message...",
 				PlaceholderColor3 = Theme["Color Dark Text"],
-				Text              = "",
-				ClearTextOnFocus  = false,
-				TextXAlignment    = "Left",
-				Name              = "Input"
+				Text = "",
+				ClearTextOnFocus = false,
+				TextXAlignment = "Left",
 			}), "Text")
-
-			-- Send button
 			local SendBtn = InsertTheme(Create("ImageButton", InputRow, {
-				Size             = UDim2.fromOffset(28, 28),
-				Position         = UDim2.new(1, -8, 0.5),
-				AnchorPoint      = Vector2.new(1, 0.5),
-				Image            = "rbxassetid://10709768347",
-				ImageColor3      = Theme["Color Theme"],
+				Size = UDim2.fromOffset(28,28),
+				Position = UDim2.new(1,-8,0.5),
+				AnchorPoint = Vector2.new(1,0.5),
+				Image = "rbxassetid://10709768347",
+				ImageColor3 = Theme["Color Theme"],
 				BackgroundColor3 = Theme["Color Hub 2"],
 				BackgroundTransparency = 0.2,
-				AutoButtonColor  = false,
-				Name             = "SendBtn"
+				AutoButtonColor = false,
 			}), "Frame")
-			Make("Corner", SendBtn, UDim.new(0, 8))
+			Make("Corner", SendBtn, UDim.new(0,8))
 			Make("Stroke", SendBtn)
-
 			SendBtn.MouseEnter:Connect(function()
-				CreateTween({SendBtn, "ImageColor3", Color3.fromRGB(255,255,255), 0.15})
-				CreateTween({SendBtn, "BackgroundTransparency", 0, 0.15})
+				CreateTween({SendBtn,"ImageColor3",Color3.fromRGB(255,255,255),0.15})
+				CreateTween({SendBtn,"BackgroundTransparency",0,0.15})
 			end)
 			SendBtn.MouseLeave:Connect(function()
-				CreateTween({SendBtn, "ImageColor3", Theme["Color Theme"], 0.15})
-				CreateTween({SendBtn, "BackgroundTransparency", 0.2, 0.15})
+				CreateTween({SendBtn,"ImageColor3",Theme["Color Theme"],0.15})
+				CreateTween({SendBtn,"BackgroundTransparency",0.2,0.15})
 			end)
 
-			-- ââ AddMessage âââââââââââââââââââââââââââââââââââââââââââââââââ
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			--  TAB SWITCHING
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			local ActiveTab = "public"
+			local function SetActiveTab(which)
+				ActiveTab = which
+				local isPub = (which == "public")
+				PublicPanel.Visible  = isPub
+				PrivatePanel.Visible = not isPub
+				-- highlight active button
+				InsertTheme(BtnPublic,  isPub and "Theme" or "Frame")
+				InsertTheme(BtnPrivate, not isPub and "Theme" or "Frame")
+				BtnPublic.TextColor3  = isPub and Theme["Color Theme"] or Theme["Color Dark Text"]
+				BtnPrivate.TextColor3 = not isPub and Theme["Color Theme"] or Theme["Color Dark Text"]
+				-- update placeholder
+				if isPub then
+					ChatInput.PlaceholderText = "Type a message..."
+				else
+					ChatInput.PlaceholderText = ActiveDmUid
+						and ("Message " .. (OnlineUsers[ActiveDmUid] and OnlineUsers[ActiveDmUid].display or "..."))
+						or "Select a player first"
+				end
+			end
+			BtnPublic.Activated:Connect(function() SetActiveTab("public") end)
+			BtnPrivate.Activated:Connect(function() SetActiveTab("private") end)
+			SetActiveTab("public")
+
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			--  MESSAGE BUILDER  (shared for Public + DM areas)
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 			local MsgCount = 0
 
-			local function ScrollToBottom()
+			local function ScrollBottom(area)
 				task.defer(function()
-					MsgArea.CanvasPosition = Vector2.new(0, math.huge)
+					area.CanvasPosition = Vector2.new(0, math.huge)
 				end)
 			end
 
-			-- avatarCache[userId] = rbxassetid or url string
-			local avatarCache = {}
-
-			local function AddMessage(displayName, text, isSystem, timestamp, userId, avatarId)
+			-- Build one message row into `area`
+			local function BuildMessage(area, displayName, text, isSystem, timestamp, uid)
 				MsgCount = MsgCount + 1
 
 				if MaxMsg then
 					local list = {}
-					for _, c in ipairs(MsgArea:GetChildren()) do
+					for _, c in ipairs(area:GetChildren()) do
 						if c:IsA("Frame") then table.insert(list, c) end
 					end
 					if #list >= MaxMsg then
-						table.sort(list, function(a, b) return a.LayoutOrder < b.LayoutOrder end)
+						table.sort(list, function(a,b) return a.LayoutOrder < b.LayoutOrder end)
 						list[1]:Destroy()
 					end
 				end
 
-				local Row = Create("Frame", MsgArea, {
-					Size           = UDim2.new(1, 0, 0, 0),
-					AutomaticSize  = Enum.AutomaticSize.Y,
+				local Row = Create("Frame", area, {
+					Size = UDim2.new(1,0,0,0),
+					AutomaticSize = Enum.AutomaticSize.Y,
 					BackgroundTransparency = 1,
-					Name           = "M" .. MsgCount,
-					LayoutOrder    = MsgCount
+					Name = "M"..MsgCount,
+					LayoutOrder = MsgCount
 				})
-				Create("UIPadding", Row, {
-					PaddingTop    = UDim.new(0, 2),
-					PaddingBottom = UDim.new(0, 2),
-				})
+				Create("UIPadding", Row, {PaddingTop=UDim.new(0,2),PaddingBottom=UDim.new(0,2)})
 
 				if isSystem then
-					-- System message: centered subtle text
 					Create("TextLabel", Row, {
-						Size           = UDim2.new(1, 0, 0, 14),
+						Size = UDim2.new(1,0,0,14),
 						BackgroundTransparency = 1,
-						Font           = Enum.Font.Gotham,
-						TextSize       = 8,
-						TextColor3     = Theme["Color Dark Text"],
+						Font = Enum.Font.Gotham,
+						TextSize = 8,
+						TextColor3 = Theme["Color Dark Text"],
 						TextXAlignment = "Center",
-						Text           = text,
+						Text = text,
 					})
-				else
-					-- ââ Full message row âââââââââââââââââââââââââââââââââââ
-					-- Layout: [avatar 32x32] [right block: header + text]
-					local MsgRow = Create("Frame", Row, {
-						Size           = UDim2.new(1, 0, 0, 0),
-						AutomaticSize  = Enum.AutomaticSize.Y,
-						BackgroundTransparency = 1,
-					})
-
-					-- Avatar image (32x32, rounded)
-					local AvatarImg = Create("ImageLabel", MsgRow, {
-						Size             = UDim2.fromOffset(32, 32),
-						Position         = UDim2.new(0, 0, 0, 0),
-						BackgroundColor3 = Theme["Color Stroke"],
-						Image            = "",
-						Name             = "Avatar"
-					})
-					Make("Corner", AvatarImg, UDim.new(0, 6))
-
-					-- Load avatar async
-					task.spawn(function()
-						-- Try cached first
-						if avatarId and avatarCache[avatarId] then
-							AvatarImg.Image = avatarCache[avatarId]
-							return
-						end
-						-- Try Players service for local players
-						if userId then
-							local ok, img = pcall(function()
-								return Players:GetUserThumbnailAsync(
-									tonumber(userId),
-									Enum.ThumbnailType.HeadShot,
-									Enum.ThumbnailSize.Size48x48
-								)
-							end)
-							if ok and img then
-								AvatarImg.Image = img
-								if avatarId then avatarCache[avatarId] = img end
-								return
-							end
-						end
-					end)
-
-					-- Right block (name + time header, then message text)
-					local RightBlock = Create("Frame", MsgRow, {
-						Size           = UDim2.new(1, -40, 0, 0),
-						AutomaticSize  = Enum.AutomaticSize.Y,
-						Position       = UDim2.fromOffset(40, 0),
-						BackgroundTransparency = 1,
-					})
-					Create("UIListLayout", RightBlock, {
-						Padding   = UDim.new(0, 2),
-						SortOrder = "LayoutOrder"
-					})
-
-					-- Header: display name + timestamp
-					local HeaderRow = Create("Frame", RightBlock, {
-						Size           = UDim2.new(1, 0, 0, 14),
-						BackgroundTransparency = 1,
-						LayoutOrder    = 1
-					})
-
-					local nameColor = GetNameColor(displayName or "x")
-
-					-- Display name
-					Create("TextLabel", HeaderRow, {
-						Size           = UDim2.new(1, -44, 1, 0),
-						Position       = UDim2.fromOffset(0, 0),
-						BackgroundTransparency = 1,
-						Font           = Enum.Font.GothamBold,
-						TextSize       = 10,
-						TextColor3     = nameColor,
-						TextXAlignment = "Left",
-						TextTruncate   = "AtEnd",
-						Text           = displayName or "Unknown"
-					})
-
-					-- Timestamp (right-aligned)
-					Create("TextLabel", HeaderRow, {
-						Size           = UDim2.fromOffset(40, 14),
-						Position       = UDim2.new(1, 0, 0, 0),
-						AnchorPoint    = Vector2.new(1, 0),
-						BackgroundTransparency = 1,
-						Font           = Enum.Font.Gotham,
-						TextSize       = 8,
-						TextColor3     = Theme["Color Dark Text"],
-						TextXAlignment = "Right",
-						Text           = timestamp or GetTime()
-					})
-
-					-- Message text
-					Create("TextLabel", RightBlock, {
-						Size           = UDim2.new(1, 0, 0, 0),
-						AutomaticSize  = Enum.AutomaticSize.Y,
-						BackgroundTransparency = 1,
-						Font           = Enum.Font.Gotham,
-						TextSize       = 11,
-						TextColor3     = Theme["Color Text"],
-						TextXAlignment = "Left",
-						TextWrapped    = true,
-						Text           = text,
-						LayoutOrder    = 2
-					})
+					ScrollBottom(area)
+					return
 				end
 
-				ScrollToBottom()
+				-- Avatar + right block
+				local MsgRow = Create("Frame", Row, {
+					Size = UDim2.new(1,0,0,0),
+					AutomaticSize = Enum.AutomaticSize.Y,
+					BackgroundTransparency = 1,
+				})
+
+				local AvatarImg = Create("ImageLabel", MsgRow, {
+					Size = UDim2.fromOffset(32,32),
+					Position = UDim2.new(0,0,0,0),
+					BackgroundColor3 = Theme["Color Stroke"],
+					Image = "",
+				})
+				Make("Corner", AvatarImg, UDim.new(0,6))
+				LoadAvatar(AvatarImg, uid)
+
+				local RightBlock = Create("Frame", MsgRow, {
+					Size = UDim2.new(1,-40,0,0),
+					AutomaticSize = Enum.AutomaticSize.Y,
+					Position = UDim2.fromOffset(40,0),
+					BackgroundTransparency = 1,
+				})
+				Create("UIListLayout", RightBlock, {Padding=UDim.new(0,2),SortOrder="LayoutOrder"})
+
+				-- Header row: name  +  time  +  copy button
+				local HeaderRow = Create("Frame", RightBlock, {
+					Size = UDim2.new(1,0,0,16),
+					BackgroundTransparency = 1,
+					LayoutOrder = 1
+				})
+				local nc = GetNameColor(displayName or "x")
+				Create("TextLabel", HeaderRow, {
+					Size = UDim2.new(1,-54,1,0),
+					BackgroundTransparency = 1,
+					Font = Enum.Font.GothamBold,
+					TextSize = 10,
+					TextColor3 = nc,
+					TextXAlignment = "Left",
+					TextTruncate = "AtEnd",
+					Text = displayName or "Unknown"
+				})
+				Create("TextLabel", HeaderRow, {
+					Size = UDim2.fromOffset(38,14),
+					Position = UDim2.new(1,-38,0,0),
+					BackgroundTransparency = 1,
+					Font = Enum.Font.Gotham,
+					TextSize = 8,
+					TextColor3 = Theme["Color Dark Text"],
+					TextXAlignment = "Right",
+					Text = timestamp or GetTime()
+				})
+
+				-- Message text
+				local MsgText = Create("TextLabel", RightBlock, {
+					Size = UDim2.new(1,0,0,0),
+					AutomaticSize = Enum.AutomaticSize.Y,
+					BackgroundTransparency = 1,
+					Font = Enum.Font.Gotham,
+					TextSize = 11,
+					TextColor3 = Theme["Color Text"],
+					TextXAlignment = "Left",
+					TextWrapped = true,
+					Text = text,
+					LayoutOrder = 2
+				})
+
+				-- Copy button (appears on hover over Row)
+				local CopyBtn = InsertTheme(Create("TextButton", Row, {
+					Size = UDim2.fromOffset(36, 14),
+					Position = UDim2.new(1, -4, 0, 2),
+					AnchorPoint = Vector2.new(1, 0),
+					BackgroundColor3 = Theme["Color Hub 2"],
+					Font = Enum.Font.GothamBold,
+					TextSize = 7,
+					TextColor3 = Theme["Color Dark Text"],
+					Text = "Copy",
+					AutoButtonColor = false,
+					BackgroundTransparency = 1,
+					ZIndex = 5,
+				}), "Frame")
+				Make("Corner", CopyBtn, UDim.new(0,4))
+
+				-- Show copy btn on hover
+				Row.MouseEnter:Connect(function()
+					CreateTween({CopyBtn,"BackgroundTransparency",0,0.1})
+				end)
+				Row.MouseLeave:Connect(function()
+					CreateTween({CopyBtn,"BackgroundTransparency",1,0.1})
+				end)
+				CopyBtn.Activated:Connect(function()
+					pcall(setclipboard, text)
+					CopyBtn.Text = "Copied!"
+					task.delay(1.5, function()
+						if CopyBtn and CopyBtn.Parent then
+							CopyBtn.Text = "Copy"
+						end
+					end)
+				end)
+
+				ScrollBottom(area)
 			end
 
-			-- ââ MessagingService âââââââââââââââââââââââââââââââââââââââââââ
-			local Connected  = false
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			--  PLAYER LIST  (Private Chat)
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			local PlayerBtns = {}  -- uid â button
+
+			local function RefreshPlayerList()
+				-- remove buttons for users no longer known (shouldn't happen, but safe)
+				for uid, btn in pairs(PlayerBtns) do
+					if not OnlineUsers[uid] and btn.Parent then btn:Destroy(); PlayerBtns[uid] = nil end
+				end
+				-- add new entries
+				for uid, info in pairs(OnlineUsers) do
+					if uid ~= PlayerUserId and not PlayerBtns[uid] then
+						local Btn = InsertTheme(Create("TextButton", PlayerListFrame, {
+							Size = UDim2.new(1,0,0,46),
+							BackgroundColor3 = Theme["Color Hub 2"],
+							BackgroundTransparency = 0.3,
+							AutoButtonColor = false,
+							Text = "",
+							Name = "PLR_"..uid
+						}), "Frame")
+						Make("Corner", Btn, UDim.new(0,6))
+
+						local Av = Create("ImageLabel", Btn, {
+							Size = UDim2.fromOffset(28,28),
+							Position = UDim2.new(0,4,0.5),
+							AnchorPoint = Vector2.new(0,0.5),
+							BackgroundColor3 = Theme["Color Stroke"],
+							Image = "",
+						})
+						Make("Corner", Av, UDim.new(0,5))
+						LoadAvatar(Av, uid)
+
+						Create("TextLabel", Btn, {
+							Size = UDim2.new(1,-38,0,14),
+							Position = UDim2.new(0,36,0,8),
+							BackgroundTransparency = 1,
+							Font = Enum.Font.GothamBold,
+							TextSize = 9,
+							TextColor3 = Theme["Color Text"],
+							TextXAlignment = "Left",
+							TextTruncate = "AtEnd",
+							Text = info.display,
+						})
+						Create("TextLabel", Btn, {
+							Size = UDim2.new(1,-38,0,10),
+							Position = UDim2.new(0,36,0,24),
+							BackgroundTransparency = 1,
+							Font = Enum.Font.Gotham,
+							TextSize = 8,
+							TextColor3 = Theme["Color Dark Text"],
+							TextXAlignment = "Left",
+							TextTruncate = "AtEnd",
+							Text = "@"..info.name,
+						})
+
+						-- Unread dot
+						local UnreadDot = Create("Frame", Btn, {
+							Size = UDim2.fromOffset(6,6),
+							Position = UDim2.new(1,-6,0,6),
+							AnchorPoint = Vector2.new(1,0),
+							BackgroundColor3 = Theme["Color Theme"],
+							Visible = false,
+						})
+						Make("Corner", UnreadDot, UDim.new(1,0))
+
+						PlayerBtns[uid] = { btn=Btn, unread=UnreadDot }
+
+						Btn.Activated:Connect(function()
+							ActiveDmUid = uid
+							-- clear unread
+							if PlayerBtns[uid] then PlayerBtns[uid].unread.Visible = false end
+							-- update header
+							DmHeader.Text = "DM: " .. info.display
+							-- clear and repopulate DM area
+							for _, c in ipairs(DmMsgArea:GetChildren()) do
+								if c:IsA("Frame") then c:Destroy() end
+							end
+							if DmHistory[uid] then
+								for _, m in ipairs(DmHistory[uid]) do
+									BuildMessage(DmMsgArea, m.display, m.text, false, m.ts, m.uid)
+								end
+							end
+							ChatInput.PlaceholderText = "Message " .. info.display
+						end)
+
+						-- hover
+						Btn.MouseEnter:Connect(function()
+							CreateTween({Btn,"BackgroundTransparency",0,0.15})
+						end)
+						Btn.MouseLeave:Connect(function()
+							CreateTween({Btn,"BackgroundTransparency",0.3,0.15})
+						end)
+					end
+				end
+			end
+
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			--  MESSAGING SERVICE
+			-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			local Connected   = false
 			local Subscription
 
 			local function Connect()
 				local ok, err = pcall(function()
 					Subscription = MessagingService:SubscribeAsync(Topic, function(msg)
 						local ok2, data = pcall(HttpService.JSONDecode, HttpService, msg.Data)
-						if ok2 and type(data) == "table" and data.display and data.text then
-							MarkOnline(data.uid)
-							AddMessage(
-								tostring(data.display),
-								tostring(data.text),
-								false,
-								tostring(data.time or ""),
-								data.uid,
-								data.uid
-							)
+						if not (ok2 and type(data) == "table") then return end
+
+						local uid     = tostring(data.uid or "")
+						local display = tostring(data.display or "?")
+						local name    = tostring(data.name or uid)
+						local text    = tostring(data.text or "")
+						local ts      = tostring(data.time or GetTime())
+						local msgType = data.msgType or "public"
+						local toUid   = tostring(data.toUid or "")
+
+						MarkOnline(uid, display, name)
+						RefreshPlayerList()
+
+						if msgType == "public" then
+							BuildMessage(PubMsgArea, display, text, false, ts, uid)
+
+						elseif msgType == "private" and toUid == PlayerUserId then
+							-- incoming DM for me
+							if not DmHistory[uid] then DmHistory[uid] = {} end
+							table.insert(DmHistory[uid], {display=display,text=text,ts=ts,uid=uid})
+							-- if we're currently viewing this conversation, show it
+							if ActiveTab == "private" and ActiveDmUid == uid then
+								BuildMessage(DmMsgArea, display, text, false, ts, uid)
+							else
+								-- show unread dot
+								if PlayerBtns[uid] then PlayerBtns[uid].unread.Visible = true end
+							end
 						end
 					end)
 				end)
 				if ok then
 					Connected = true
-					StatusDot.BackgroundColor3 = Color3.fromRGB(80, 215, 100)
-					StatusLabel.Text           = "Connected"
+					StatusDot.BackgroundColor3 = Color3.fromRGB(80,215,100)
+					StatusLabel.Text = "Connected"
+					-- announce presence so others can see us in their player list
+					pcall(function()
+						MessagingService:PublishAsync(Topic, HttpService:JSONEncode({
+							msgType = "join",
+							uid     = PlayerUserId,
+							display = PlayerDisplay,
+							name    = PlayerName,
+							text    = PlayerDisplay .. " joined the chat",
+							time    = GetTime()
+						}))
+					end)
 				else
 					Connected = false
-					StatusDot.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
-					local errMsg = tostring(err):match(":%d+: (.+)") or tostring(err)
-					StatusLabel.Text = "Error: " .. errMsg:sub(1, 40)
+					StatusDot.BackgroundColor3 = Color3.fromRGB(220,60,60)
+					local e = tostring(err):match(":%d+: (.+)") or tostring(err)
+					StatusLabel.Text = "Error: " .. e:sub(1,40)
 				end
 			end
+
+			-- Also handle "join" packets
+			local _origSub -- patched after Connect
+			-- (join messages are filtered in the subscriber above via msgType)
 
 			local function DoSend(txt)
 				txt = txt:match("^%s*(.-)%s*$")
 				if #txt == 0 or #txt > 200 then return end
-
 				local ts = GetTime()
 
-				if not Connected then
-					-- Local only (Studio / not published)
-					AddMessage(PlayerDisplay, txt, false, ts, tostring(PlayerUserId), tostring(PlayerUserId))
-					return
-				end
-
-				local payload = HttpService:JSONEncode({
-					display = PlayerDisplay,
-					name    = PlayerName,
-					uid     = tostring(PlayerUserId),
-					text    = txt,
-					time    = ts
-				})
-				local ok, err = pcall(function()
-					MessagingService:PublishAsync(Topic, payload)
-				end)
-				if not ok then
-					local errMsg = tostring(err):match(":%d+: (.+)") or tostring(err)
-					AddMessage("", "Send failed: " .. errMsg:sub(1, 50), true)
+				if ActiveTab == "public" then
+					-- show locally immediately
+					BuildMessage(PubMsgArea, PlayerDisplay, txt, false, ts, PlayerUserId)
+					if Connected then
+						pcall(function()
+							MessagingService:PublishAsync(Topic, HttpService:JSONEncode({
+								msgType = "public",
+								display = PlayerDisplay,
+								name    = PlayerName,
+								uid     = PlayerUserId,
+								text    = txt,
+								time    = ts
+							}))
+						end)
+					end
+				else
+					-- private
+					if not ActiveDmUid then return end
+					local targetInfo = OnlineUsers[ActiveDmUid]
+					if not targetInfo then return end
+					-- save to history
+					if not DmHistory[ActiveDmUid] then DmHistory[ActiveDmUid] = {} end
+					table.insert(DmHistory[ActiveDmUid], {display=PlayerDisplay,text=txt,ts=ts,uid=PlayerUserId})
+					BuildMessage(DmMsgArea, PlayerDisplay, txt, false, ts, PlayerUserId)
+					if Connected then
+						pcall(function()
+							MessagingService:PublishAsync(Topic, HttpService:JSONEncode({
+								msgType = "private",
+								display = PlayerDisplay,
+								name    = PlayerName,
+								uid     = PlayerUserId,
+								toUid   = ActiveDmUid,
+								text    = txt,
+								time    = ts
+							}))
+						end)
+					end
 				end
 			end
 
@@ -5193,16 +5483,18 @@ function redzlib:MakeWindow(Configs)
 
 			-- ââ Public API âââââââââââââââââââââââââââââââââââââââââââââââââ
 			local ChatAPI = {}
-			function ChatAPI:SendSystem(text) AddMessage("", text, true) end
+			function ChatAPI:SendSystem(text)
+				BuildMessage(PubMsgArea, "", text, true)
+			end
 			function ChatAPI:Reconnect()
 				if Subscription then pcall(function() Subscription:Disconnect() end) end
 				Connected = false
-				StatusDot.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
+				StatusDot.BackgroundColor3 = Color3.fromRGB(120,120,120)
 				StatusLabel.Text = "Reconnecting..."
 				task.spawn(Connect)
 			end
 			function ChatAPI:Clear()
-				for _, c in ipairs(MsgArea:GetChildren()) do
+				for _, c in ipairs(PubMsgArea:GetChildren()) do
 					if c:IsA("Frame") then c:Destroy() end
 				end
 				MsgCount = 0
