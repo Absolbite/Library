@@ -4757,20 +4757,17 @@ function redzlib:MakeWindow(Configs)
 			return DiscordInvite
 		end
 
-		-- ============================================================
-		--  Tab:AddGlobalChat()
-		--  Uses MessagingService (cross-server, requires published game)
-		--  Falls back to local-server chat via Players if unavailable.
-		-- ============================================================
 		function Tab:AddGlobalChat(Configs)
 			Configs = Configs or {}
 			local Topic  = Configs.Topic or Configs[1] or "redzlib_global_chat"
 			local MaxMsg = Configs.MaxMessages  -- nil = unlimited
 
 			local MessagingService = game:GetService("MessagingService")
-			local PlayerName = Player.Name
+			local PlayerName    = Player.Name
+			local PlayerDisplay = Player.DisplayName
+			local PlayerUserId  = Player.UserId
 
-			-- Unique name colours derived from username hash
+			-- Unique name colours derived from display name hash
 			local NameColors = {
 				Color3.fromRGB(99,  155, 255),
 				Color3.fromRGB(60,  220, 130),
@@ -4789,13 +4786,36 @@ function redzlib:MakeWindow(Configs)
 				return NameColors[(s % #NameColors) + 1]
 			end
 
-			-- Timestamp helper  â  "14:05"
+			-- Avatar thumbnail URL from userId
+			local function GetAvatarUrl(userId)
+				return "https://www.roblox.com/headshot-thumbnail/image?userId=" .. tostring(userId) .. "&width=48&height=48&format=png"
+			end
+
+			-- Timestamp  â  "14:05"
 			local function GetTime()
 				local t = os.time()
 				return string.format("%02d:%02d", math.floor(t / 3600) % 24, math.floor(t / 60) % 60)
 			end
 
-			-- ââ Strip tab padding so chat fills the container ââââââââââââââ
+			-- Online counter (unique userIds seen recently)
+			local OnlineSeen = {}   -- [userId] = true
+			local OnlineCount = 0
+			local OnlineLabel  -- declared below after UI build
+
+			local function MarkOnline(userId)
+				if userId and not OnlineSeen[userId] then
+					OnlineSeen[userId] = true
+					OnlineCount = OnlineCount + 1
+					if OnlineLabel then
+						OnlineLabel.Text = OnlineCount .. " online"
+					end
+				end
+			end
+
+			-- Mark self immediately
+			MarkOnline(tostring(PlayerUserId))
+
+			-- ââ Strip tab padding ââââââââââââââââââââââââââââââââââââââââââ
 			for _, ch in ipairs(Container:GetChildren()) do
 				if ch:IsA("UIPadding") or ch:IsA("UIListLayout") then ch:Destroy() end
 			end
@@ -4811,9 +4831,12 @@ function redzlib:MakeWindow(Configs)
 				Name             = "ChatWrapper"
 			})
 
-			-- ââ Message scroll area  (leaves 54 px at the bottom) âââââââââ
+			-- Bottom bar height: 36px input + 18px status = 54px total
+			local BOTTOM_H = 54
+
+			-- ââ Message scroll area ââââââââââââââââââââââââââââââââââââââââ
 			local MsgArea = InsertTheme(Create("ScrollingFrame", Wrapper, {
-				Size                   = UDim2.new(1, 0, 1, -54),
+				Size                   = UDim2.new(1, 0, 1, -BOTTOM_H),
 				Position               = UDim2.new(0, 0, 0, 0),
 				BackgroundTransparency = 1,
 				ScrollBarThickness     = 3,
@@ -4825,26 +4848,26 @@ function redzlib:MakeWindow(Configs)
 				ScrollingDirection     = "Y",
 				Name                   = "MsgArea"
 			}, {
-				Create("UIListLayout", { Padding = UDim.new(0, 2), SortOrder = "LayoutOrder" }),
+				Create("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = "LayoutOrder" }),
 				Create("UIPadding", {
 					PaddingLeft   = UDim.new(0, 8),
 					PaddingRight  = UDim.new(0, 10),
-					PaddingTop    = UDim.new(0, 6),
+					PaddingTop    = UDim.new(0, 8),
 					PaddingBottom = UDim.new(0, 4)
 				})
 			}), "ScrollBar")
 
-			-- ââ Divider ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+			-- ââ Thin divider âââââââââââââââââââââââââââââââââââââââââââââââ
 			InsertTheme(Create("Frame", Wrapper, {
 				Size             = UDim2.new(1, -16, 0, 1),
-				Position         = UDim2.new(0, 8, 1, -54),
+				Position         = UDim2.new(0, 8, 1, -BOTTOM_H),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
 
-			-- ââ Status bar (18 px) âââââââââââââââââââââââââââââââââââââââââ
+			-- ââ Status bar (18px): connection dot + label | online count âââ
 			local StatusBar = Create("Frame", Wrapper, {
 				Size               = UDim2.new(1, 0, 0, 18),
-				Position           = UDim2.new(0, 0, 1, -54),
+				Position           = UDim2.new(0, 0, 1, -BOTTOM_H),
 				BackgroundTransparency = 1,
 				Name               = "StatusBar"
 			})
@@ -4853,11 +4876,11 @@ function redzlib:MakeWindow(Configs)
 				Position         = UDim2.new(0, 8, 0.5),
 				AnchorPoint      = Vector2.new(0, 0.5),
 				BackgroundColor3 = Color3.fromRGB(120, 120, 120),
-				Name             = "Dot"
 			})
 			Make("Corner", StatusDot, UDim.new(1, 0))
+
 			local StatusLabel = InsertTheme(Create("TextLabel", StatusBar, {
-				Size           = UDim2.new(1, -22, 1, 0),
+				Size           = UDim2.new(0.5, -20, 1, 0),
 				Position       = UDim2.fromOffset(20, 0),
 				BackgroundTransparency = 1,
 				Font           = Enum.Font.Gotham,
@@ -4868,13 +4891,27 @@ function redzlib:MakeWindow(Configs)
 				Text           = "Connecting..."
 			}), "DarkText")
 
-			-- ââ Input row (36 px) ââââââââââââââââââââââââââââââââââââââââââ
+			-- Online count label (right side of status bar)
+			OnlineLabel = InsertTheme(Create("TextLabel", StatusBar, {
+				Size           = UDim2.new(0.5, -8, 1, 0),
+				Position       = UDim2.new(0.5, 0, 0, 0),
+				BackgroundTransparency = 1,
+				Font           = Enum.Font.GothamBold,
+				TextSize       = 8,
+				TextColor3     = Theme["Color Theme"],
+				TextXAlignment = "Right",
+				Text           = "1 online"
+			}), "Theme")
+
+			-- ââ Input row (36px) âââââââââââââââââââââââââââââââââââââââââââ
 			local InputRow = Create("Frame", Wrapper, {
 				Size               = UDim2.new(1, 0, 0, 36),
 				Position           = UDim2.new(0, 0, 1, -36),
 				BackgroundTransparency = 1,
 				Name               = "InputRow"
 			})
+
+			-- Input box  (leaves room for send button on the right)
 			local InputHolder = InsertTheme(Create("Frame", InputRow, {
 				Size             = UDim2.new(1, -44, 1, -8),
 				Position         = UDim2.new(0, 8, 0.5),
@@ -4899,6 +4936,7 @@ function redzlib:MakeWindow(Configs)
 				Name              = "Input"
 			}), "Text")
 
+			-- Send button
 			local SendBtn = InsertTheme(Create("ImageButton", InputRow, {
 				Size             = UDim2.fromOffset(28, 28),
 				Position         = UDim2.new(1, -8, 0.5),
@@ -4931,10 +4969,12 @@ function redzlib:MakeWindow(Configs)
 				end)
 			end
 
-			local function AddMessage(sender, text, isSystem, timestamp)
+			-- avatarCache[userId] = rbxassetid or url string
+			local avatarCache = {}
+
+			local function AddMessage(displayName, text, isSystem, timestamp, userId, avatarId)
 				MsgCount = MsgCount + 1
 
-				-- Trim old messages when limit is set
 				if MaxMsg then
 					local list = {}
 					for _, c in ipairs(MsgArea:GetChildren()) do
@@ -4946,73 +4986,109 @@ function redzlib:MakeWindow(Configs)
 					end
 				end
 
-				local isSelf = (not isSystem) and (sender == PlayerName)
-
 				local Row = Create("Frame", MsgArea, {
-					Size               = UDim2.new(1, 0, 0, 0),
-					AutomaticSize      = Enum.AutomaticSize.Y,
+					Size           = UDim2.new(1, 0, 0, 0),
+					AutomaticSize  = Enum.AutomaticSize.Y,
 					BackgroundTransparency = 1,
-					Name               = "M" .. MsgCount,
-					LayoutOrder        = MsgCount
+					Name           = "M" .. MsgCount,
+					LayoutOrder    = MsgCount
 				})
 				Create("UIPadding", Row, {
-					PaddingLeft   = UDim.new(0, 4),
-					PaddingRight  = UDim.new(0, 4),
-					PaddingTop    = UDim.new(0, 3),
-					PaddingBottom = UDim.new(0, 3)
-				})
-				Create("UIListLayout", Row, {
-					Padding   = UDim.new(0, 2),
-					SortOrder = "LayoutOrder"
+					PaddingTop    = UDim.new(0, 2),
+					PaddingBottom = UDim.new(0, 2),
 				})
 
 				if isSystem then
-					-- ââ System message âââââââââââââââââââââââââââââââââââââ
+					-- System message: centered subtle text
 					Create("TextLabel", Row, {
-						Size               = UDim2.new(1, 0, 0, 0),
-						AutomaticSize      = Enum.AutomaticSize.Y,
+						Size           = UDim2.new(1, 0, 0, 14),
 						BackgroundTransparency = 1,
-						Font               = Enum.Font.GothamMedium,
-						TextSize           = 9,
-						TextColor3         = Theme["Color Dark Text"],
-						TextXAlignment     = "Center",
-						TextWrapped        = true,
-						Text               = "-- " .. text .. " --",
-						LayoutOrder        = 1
+						Font           = Enum.Font.Gotham,
+						TextSize       = 8,
+						TextColor3     = Theme["Color Dark Text"],
+						TextXAlignment = "Center",
+						Text           = text,
 					})
 				else
-					-- ââ Header row: coloured dot + name + timestamp ââââââââ
-					local HeaderRow = Create("Frame", Row, {
-						Size               = UDim2.new(1, 0, 0, 14),
+					-- ââ Full message row âââââââââââââââââââââââââââââââââââ
+					-- Layout: [avatar 32x32] [right block: header + text]
+					local MsgRow = Create("Frame", Row, {
+						Size           = UDim2.new(1, 0, 0, 0),
+						AutomaticSize  = Enum.AutomaticSize.Y,
 						BackgroundTransparency = 1,
-						LayoutOrder        = 1
 					})
 
-					-- Colour dot
-					local Dot = Create("Frame", HeaderRow, {
-						Size             = UDim2.fromOffset(8, 8),
-						Position         = UDim2.new(0, 0, 0.5),
-						AnchorPoint      = Vector2.new(0, 0.5),
-						BackgroundColor3 = GetNameColor(sender)
+					-- Avatar image (32x32, rounded)
+					local AvatarImg = Create("ImageLabel", MsgRow, {
+						Size             = UDim2.fromOffset(32, 32),
+						Position         = UDim2.new(0, 0, 0, 0),
+						BackgroundColor3 = Theme["Color Stroke"],
+						Image            = "",
+						Name             = "Avatar"
 					})
-					Make("Corner", Dot, UDim.new(1, 0))
+					Make("Corner", AvatarImg, UDim.new(0, 6))
 
-					-- Player name
+					-- Load avatar async
+					task.spawn(function()
+						-- Try cached first
+						if avatarId and avatarCache[avatarId] then
+							AvatarImg.Image = avatarCache[avatarId]
+							return
+						end
+						-- Try Players service for local players
+						if userId then
+							local ok, img = pcall(function()
+								return Players:GetUserThumbnailAsync(
+									tonumber(userId),
+									Enum.ThumbnailType.HeadShot,
+									Enum.ThumbnailSize.Size48x48
+								)
+							end)
+							if ok and img then
+								AvatarImg.Image = img
+								if avatarId then avatarCache[avatarId] = img end
+								return
+							end
+						end
+					end)
+
+					-- Right block (name + time header, then message text)
+					local RightBlock = Create("Frame", MsgRow, {
+						Size           = UDim2.new(1, -40, 0, 0),
+						AutomaticSize  = Enum.AutomaticSize.Y,
+						Position       = UDim2.fromOffset(40, 0),
+						BackgroundTransparency = 1,
+					})
+					Create("UIListLayout", RightBlock, {
+						Padding   = UDim.new(0, 2),
+						SortOrder = "LayoutOrder"
+					})
+
+					-- Header: display name + timestamp
+					local HeaderRow = Create("Frame", RightBlock, {
+						Size           = UDim2.new(1, 0, 0, 14),
+						BackgroundTransparency = 1,
+						LayoutOrder    = 1
+					})
+
+					local nameColor = GetNameColor(displayName or "x")
+
+					-- Display name
 					Create("TextLabel", HeaderRow, {
-						Size           = UDim2.new(1, -60, 1, 0),
-						Position       = UDim2.fromOffset(12, 0),
+						Size           = UDim2.new(1, -44, 1, 0),
+						Position       = UDim2.fromOffset(0, 0),
 						BackgroundTransparency = 1,
 						Font           = Enum.Font.GothamBold,
 						TextSize       = 10,
-						TextColor3     = GetNameColor(sender),
+						TextColor3     = nameColor,
 						TextXAlignment = "Left",
 						TextTruncate   = "AtEnd",
-						Text           = sender .. (isSelf and " (You)" or "")
+						Text           = displayName or "Unknown"
 					})
 
-					-- Timestamp  (right-aligned)
+					-- Timestamp (right-aligned)
 					Create("TextLabel", HeaderRow, {
-						Size           = UDim2.new(0, 50, 1, 0),
+						Size           = UDim2.fromOffset(40, 14),
 						Position       = UDim2.new(1, 0, 0, 0),
 						AnchorPoint    = Vector2.new(1, 0),
 						BackgroundTransparency = 1,
@@ -5023,28 +5099,25 @@ function redzlib:MakeWindow(Configs)
 						Text           = timestamp or GetTime()
 					})
 
-					-- ââ Message text âââââââââââââââââââââââââââââââââââââââ
-					Create("TextLabel", Row, {
-						Size               = UDim2.new(1, 0, 0, 0),
-						AutomaticSize      = Enum.AutomaticSize.Y,
+					-- Message text
+					Create("TextLabel", RightBlock, {
+						Size           = UDim2.new(1, 0, 0, 0),
+						AutomaticSize  = Enum.AutomaticSize.Y,
 						BackgroundTransparency = 1,
-						Font               = Enum.Font.Gotham,
-						TextSize           = 11,
-						TextColor3         = Theme["Color Text"],
-						TextXAlignment     = "Left",
-						TextWrapped        = true,
-						Text               = text,
-						LayoutOrder        = 2
+						Font           = Enum.Font.Gotham,
+						TextSize       = 11,
+						TextColor3     = Theme["Color Text"],
+						TextXAlignment = "Left",
+						TextWrapped    = true,
+						Text           = text,
+						LayoutOrder    = 2
 					})
 				end
 
 				ScrollToBottom()
 			end
 
-			-- ââ Networking âââââââââââââââââââââââââââââââââââââââââââââââââ
-			-- MessagingService only works server-side in published games.
-			-- In an exploit context we subscribe on the server via a RemoteEvent
-			-- if available, otherwise we show a clear English error.
+			-- ââ MessagingService âââââââââââââââââââââââââââââââââââââââââââ
 			local Connected  = false
 			local Subscription
 
@@ -5052,24 +5125,28 @@ function redzlib:MakeWindow(Configs)
 				local ok, err = pcall(function()
 					Subscription = MessagingService:SubscribeAsync(Topic, function(msg)
 						local ok2, data = pcall(HttpService.JSONDecode, HttpService, msg.Data)
-						if ok2 and type(data) == "table" and data.sender and data.text then
-							AddMessage(tostring(data.sender), tostring(data.text), false, tostring(data.time or ""))
+						if ok2 and type(data) == "table" and data.display and data.text then
+							MarkOnline(data.uid)
+							AddMessage(
+								tostring(data.display),
+								tostring(data.text),
+								false,
+								tostring(data.time or ""),
+								data.uid,
+								data.uid
+							)
 						end
 					end)
 				end)
 				if ok then
 					Connected = true
 					StatusDot.BackgroundColor3 = Color3.fromRGB(80, 215, 100)
-					StatusLabel.Text           = "Connected  |  topic: " .. Topic
-					AddMessage("", "Welcome to Global Chat!", true)
+					StatusLabel.Text           = "Connected"
 				else
 					Connected = false
 					StatusDot.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
-					-- Show a clean English error (strip Roblox URL noise)
-					local msg = tostring(err):match(":%d+: (.+)") or tostring(err)
-					StatusLabel.Text = "Error: " .. msg:sub(1, 55)
-					AddMessage("", "MessagingService is unavailable in this context.", true)
-					AddMessage("", "It only works in published games on the server.", true)
+					local errMsg = tostring(err):match(":%d+: (.+)") or tostring(err)
+					StatusLabel.Text = "Error: " .. errMsg:sub(1, 40)
 				end
 			end
 
@@ -5077,22 +5154,27 @@ function redzlib:MakeWindow(Configs)
 				txt = txt:match("^%s*(.-)%s*$")
 				if #txt == 0 or #txt > 200 then return end
 
+				local ts = GetTime()
+
 				if not Connected then
-					-- Show message locally only
-					AddMessage(PlayerName, txt, false, GetTime())
+					-- Local only (Studio / not published)
+					AddMessage(PlayerDisplay, txt, false, ts, tostring(PlayerUserId), tostring(PlayerUserId))
 					return
 				end
 
 				local payload = HttpService:JSONEncode({
-					sender = PlayerName,
-					text   = txt,
-					time   = GetTime()
+					display = PlayerDisplay,
+					name    = PlayerName,
+					uid     = tostring(PlayerUserId),
+					text    = txt,
+					time    = ts
 				})
 				local ok, err = pcall(function()
 					MessagingService:PublishAsync(Topic, payload)
 				end)
 				if not ok then
-					AddMessage("", "Send failed: " .. (tostring(err):match(":%d+: (.+)") or tostring(err)):sub(1,55), true)
+					local errMsg = tostring(err):match(":%d+: (.+)") or tostring(err)
+					AddMessage("", "Send failed: " .. errMsg:sub(1, 50), true)
 				end
 			end
 
@@ -5126,6 +5208,7 @@ function redzlib:MakeWindow(Configs)
 				MsgCount = 0
 			end
 			function ChatAPI:IsConnected() return Connected end
+			function ChatAPI:OnlineCount() return OnlineCount end
 			function ChatAPI:Destroy()
 				if Subscription then pcall(function() Subscription:Disconnect() end) end
 				Wrapper:Destroy()
