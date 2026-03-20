@@ -5156,8 +5156,8 @@ function redzlib:MakeWindow(Configs)
 
 						-- skip own messages we already showed locally
 						if uid==PlayerUserId then
-							-- already rendered locally on send
-						elseif msgType=="public" or msgType=="join" then
+							-- skip own messages (already shown locally)
+						elseif msgType=="public" then
 							MarkOnline(uid,display,name)
 							RefreshPlayerList()
 							BuildMessage(PubMsgArea,display,text,false,ts,uid)
@@ -5182,11 +5182,11 @@ function redzlib:MakeWindow(Configs)
 					StatusLabel.Text="No ServerUrl set"
 					return
 				end
-				-- send join ping
+				-- send silent ping to register presence (no visible message)
 				local ok,_=pcall(HttpPost,ServerUrl.."/send",{
-					topic=Topic,msgType="join",
+					topic=Topic,msgType="ping",
 					display=PlayerDisplay,name=PlayerName,uid=PlayerUserId,
-					text=PlayerDisplay.." joined the chat",time=GetTime()
+					text="",time=GetTime()
 				})
 				if ok then
 					Connected=true
