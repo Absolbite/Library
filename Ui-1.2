@@ -4758,35 +4758,30 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		-- ============================================================
-		--  Tab:AddGlobalChat()  â  Ð²ÑÑÑÐ¾ÐµÐ½Ð½ÑÐ¹ ÑÐ°Ñ Ð¿ÑÑÐ¼Ð¾ Ð² ÑÐ°Ð±
-		--  ÐÑÐ¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°Ð½Ð¸Ðµ:
-		--    local ChatTab = Window:MakeTab({"ð¬ Ð§Ð°Ñ", "message-circle"})
-		--    local chat = ChatTab:AddGlobalChat({
-		--        Topic      = "MyScript_Chat_v1",
-		--        MaxMessages = 60,
-		--    })
-		--    chat:SendSystem("ÐÐ¾Ð±ÑÐ¾ Ð¿Ð¾Ð¶Ð°Ð»Ð¾Ð²Ð°ÑÑ!")
+		--  Tab:AddGlobalChat()
+		--  Uses MessagingService (cross-server, requires published game)
+		--  Falls back to local-server chat via Players if unavailable.
 		-- ============================================================
 		function Tab:AddGlobalChat(Configs)
 			Configs = Configs or {}
-			local Topic   = Configs.Topic or Configs[1] or "redzlib_global_chat"
-			local MaxMsg  = Configs.MaxMessages  -- nil = unlimited
+			local Topic  = Configs.Topic or Configs[1] or "redzlib_global_chat"
+			local MaxMsg = Configs.MaxMessages  -- nil = unlimited
 
 			local MessagingService = game:GetService("MessagingService")
 			local PlayerName = Player.Name
 
-			-- Ð£Ð½Ð¸ÐºÐ°Ð»ÑÐ½ÑÐµ ÑÐ²ÐµÑÐ° Ð½Ð¸ÐºÐ¾Ð² Ð¿Ð¾ ÑÐµÑÑ Ð¸Ð¼ÐµÐ½Ð¸
+			-- Unique name colours derived from username hash
 			local NameColors = {
-				Color3.fromRGB(99, 155, 255),
-				Color3.fromRGB(60, 220, 130),
-				Color3.fromRGB(255, 140, 60),
-				Color3.fromRGB(255, 90, 155),
-				Color3.fromRGB(0, 195, 235),
-				Color3.fromRGB(255, 215, 60),
+				Color3.fromRGB(99,  155, 255),
+				Color3.fromRGB(60,  220, 130),
+				Color3.fromRGB(255, 140,  60),
+				Color3.fromRGB(255,  90, 155),
+				Color3.fromRGB(0,   195, 235),
+				Color3.fromRGB(255, 215,  60),
 				Color3.fromRGB(120, 255, 200),
 				Color3.fromRGB(210, 110, 255),
 				Color3.fromRGB(255, 100, 100),
-				Color3.fromRGB(80, 210, 170),
+				Color3.fromRGB(80,  210, 170),
 			}
 			local function GetNameColor(name)
 				local s = 0
@@ -4794,43 +4789,43 @@ function redzlib:MakeWindow(Configs)
 				return NameColors[(s % #NameColors) + 1]
 			end
 
-			-- ââ Ð£Ð±Ð¸ÑÐ°ÐµÐ¼ ÑÑÐ°Ð½Ð´Ð°ÑÑÐ½ÑÐµ Ð¿Ð°Ð´Ð´Ð¸Ð½Ð³Ð¸ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑÐ° ÑÐ°Ð±Ð° ââââââââââââââ
+			-- Timestamp helper  â  "14:05"
+			local function GetTime()
+				local t = os.time()
+				return string.format("%02d:%02d", math.floor(t / 3600) % 24, math.floor(t / 60) % 60)
+			end
+
+			-- ââ Strip tab padding so chat fills the container ââââââââââââââ
 			for _, ch in ipairs(Container:GetChildren()) do
-				if ch:IsA("UIPadding") or ch:IsA("UIListLayout") then
-					ch:Destroy()
-				end
+				if ch:IsA("UIPadding") or ch:IsA("UIListLayout") then ch:Destroy() end
 			end
 			Container.AutomaticCanvasSize = Enum.AutomaticSize.None
 			Container.CanvasSize          = UDim2.new()
 			Container.ScrollBarThickness  = 0
 
-			-- ââ Wrapper â Ð·Ð°Ð½Ð¸Ð¼Ð°ÐµÑ Ð²ÐµÑÑ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ âââââââââââââââââââââââââ
+			-- ââ Root wrapper âââââââââââââââââââââââââââââââââââââââââââââââ
 			local Wrapper = Create("Frame", Container, {
-				Size = UDim2.new(1, 0, 1, 0),
+				Size             = UDim2.new(1, 0, 1, 0),
 				BackgroundTransparency = 1,
 				ClipsDescendants = true,
-				Name = "ChatWrapper"
+				Name             = "ChatWrapper"
 			})
 
-			-- ââ ÐÐ±Ð»Ð°ÑÑÑ ÑÐ¾Ð¾Ð±ÑÐµÐ½Ð¸Ð¹ ââââââââââââââââââââââââââââââââââââââââââ
-			-- ÐÑÑÐ°Ð²Ð»ÑÐµÐ¼ Ð¼ÐµÑÑÐ¾ Ð¿Ð¾Ð´ Ð¸Ð½Ð¿ÑÑ (36px) + ÑÐ¾Ð½ÐºÐ°Ñ ÑÑÑÐ¾ÐºÐ° ÑÑÐ°ÑÑÑÐ° (18px)
+			-- ââ Message scroll area  (leaves 54 px at the bottom) âââââââââ
 			local MsgArea = InsertTheme(Create("ScrollingFrame", Wrapper, {
-				Size             = UDim2.new(1, 0, 1, -54),
-				Position         = UDim2.new(0, 0, 0, 0),
+				Size                   = UDim2.new(1, 0, 1, -54),
+				Position               = UDim2.new(0, 0, 0, 0),
 				BackgroundTransparency = 1,
-				ScrollBarThickness = 3,
+				ScrollBarThickness     = 3,
 				ScrollBarImageColor3   = Theme["Color Theme"],
 				ScrollBarImageTransparency = 0.5,
-				BorderSizePixel  = 0,
-				CanvasSize       = UDim2.new(),
-				AutomaticCanvasSize = "Y",
-				ScrollingDirection   = "Y",
-				Name = "MsgArea"
+				BorderSizePixel        = 0,
+				CanvasSize             = UDim2.new(),
+				AutomaticCanvasSize    = "Y",
+				ScrollingDirection     = "Y",
+				Name                   = "MsgArea"
 			}, {
-				Create("UIListLayout", {
-					Padding     = UDim.new(0, 1),
-					SortOrder   = "LayoutOrder"
-				}),
+				Create("UIListLayout", { Padding = UDim.new(0, 2), SortOrder = "LayoutOrder" }),
 				Create("UIPadding", {
 					PaddingLeft   = UDim.new(0, 8),
 					PaddingRight  = UDim.new(0, 10),
@@ -4839,85 +4834,81 @@ function redzlib:MakeWindow(Configs)
 				})
 			}), "ScrollBar")
 
-			-- ââ Ð Ð°Ð·Ð´ÐµÐ»Ð¸ÑÐµÐ»Ñ ââââââââââââââââââââââââââââââââââââââââââââââââ
+			-- ââ Divider ââââââââââââââââââââââââââââââââââââââââââââââââââââ
 			InsertTheme(Create("Frame", Wrapper, {
-				Size     = UDim2.new(1, -16, 0, 1),
-				Position = UDim2.new(0, 8, 1, -54),
+				Size             = UDim2.new(1, -16, 0, 1),
+				Position         = UDim2.new(0, 8, 1, -54),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
 
-			-- ââ Ð¡ÑÐ°ÑÑÑ-ÑÑÑÐ¾ÐºÐ° ââââââââââââââââââââââââââââââââââââââââââââââ
+			-- ââ Status bar (18 px) âââââââââââââââââââââââââââââââââââââââââ
 			local StatusBar = Create("Frame", Wrapper, {
-				Size     = UDim2.new(1, 0, 0, 18),
-				Position = UDim2.new(0, 0, 1, -54),
+				Size               = UDim2.new(1, 0, 0, 18),
+				Position           = UDim2.new(0, 0, 1, -54),
 				BackgroundTransparency = 1,
-				Name = "StatusBar"
+				Name               = "StatusBar"
 			})
-
 			local StatusDot = Create("Frame", StatusBar, {
-				Size        = UDim2.fromOffset(6, 6),
-				Position    = UDim2.new(0, 8, 0.5),
-				AnchorPoint = Vector2.new(0, 0.5),
+				Size             = UDim2.fromOffset(6, 6),
+				Position         = UDim2.new(0, 8, 0.5),
+				AnchorPoint      = Vector2.new(0, 0.5),
 				BackgroundColor3 = Color3.fromRGB(120, 120, 120),
-				Name = "Dot"
+				Name             = "Dot"
 			})
 			Make("Corner", StatusDot, UDim.new(1, 0))
-
 			local StatusLabel = InsertTheme(Create("TextLabel", StatusBar, {
-				Size     = UDim2.new(1, -22, 1, 0),
-				Position = UDim2.fromOffset(20, 0),
+				Size           = UDim2.new(1, -22, 1, 0),
+				Position       = UDim2.fromOffset(20, 0),
 				BackgroundTransparency = 1,
-				Font        = Enum.Font.Gotham,
-				TextSize    = 8,
-				TextColor3  = Theme["Color Dark Text"],
+				Font           = Enum.Font.Gotham,
+				TextSize       = 8,
+				TextColor3     = Theme["Color Dark Text"],
 				TextXAlignment = "Left",
 				TextTruncate   = "AtEnd",
-				Text = "ÐÐ¾Ð´ÐºÐ»ÑÑÐµÐ½Ð¸Ðµ..."
+				Text           = "Connecting..."
 			}), "DarkText")
 
-			-- ââ ÐÐ¾Ð»Ðµ Ð²Ð²Ð¾Ð´Ð° âââââââââââââââââââââââââââââââââââââââââââââââââ
+			-- ââ Input row (36 px) ââââââââââââââââââââââââââââââââââââââââââ
 			local InputRow = Create("Frame", Wrapper, {
-				Size     = UDim2.new(1, 0, 0, 36),
-				Position = UDim2.new(0, 0, 1, -36),
+				Size               = UDim2.new(1, 0, 0, 36),
+				Position           = UDim2.new(0, 0, 1, -36),
 				BackgroundTransparency = 1,
-				Name = "InputRow"
+				Name               = "InputRow"
 			})
-
 			local InputHolder = InsertTheme(Create("Frame", InputRow, {
-				Size     = UDim2.new(1, -44, 1, -8),
-				Position = UDim2.new(0, 8, 0.5),
-				AnchorPoint = Vector2.new(0, 0.5),
+				Size             = UDim2.new(1, -44, 1, -8),
+				Position         = UDim2.new(0, 8, 0.5),
+				AnchorPoint      = Vector2.new(0, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"],
-				Name = "InputHolder"
+				Name             = "InputHolder"
 			}), "Stroke")
 			Make("Corner", InputHolder, UDim.new(0, 8))
 
 			local ChatInput = InsertTheme(Create("TextBox", InputHolder, {
-				Size     = UDim2.new(1, -10, 1, 0),
-				Position = UDim2.fromOffset(8, 0),
+				Size              = UDim2.new(1, -10, 1, 0),
+				Position          = UDim2.fromOffset(8, 0),
 				BackgroundTransparency = 1,
-				Font        = Enum.Font.Gotham,
-				TextSize    = 11,
-				TextColor3  = Theme["Color Text"],
-				PlaceholderText   = "ÐÐ°Ð¿Ð¸ÑÐ°ÑÑ ÑÐ¾Ð¾Ð±ÑÐµÐ½Ð¸Ðµ...",
+				Font              = Enum.Font.Gotham,
+				TextSize          = 11,
+				TextColor3        = Theme["Color Text"],
+				PlaceholderText   = "Type a message...",
 				PlaceholderColor3 = Theme["Color Dark Text"],
-				Text = "",
-				ClearTextOnFocus = false,
-				TextXAlignment = "Left",
-				Name = "Input"
+				Text              = "",
+				ClearTextOnFocus  = false,
+				TextXAlignment    = "Left",
+				Name              = "Input"
 			}), "Text")
 
-			-- ÐÐ½Ð¾Ð¿ÐºÐ° Ð¾ÑÐ¿ÑÐ°Ð²ÐºÐ¸ (Ð¸ÐºÐ¾Ð½ÐºÐ° ÑÑÑÐµÐ»ÐºÐ¸)
 			local SendBtn = InsertTheme(Create("ImageButton", InputRow, {
-				Size        = UDim2.fromOffset(28, 28),
-				Position    = UDim2.new(1, -8, 0.5),
-				AnchorPoint = Vector2.new(1, 0.5),
-				Image        = "rbxassetid://10709768347",
-				ImageColor3  = Theme["Color Theme"],
+				Size             = UDim2.fromOffset(28, 28),
+				Position         = UDim2.new(1, -8, 0.5),
+				AnchorPoint      = Vector2.new(1, 0.5),
+				Image            = "rbxassetid://10709768347",
+				ImageColor3      = Theme["Color Theme"],
 				BackgroundColor3 = Theme["Color Hub 2"],
 				BackgroundTransparency = 0.2,
-				AutoButtonColor = false,
-				Name = "SendBtn"
+				AutoButtonColor  = false,
+				Name             = "SendBtn"
 			}), "Frame")
 			Make("Corner", SendBtn, UDim.new(0, 8))
 			Make("Stroke", SendBtn)
@@ -4931,7 +4922,7 @@ function redzlib:MakeWindow(Configs)
 				CreateTween({SendBtn, "BackgroundTransparency", 0.2, 0.15})
 			end)
 
-			-- ââ ÐÐ¾Ð±Ð°Ð²Ð»ÐµÐ½Ð¸Ðµ ÑÐ¾Ð¾Ð±ÑÐµÐ½Ð¸Ð¹ âââââââââââââââââââââââââââââââââââââââ
+			-- ââ AddMessage âââââââââââââââââââââââââââââââââââââââââââââââââ
 			local MsgCount = 0
 
 			local function ScrollToBottom()
@@ -4940,40 +4931,33 @@ function redzlib:MakeWindow(Configs)
 				end)
 			end
 
-			local function AddMessage(sender, text, isSystem)
+			local function AddMessage(sender, text, isSystem, timestamp)
 				MsgCount = MsgCount + 1
+
+				-- Trim old messages when limit is set
+				if MaxMsg then
+					local list = {}
+					for _, c in ipairs(MsgArea:GetChildren()) do
+						if c:IsA("Frame") then table.insert(list, c) end
+					end
+					if #list >= MaxMsg then
+						table.sort(list, function(a, b) return a.LayoutOrder < b.LayoutOrder end)
+						list[1]:Destroy()
+					end
+				end
+
 				local isSelf = (not isSystem) and (sender == PlayerName)
 
-				-- Ð£Ð±Ð¸ÑÐ°ÐµÐ¼ ÑÑÐ°ÑÑÐµ ÑÐ¾Ð¾Ð±ÑÐµÐ½Ð¸Ñ (ÑÐ¾Ð»ÑÐºÐ¾ ÐµÑÐ»Ð¸ Ð·Ð°Ð´Ð°Ð½ Ð»Ð¸Ð¼Ð¸Ñ)
-				if MaxMsg then
-					local msgList = {}
-					for _, c in ipairs(MsgArea:GetChildren()) do
-						if c:IsA("Frame") then table.insert(msgList, c) end
-					end
-					if #msgList >= MaxMsg then
-						table.sort(msgList, function(a,b) return a.LayoutOrder < b.LayoutOrder end)
-						msgList[1]:Destroy()
-					end
-				end
-
 				local Row = Create("Frame", MsgArea, {
-					Size = UDim2.new(1, 0, 0, 0),
-					AutomaticSize = Enum.AutomaticSize.Y,
+					Size               = UDim2.new(1, 0, 0, 0),
+					AutomaticSize      = Enum.AutomaticSize.Y,
 					BackgroundTransparency = 1,
-					Name = "M" .. MsgCount,
-					LayoutOrder = MsgCount
+					Name               = "M" .. MsgCount,
+					LayoutOrder        = MsgCount
 				})
-
-				-- Ð¤Ð¾Ð½ Ð´Ð»Ñ ÑÐ²Ð¾Ð¸Ñ ÑÐ¾Ð¾Ð±ÑÐµÐ½Ð¸Ð¹ (ÐºÐ°Ðº Ð¿ÑÐ·ÑÑÑ)
-				if isSelf then
-					Row.BackgroundTransparency = 0.85
-					Row.BackgroundColor3 = Theme["Color Theme"]
-					Make("Corner", Row, UDim.new(0, 6))
-				end
-
 				Create("UIPadding", Row, {
-					PaddingLeft   = UDim.new(0, isSelf and 8 or 0),
-					PaddingRight  = UDim.new(0, 6),
+					PaddingLeft   = UDim.new(0, 4),
+					PaddingRight  = UDim.new(0, 4),
 					PaddingTop    = UDim.new(0, 3),
 					PaddingBottom = UDim.new(0, 3)
 				})
@@ -4983,71 +4967,84 @@ function redzlib:MakeWindow(Configs)
 				})
 
 				if isSystem then
-					-- Ð¡Ð¸ÑÑÐµÐ¼Ð½Ð¾Ðµ ÑÐ¾Ð¾Ð±ÑÐµÐ½Ð¸Ðµ â Ð¾Ð´Ð½Ð° ÑÑÑÐ¾ÐºÐ° Ð¿Ð¾ ÑÐµÐ½ÑÑÑ
+					-- ââ System message âââââââââââââââââââââââââââââââââââââ
 					Create("TextLabel", Row, {
-						Size = UDim2.new(1, 0, 0, 0),
-						AutomaticSize = Enum.AutomaticSize.Y,
+						Size               = UDim2.new(1, 0, 0, 0),
+						AutomaticSize      = Enum.AutomaticSize.Y,
 						BackgroundTransparency = 1,
-						Font        = Enum.Font.GothamMedium,
-						TextSize    = 9,
-						TextColor3  = Theme["Color Dark Text"],
-						TextXAlignment = "Center",
-						TextWrapped    = true,
-						Text = "â " .. text .. " â",
-						RichText = true,
-						LayoutOrder = 1
+						Font               = Enum.Font.GothamMedium,
+						TextSize           = 9,
+						TextColor3         = Theme["Color Dark Text"],
+						TextXAlignment     = "Center",
+						TextWrapped        = true,
+						Text               = "-- " .. text .. " --",
+						LayoutOrder        = 1
 					})
 				else
-					-- Ð¡ÑÑÐ¾ÐºÐ° Ñ Ð°Ð²Ð°ÑÐ°ÑÐ¾Ð¼ + Ð¸Ð¼ÐµÐ½ÐµÐ¼
+					-- ââ Header row: coloured dot + name + timestamp ââââââââ
 					local HeaderRow = Create("Frame", Row, {
-						Size = UDim2.new(1, 0, 0, 16),
+						Size               = UDim2.new(1, 0, 0, 14),
 						BackgroundTransparency = 1,
-						LayoutOrder = 1
+						LayoutOrder        = 1
 					})
 
-					-- ÐÐ°Ð»ÐµÐ½ÑÐºÐ¸Ð¹ ÑÐ²ÐµÑÐ½Ð¾Ð¹ ÐºÑÑÐ¶Ð¾Ðº Ð²Ð¼ÐµÑÑÐ¾ Ð°Ð²Ð°ÑÐ°ÑÐ°
-					local AvatarDot = Create("Frame", HeaderRow, {
-						Size        = UDim2.fromOffset(10, 10),
-						Position    = UDim2.new(0, 0, 0.5),
-						AnchorPoint = Vector2.new(0, 0.5),
-						BackgroundColor3 = GetNameColor(sender),
-						Name = "Dot"
+					-- Colour dot
+					local Dot = Create("Frame", HeaderRow, {
+						Size             = UDim2.fromOffset(8, 8),
+						Position         = UDim2.new(0, 0, 0.5),
+						AnchorPoint      = Vector2.new(0, 0.5),
+						BackgroundColor3 = GetNameColor(sender)
 					})
-					Make("Corner", AvatarDot, UDim.new(1, 0))
+					Make("Corner", Dot, UDim.new(1, 0))
 
-					-- ÐÐ¼Ñ Ð¸Ð³ÑÐ¾ÐºÐ°
+					-- Player name
 					Create("TextLabel", HeaderRow, {
-						Size     = UDim2.new(1, -16, 1, 0),
-						Position = UDim2.fromOffset(14, 0),
+						Size           = UDim2.new(1, -60, 1, 0),
+						Position       = UDim2.fromOffset(12, 0),
 						BackgroundTransparency = 1,
-						Font        = Enum.Font.GothamBold,
-						TextSize    = 10,
-						TextColor3  = GetNameColor(sender),
+						Font           = Enum.Font.GothamBold,
+						TextSize       = 10,
+						TextColor3     = GetNameColor(sender),
 						TextXAlignment = "Left",
 						TextTruncate   = "AtEnd",
-						Text = sender .. (isSelf and " (ÐÑ)" or "")
+						Text           = sender .. (isSelf and " (You)" or "")
 					})
 
-					-- Ð¢ÐµÐºÑÑ ÑÐ¾Ð¾Ð±ÑÐµÐ½Ð¸Ñ
-					Create("TextLabel", Row, {
-						Size = UDim2.new(1, 0, 0, 0),
-						AutomaticSize = Enum.AutomaticSize.Y,
+					-- Timestamp  (right-aligned)
+					Create("TextLabel", HeaderRow, {
+						Size           = UDim2.new(0, 50, 1, 0),
+						Position       = UDim2.new(1, 0, 0, 0),
+						AnchorPoint    = Vector2.new(1, 0),
 						BackgroundTransparency = 1,
-						Font        = Enum.Font.Gotham,
-						TextSize    = 11,
-						TextColor3  = Theme["Color Text"],
-						TextXAlignment = "Left",
-						TextWrapped    = true,
-						RichText = true,
-						Text = text,
-						LayoutOrder = 2
+						Font           = Enum.Font.Gotham,
+						TextSize       = 8,
+						TextColor3     = Theme["Color Dark Text"],
+						TextXAlignment = "Right",
+						Text           = timestamp or GetTime()
+					})
+
+					-- ââ Message text âââââââââââââââââââââââââââââââââââââââ
+					Create("TextLabel", Row, {
+						Size               = UDim2.new(1, 0, 0, 0),
+						AutomaticSize      = Enum.AutomaticSize.Y,
+						BackgroundTransparency = 1,
+						Font               = Enum.Font.Gotham,
+						TextSize           = 11,
+						TextColor3         = Theme["Color Text"],
+						TextXAlignment     = "Left",
+						TextWrapped        = true,
+						Text               = text,
+						LayoutOrder        = 2
 					})
 				end
 
 				ScrollToBottom()
 			end
 
-			-- ââ MessagingService âââââââââââââââââââââââââââââââââââââââââââ
+			-- ââ Networking âââââââââââââââââââââââââââââââââââââââââââââââââ
+			-- MessagingService only works server-side in published games.
+			-- In an exploit context we subscribe on the server via a RemoteEvent
+			-- if available, otherwise we show a clear English error.
 			local Connected  = false
 			local Subscription
 
@@ -5056,35 +5053,46 @@ function redzlib:MakeWindow(Configs)
 					Subscription = MessagingService:SubscribeAsync(Topic, function(msg)
 						local ok2, data = pcall(HttpService.JSONDecode, HttpService, msg.Data)
 						if ok2 and type(data) == "table" and data.sender and data.text then
-							AddMessage(tostring(data.sender), tostring(data.text), false)
+							AddMessage(tostring(data.sender), tostring(data.text), false, tostring(data.time or ""))
 						end
 					end)
 				end)
 				if ok then
 					Connected = true
-					StatusDot.BackgroundColor3   = Color3.fromRGB(80, 215, 100)
-					StatusLabel.Text             = "ÐÐ¾Ð´ÐºÐ»ÑÑÑÐ½ Â· Topic: " .. Topic
-					AddMessage("", "ÐÐ¾Ð±ÑÐ¾ Ð¿Ð¾Ð¶Ð°Ð»Ð¾Ð²Ð°ÑÑ Ð² Ð³Ð»Ð¾Ð±Ð°Ð»ÑÐ½ÑÐ¹ ÑÐ°Ñ! ð", true)
+					StatusDot.BackgroundColor3 = Color3.fromRGB(80, 215, 100)
+					StatusLabel.Text           = "Connected  |  topic: " .. Topic
+					AddMessage("", "Welcome to Global Chat!", true)
 				else
 					Connected = false
 					StatusDot.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
-					StatusLabel.Text           = "ÐÑÐ¸Ð±ÐºÐ°: " .. tostring(err):sub(1, 60)
+					-- Show a clean English error (strip Roblox URL noise)
+					local msg = tostring(err):match(":%d+: (.+)") or tostring(err)
+					StatusLabel.Text = "Error: " .. msg:sub(1, 55)
+					AddMessage("", "MessagingService is unavailable in this context.", true)
+					AddMessage("", "It only works in published games on the server.", true)
 				end
 			end
 
 			local function DoSend(txt)
+				txt = txt:match("^%s*(.-)%s*$")
+				if #txt == 0 or #txt > 200 then return end
+
 				if not Connected then
-					AddMessage("", "ÐÐµÑ Ð¿Ð¾Ð´ÐºÐ»ÑÑÐµÐ½Ð¸Ñ Ðº MessagingService", true)
+					-- Show message locally only
+					AddMessage(PlayerName, txt, false, GetTime())
 					return
 				end
-				txt = txt:match("^%s*(.-)%s*$")  -- trim
-				if #txt == 0 or #txt > 200 then return end
-				local payload = HttpService:JSONEncode({ sender = PlayerName, text = txt })
+
+				local payload = HttpService:JSONEncode({
+					sender = PlayerName,
+					text   = txt,
+					time   = GetTime()
+				})
 				local ok, err = pcall(function()
 					MessagingService:PublishAsync(Topic, payload)
 				end)
 				if not ok then
-					AddMessage("", "ÐÑÐ¸Ð±ÐºÐ° Ð¾ÑÐ¿ÑÐ°Ð²ÐºÐ¸: " .. tostring(err):sub(1,60), true)
+					AddMessage("", "Send failed: " .. (tostring(err):match(":%d+: (.+)") or tostring(err)):sub(1,55), true)
 				end
 			end
 
@@ -5092,7 +5100,6 @@ function redzlib:MakeWindow(Configs)
 				local t = ChatInput.Text
 				if t:match("%S") then DoSend(t); ChatInput.Text = "" end
 			end)
-
 			ChatInput.FocusLost:Connect(function(enter)
 				if enter then
 					local t = ChatInput.Text
@@ -5102,14 +5109,14 @@ function redzlib:MakeWindow(Configs)
 
 			task.spawn(Connect)
 
-			-- ââ ÐÑÐ±Ð»Ð¸ÑÐ½Ð¾Ðµ API ââââââââââââââââââââââââââââââââââââââââââââââ
+			-- ââ Public API âââââââââââââââââââââââââââââââââââââââââââââââââ
 			local ChatAPI = {}
 			function ChatAPI:SendSystem(text) AddMessage("", text, true) end
 			function ChatAPI:Reconnect()
 				if Subscription then pcall(function() Subscription:Disconnect() end) end
 				Connected = false
 				StatusDot.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
-				StatusLabel.Text = "ÐÐµÑÐµÐ¿Ð¾Ð´ÐºÐ»ÑÑÐµÐ½Ð¸Ðµ..."
+				StatusLabel.Text = "Reconnecting..."
 				task.spawn(Connect)
 			end
 			function ChatAPI:Clear()
