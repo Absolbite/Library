@@ -4798,10 +4798,22 @@ function redzlib:MakeWindow(Configs)
 			local function MarkOnline(uid,display,name)
 				if not uid then return end
 				uid=tostring(uid)
+				local newDisplay = display or uid
+				local newName    = name or uid
 				if not OnlineUsers[uid] then
-					OnlineUsers[uid]={display=display or uid,name=name or uid}
+					OnlineUsers[uid]={display=newDisplay,name=newName}
 					OnlineCount=OnlineCount+1
 					if OnlineLabel then OnlineLabel.Text=OnlineCount.." online" end
+				elseif OnlineUsers[uid].display ~= newDisplay or OnlineUsers[uid].name ~= newName then
+					-- display/name Ð¸Ð·Ð¼ÐµÐ½Ð¸Ð»Ð¸ÑÑ (Ð½Ð°Ð¿ÑÐ¸Ð¼ÐµÑ Anonymous Mode)
+					OnlineUsers[uid].display = newDisplay
+					OnlineUsers[uid].name    = newName
+					-- Ð¾Ð±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ Ð»ÐµÐ¹Ð±Ð»Ñ Ð² ÐºÐ½Ð¾Ð¿ÐºÐµ ÑÐ¿Ð¸ÑÐºÐ° ÐµÑÐ»Ð¸ Ð¾Ð½Ð° ÑÐ¶Ðµ ÑÐ¾Ð·Ð´Ð°Ð½Ð°
+					if PlayerBtns and PlayerBtns[uid] then
+						local pb = PlayerBtns[uid]
+						if pb.displayLabel then pb.displayLabel.Text = newDisplay end
+						if pb.nameLabel    then pb.nameLabel.Text    = "@"..newName end
+					end
 				end
 			end
 			MarkOnline(PlayerUserId,PlayerDisplay,PlayerName)
@@ -5312,12 +5324,12 @@ function redzlib:MakeWindow(Configs)
 							AnchorPoint=Vector2.new(0,0.5),BackgroundColor3=Theme["Color Stroke"],Image=""
 						})
 						Make("Corner",Av,UDim.new(0,5)); LoadAvatar(Av,uid)
-						Create("TextLabel",Btn,{
+						local DisplayLabel=Create("TextLabel",Btn,{
 							Size=UDim2.new(1,-38,0,14),Position=UDim2.new(0,36,0,8),
 							BackgroundTransparency=1,Font=Enum.Font.GothamBold,TextSize=9,
 							TextColor3=Theme["Color Text"],TextXAlignment="Left",TextTruncate="AtEnd",Text=info.display
 						})
-						Create("TextLabel",Btn,{
+						local NameLabel=Create("TextLabel",Btn,{
 							Size=UDim2.new(1,-38,0,10),Position=UDim2.new(0,36,0,24),
 							BackgroundTransparency=1,Font=Enum.Font.Gotham,TextSize=8,
 							TextColor3=Theme["Color Dark Text"],TextXAlignment="Left",TextTruncate="AtEnd",Text="@"..info.name
@@ -5333,7 +5345,7 @@ function redzlib:MakeWindow(Configs)
 							TextColor3=Color3.fromRGB(255,255,255),Text="0",
 							TextXAlignment="Center",TextYAlignment="Center"
 						})
-						PlayerBtns[uid]={btn=Btn,unread=UnreadBadge,count=UnreadCount,unreadNum=0}
+						PlayerBtns[uid]={btn=Btn,unread=UnreadBadge,count=UnreadCount,unreadNum=0,displayLabel=DisplayLabel,nameLabel=NameLabel}
 						Btn.Activated:Connect(function()
 							ActiveDmUid=uid
 							if PlayerBtns[uid] then
@@ -5470,6 +5482,7 @@ function redzlib:MakeWindow(Configs)
 					StatusLabel.Text="No ServerUrl set"
 					return
 				end
+				-- ÃÂÃÂµÃÂÃÂ²ÃÂÃÂ¹ ping ÃÂÃÂÃÂ¾ÃÂ±ÃÂ ÃÂ·ÃÂ°ÃÂÃÂµÃÂ³ÃÂ¸ÃÂÃÂÃÂÃÂ¸ÃÂÃÂ¾ÃÂ²ÃÂ°ÃÂÃÂÃÂÃÂ (1 ÃÂ·ÃÂ°ÃÂ¿ÃÂÃÂ¾ÃÂ ÃÂ¿ÃÂÃÂ¸ ÃÂ²ÃÂÃÂ¾ÃÂ´ÃÂµ)
 				local ok,_=pcall(function()
 					HttpGet(ServerUrl.."/ping?topic="..HTTP:UrlEncode(Topic).."&uid="..PlayerUserId.."&display="..HTTP:UrlEncode(PlayerDisplay).."&name="..HTTP:UrlEncode(PlayerName))
 				end)
@@ -5481,6 +5494,11 @@ function redzlib:MakeWindow(Configs)
 					StatusDot.BackgroundColor3=Color3.fromRGB(220,60,60)
 					StatusLabel.Text="Server unreachable"
 				end
+				-- Adaptive polling:
+				-- ÃÂÃÂµÃÂ ÃÂ½ÃÂ¾ÃÂ²ÃÂÃÂ ÃÂÃÂ¾ÃÂ¾ÃÂ±ÃÂÃÂµÃÂ½ÃÂ¸ÃÂ¹ 3 ÃÂÃÂ¸ÃÂºÃÂ»ÃÂ° ÃÂ¿ÃÂ¾ÃÂ´ÃÂÃÂÃÂ´ Ã¢ÂÂ ÃÂ·ÃÂ°ÃÂ¼ÃÂµÃÂ´ÃÂ»ÃÂÃÂµÃÂ¼ÃÂÃÂ ÃÂ´ÃÂ¾ 8s
+				-- ÃÂÃÂÃÂÃÂ ÃÂ½ÃÂ¾ÃÂ²ÃÂÃÂµ Ã¢ÂÂ ÃÂ²ÃÂ¾ÃÂ·ÃÂ²ÃÂÃÂ°ÃÂÃÂ°ÃÂµÃÂ¼ÃÂÃÂ ÃÂº 4s
+				-- Heartbeat ÃÂ²ÃÂÃÂÃÂÃÂ¾ÃÂµÃÂ½ ÃÂ² /messages (lastSeen ÃÂ¾ÃÂ±ÃÂ½ÃÂ¾ÃÂ²ÃÂ»ÃÂÃÂµÃÂÃÂÃÂ ÃÂÃÂ°ÃÂ¼)
+				-- ÃÂÃÂÃÂ´ÃÂµÃÂ»ÃÂÃÂ½ÃÂÃÂ¹ heartbeat ÃÂÃÂ±ÃÂÃÂ°ÃÂ½ Ã¢ÂÂ ÃÂÃÂºÃÂ¾ÃÂ½ÃÂ¾ÃÂ¼ÃÂ¸ÃÂ ~4 ÃÂ·ÃÂ°ÃÂ¿ÃÂÃÂ¾ÃÂÃÂ¾ÃÂ² ÃÂ² ÃÂ¼ÃÂ¸ÃÂ½ÃÂÃÂÃÂ
 				task.spawn(function()
 					local idleCount = 0
 					while PollLoop do
@@ -5496,7 +5514,7 @@ function redzlib:MakeWindow(Configs)
 						else
 							idleCount = idleCount + 1
 							if idleCount >= 3 then
-								task.wait(8)
+								task.wait(8) -- ÃÂÃÂ¸ÃÂÃÂ¾ Ã¢ÂÂ ÃÂÃÂµÃÂ¶ÃÂµ ÃÂ¾ÃÂ¿ÃÂÃÂ°ÃÂÃÂ¸ÃÂ²ÃÂ°ÃÂµÃÂ¼
 							else
 								task.wait(4)
 							end
@@ -5505,6 +5523,7 @@ function redzlib:MakeWindow(Configs)
 				end)
 			end
 
+			-- Ã¢ÂÂÃ¢ÂÂ Profanity filter Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 			local MutedUntil   = 0
 			local LastSendTime = 0
 			local MUTE_DURATION   = 3600
@@ -5578,6 +5597,7 @@ function redzlib:MakeWindow(Configs)
 			local function MutePlayer()
 				MutedUntil = os.time() + MUTE_DURATION
 			end
+			-- Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
 			local function DoSend(txt)
 				txt=txt:match("^%s*(.-)%s*$")
@@ -5644,6 +5664,7 @@ function redzlib:MakeWindow(Configs)
 
 			task.spawn(Connect)
 
+			-- ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ Public API ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 			local ChatAPI={}
 			function ChatAPI:SendSystem(text) BuildMessage(PubMsgArea,"",text,true) end
 			function ChatAPI:Reconnect()
