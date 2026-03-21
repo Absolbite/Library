@@ -4841,7 +4841,7 @@ function redzlib:MakeWindow(Configs)
 				Size=UDim2.new(1,0,0,TAB_H),BackgroundTransparency=1,Name="TopTabBar"
 			})
 			-- TAB_W: ÐºÐ½Ð¾Ð¿ÐºÐ¸ Public Ð¸ Private Ð¿Ð¾ 1/3, ÑÐµÑÑÐµÑÑÐ½ÐºÐ° ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½Ð°Ñ
-			local TAB_GEAR_W = TAB_H - 4  -- ÐºÐ²Ð°Ð´ÑÐ°ÑÐ½Ð°Ñ ÐºÐ½Ð¾Ð¿ÐºÐ° ÑÐµÑÑÐµÑÑÐ½ÐºÐ¸
+			local TAB_GEAR_W = 28  -- ÑÐ¸ÑÐ¸Ð½Ð° ÐºÐ½Ð¾Ð¿ÐºÐ¸ ÑÐµÑÑÐµÑÑÐ½ÐºÐ¸
 			local function MakeTabBtn(text,xPos,xSz,isGear)
 				local Btn=InsertTheme(Create("TextButton",TopTabBar,{
 					Size=UDim2.new(0,xSz,1,-4),
@@ -4986,118 +4986,137 @@ function redzlib:MakeWindow(Configs)
 			})
 			do
 				local SP=SettingsPanel
-				Create("UIListLayout",SP,{Padding=UDim.new(0,8),SortOrder="LayoutOrder"})
-				Create("UIPadding",SP,{PaddingLeft=UDim.new(0,12),PaddingRight=UDim.new(0,12),PaddingTop=UDim.new(0,12)})
-				InsertTheme(Create("TextLabel",SP,{
-					Size=UDim2.new(1,0,0,18),BackgroundTransparency=1,
-					Font=Enum.Font.GothamBold,TextSize=12,
-					TextColor3=Theme["Color Text"],TextXAlignment="Left",
-					Text="Chat Settings",LayoutOrder=1
-				}),"Text")
-				InsertTheme(Create("Frame",SP,{
-					Size=UDim2.new(1,0,0,1),BackgroundColor3=Theme["Color Stroke"],LayoutOrder=2
-				}),"Stroke")
-
-				-- Anonymous Mode row
-				local AnonRow=Create("Frame",SP,{
-					Size=UDim2.new(1,0,0,36),BackgroundTransparency=1,LayoutOrder=3
+				Create("UIListLayout",SP,{Padding=UDim.new(0,4),SortOrder="LayoutOrder"})
+				Create("UIPadding",SP,{
+					PaddingLeft=UDim.new(0,8),PaddingRight=UDim.new(0,8),
+					PaddingTop=UDim.new(0,6),PaddingBottom=UDim.new(0,6)
 				})
-				InsertTheme(Create("TextLabel",AnonRow,{
-					Size=UDim2.new(1,-50,0,16),Position=UDim2.new(0,0,0,0),
-					BackgroundTransparency=1,Font=Enum.Font.GothamBold,TextSize=11,
-					TextColor3=Theme["Color Text"],TextXAlignment="Left",Text="Anonymous Mode"
+
+				-- Section header
+				local SecFrame=Create("Frame",SP,{
+					Size=UDim2.new(1,0,0,20),BackgroundTransparency=1,LayoutOrder=1,Name="Option"
+				})
+				InsertTheme(Create("TextLabel",SecFrame,{
+					Font=Enum.Font.GothamBold,Text="Chat Settings",
+					TextColor3=Theme["Color Text"],Size=UDim2.new(1,-25,1,0),
+					Position=UDim2.new(0,5),BackgroundTransparency=1,
+					TextTruncate="AtEnd",TextSize=14,TextXAlignment="Left"
 				}),"Text")
-				InsertTheme(Create("TextLabel",AnonRow,{
-					Size=UDim2.new(1,-50,0,14),Position=UDim2.new(0,0,0,18),
-					BackgroundTransparency=1,Font=Enum.Font.Gotham,TextSize=9,
-					TextColor3=Theme["Color Dark Text"],TextXAlignment="Left",
-					Text="Display name shown as 'Anonymous'"
-				}),"DarkText")
-				-- Toggle â same structure as AddToggle
-				local ToggleHolder=InsertTheme(Create("Frame",AnonRow,{
+
+				-- ââ Anonymous Mode toggle (using same structure as AddToggle) ââ
+				local AnonFlag = "ChatAnonymousMode"
+				local AnonDefault = CheckFlag(AnonFlag) and GetFlag(AnonFlag) or false
+				local AnonymousMode = AnonDefault
+				local OriginalDisplay = PlayerDisplay
+
+				-- ButtonFrame equivalent: Make("Button") + labels
+				local AnonBtn = Make("Button", SP, {
+					Size=UDim2.new(1,0,0,25),AutomaticSize="Y",LayoutOrder=2,Name="Option"
+				})
+				Make("Corner",AnonBtn,UDim.new(0,6))
+				local AnonLabelHolder=Create("Frame",AnonBtn,{
+					AutomaticSize="Y",BackgroundTransparency=1,
+					Size=UDim2.new(1,-38,0,0),Position=UDim2.new(0,10,0,0),
+					AnchorPoint=Vector2.new(0,0)
+				},{
+					Create("UIListLayout",{SortOrder="LayoutOrder",VerticalAlignment="Center",Padding=UDim.new(0,2)}),
+					Create("UIPadding",{PaddingBottom=UDim.new(0,5),PaddingTop=UDim.new(0,5)}),
+					InsertTheme(Create("TextLabel",{
+						Font=Enum.Font.GothamMedium,TextColor3=Theme["Color Text"],
+						Size=UDim2.new(1,-20,0,0),AutomaticSize="Y",
+						BackgroundTransparency=1,TextTruncate="AtEnd",
+						TextSize=10,TextXAlignment="Left",
+						Text="Anonymous Mode",RichText=true,LayoutOrder=1
+					}),"Text"),
+					InsertTheme(Create("TextLabel",{
+						Font=Enum.Font.Gotham,TextColor3=Theme["Color Dark Text"],
+						Size=UDim2.new(1,-20,0,0),AutomaticSize="Y",
+						BackgroundTransparency=1,TextWrapped=true,
+						TextSize=8,TextXAlignment="Left",
+						Text="Your display name will appear as Anonymous",RichText=true,LayoutOrder=2
+					}),"DarkText")
+				})
+				-- Toggle widget â exact copy of AddToggle structure
+				local AnonToggleHolder=InsertTheme(Create("Frame",AnonBtn,{
 					Size=UDim2.new(0,35,0,18),
 					Position=UDim2.new(1,-10,0.5),
 					AnchorPoint=Vector2.new(1,0.5),
 					BackgroundColor3=Theme["Color Stroke"]
 				}),"Stroke")
-				Make("Corner",ToggleHolder,UDim.new(0.5,0))
-				local AnonSlider=Create("Frame",ToggleHolder,{
+				Make("Corner",AnonToggleHolder,UDim.new(0.5,0))
+				local AnonSlider=Create("Frame",AnonToggleHolder,{
 					BackgroundTransparency=1,
 					Size=UDim2.new(0.8,0,0.8,0),
 					Position=UDim2.new(0.5,0,0.5,0),
 					AnchorPoint=Vector2.new(0.5,0.5)
 				})
-				local AnonToggleKnob=InsertTheme(Create("Frame",AnonSlider,{
+				local AnonKnob=InsertTheme(Create("Frame",AnonSlider,{
 					Size=UDim2.new(0,12,0,12),
 					Position=UDim2.new(0,0,0.5),
 					AnchorPoint=Vector2.new(0,0.5),
 					BackgroundColor3=Theme["Color Theme"]
 				}),"Theme")
-				Make("Corner",AnonToggleKnob,UDim.new(0.5,0))
-				local AnonToggleBtn=Create("TextButton",AnonRow,{
-					Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text="",ZIndex=5
-				})
-				local AnonymousMode=false
-				local OriginalDisplay=PlayerDisplay
-				local function SetAnonMode(on)
-					AnonymousMode=on
-					if on then
-						CreateTween({ToggleHolder,"BackgroundColor3",Theme["Color Theme"],0.25})
-						CreateTween({AnonToggleKnob,"Position",UDim2.new(1,0,0.5),0.25})
-						CreateTween({AnonToggleKnob,"AnchorPoint",Vector2.new(1,0.5),0.25})
-						CreateTween({AnonToggleKnob,"BackgroundTransparency",0,0.25})
+				Make("Corner",AnonKnob,UDim.new(0.5,0))
+
+				local function SetAnonMode(val)
+					AnonymousMode=val
+					SetFlag(AnonFlag,val)
+					if val then
+						CreateTween({AnonToggleHolder,"BackgroundColor3",Theme["Color Theme"],0.25})
+						CreateTween({AnonKnob,"Position",UDim2.new(1,0,0.5),0.25})
+						CreateTween({AnonKnob,"AnchorPoint",Vector2.new(1,0.5),0.25})
+						CreateTween({AnonKnob,"BackgroundTransparency",0,0.25})
 						PlayerDisplay="Anonymous"
 					else
-						CreateTween({ToggleHolder,"BackgroundColor3",Theme["Color Stroke"],0.25})
-						CreateTween({AnonToggleKnob,"Position",UDim2.new(0,0,0.5),0.25})
-						CreateTween({AnonToggleKnob,"AnchorPoint",Vector2.new(0,0.5),0.25})
-						CreateTween({AnonToggleKnob,"BackgroundTransparency",0.8,0.25})
+						CreateTween({AnonToggleHolder,"BackgroundColor3",Theme["Color Stroke"],0.25})
+						CreateTween({AnonKnob,"Position",UDim2.new(0,0,0.5),0.25})
+						CreateTween({AnonKnob,"AnchorPoint",Vector2.new(0,0.5),0.25})
+						CreateTween({AnonKnob,"BackgroundTransparency",0.8,0.25})
 						PlayerDisplay=OriginalDisplay
 					end
 				end
-				task.spawn(SetAnonMode,false)
-				AnonToggleBtn.Activated:Connect(function() SetAnonMode(not AnonymousMode) end)
+				task.spawn(SetAnonMode, AnonDefault)
+				AnonBtn.Activated:Connect(function() SetAnonMode(not AnonymousMode) end)
 
-				-- Divider
-				InsertTheme(Create("Frame",SP,{
-					Size=UDim2.new(1,0,0,1),BackgroundColor3=Theme["Color Stroke"],LayoutOrder=4
-				}),"Stroke")
-
-				-- Clear Public Chat row
-				local ClearRow=Create("Frame",SP,{
-					Size=UDim2.new(1,0,0,40),BackgroundTransparency=1,LayoutOrder=5
+				-- ââ Clear Public Chat button ââââââââââââââââââââââââââââââââââ
+				local ClearBtn = Make("Button", SP, {
+					Size=UDim2.new(1,0,0,25),AutomaticSize="Y",LayoutOrder=3,Name="Option"
 				})
-				InsertTheme(Create("TextLabel",ClearRow,{
-					Size=UDim2.new(1,-110,0,16),Position=UDim2.new(0,0,0,0),
-					BackgroundTransparency=1,Font=Enum.Font.GothamBold,TextSize=11,
-					TextColor3=Theme["Color Text"],TextXAlignment="Left",Text="Clear Public Chat"
-				}),"Text")
-				InsertTheme(Create("TextLabel",ClearRow,{
-					Size=UDim2.new(1,-110,0,14),Position=UDim2.new(0,0,0,18),
-					BackgroundTransparency=1,Font=Enum.Font.Gotham,TextSize=9,
-					TextColor3=Theme["Color Dark Text"],TextXAlignment="Left",
-					Text="Clears messages only for you"
-				}),"DarkText")
-				local ClearPubBtn=InsertTheme(Create("TextButton",ClearRow,{
-					Size=UDim2.fromOffset(100,26),Position=UDim2.new(1,0,0.5,0),
-					AnchorPoint=Vector2.new(1,0.5),BackgroundColor3=Color3.fromRGB(180,50,50),
-					Font=Enum.Font.GothamBold,TextSize=10,
-					TextColor3=Color3.fromRGB(255,255,255),Text="Clear Messages",AutoButtonColor=false
-				}),"Frame")
-				Make("Corner",ClearPubBtn,UDim.new(0,6))
-				ClearPubBtn.MouseEnter:Connect(function()
-					CreateTween({ClearPubBtn,"BackgroundColor3",Color3.fromRGB(220,60,60),0.15})
-				end)
-				ClearPubBtn.MouseLeave:Connect(function()
-					CreateTween({ClearPubBtn,"BackgroundColor3",Color3.fromRGB(180,50,50),0.15})
-				end)
-				ClearPubBtn.Activated:Connect(function()
+				Make("Corner",ClearBtn,UDim.new(0,6))
+				local ClearLabelHolder=Create("Frame",ClearBtn,{
+					AutomaticSize="Y",BackgroundTransparency=1,
+					Size=UDim2.new(1,-38,0,0),Position=UDim2.new(0,10,0,0),
+					AnchorPoint=Vector2.new(0,0)
+				},{
+					Create("UIListLayout",{SortOrder="LayoutOrder",VerticalAlignment="Center",Padding=UDim.new(0,2)}),
+					Create("UIPadding",{PaddingBottom=UDim.new(0,5),PaddingTop=UDim.new(0,5)}),
+					InsertTheme(Create("TextLabel",{
+						Font=Enum.Font.GothamMedium,TextColor3=Theme["Color Text"],
+						Size=UDim2.new(1,-20,0,0),AutomaticSize="Y",
+						BackgroundTransparency=1,TextTruncate="AtEnd",
+						TextSize=10,TextXAlignment="Left",
+						Text="Clear Public Chat",RichText=true,LayoutOrder=1
+					}),"Text"),
+					InsertTheme(Create("TextLabel",{
+						Font=Enum.Font.Gotham,TextColor3=Theme["Color Dark Text"],
+						Size=UDim2.new(1,-20,0,0),AutomaticSize="Y",
+						BackgroundTransparency=1,TextWrapped=true,
+						TextSize=8,TextXAlignment="Left",
+						Text="Clears messages only on your screen",RichText=true,LayoutOrder=2
+					}),"DarkText")
+				})
+				-- Arrow icon (same style as AddButton)
+				Create("ImageLabel",ClearBtn,{
+					Size=UDim2.new(0,14,0,14),Position=UDim2.new(1,-10,0.5),
+					AnchorPoint=Vector2.new(1,0.5),BackgroundTransparency=1,
+					Image="rbxassetid://10709791437"
+				})
+				ClearBtn.Activated:Connect(function()
 					for _,c in ipairs(PubMsgArea:GetChildren()) do
 						if c:IsA("Frame") then c:Destroy() end
 					end
 					MsgCount=0
-					ClearPubBtn.Text="Cleared!"
-					task.delay(2,function() if ClearPubBtn and ClearPubBtn.Parent then ClearPubBtn.Text="Clear Messages" end end)
+					BuildMessage(PubMsgArea,"","Chat cleared.",true)
 				end)
 			end
 
@@ -5191,23 +5210,26 @@ function redzlib:MakeWindow(Configs)
 			-- ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ Message builder ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 			local MsgCount=0
 			local function ScrollBottom(area)
-				-- ÐÐ°Ð´ÑÐ¶Ð½ÑÐ¹ ÑÐºÑÐ¾Ð»Ð»: Ð¶Ð´ÑÐ¼ ÑÐ»ÐµÐ´ÑÑÑÐµÐ³Ð¾ ÐºÐ°Ð´ÑÐ° ÐÐÐ¡ÐÐ Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ canvas
 				task.defer(function()
-					RunService.RenderStepped:Wait()
-					area.CanvasPosition=Vector2.new(0,math.huge)
+					area.CanvasPosition=Vector2.new(0,1e9)
 				end)
 			end
-			-- ÐÐ²ÑÐ¾ÑÐºÑÐ¾Ð»Ð» Ð¿ÑÐ¸ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ð¸ ÑÐ°Ð·Ð¼ÐµÑÐ° canvas (Ð½Ð¾Ð²ÑÐµ ÑÐ¾Ð¾Ð±ÑÐµÐ½Ð¸Ñ)
-			PubMsgArea:GetPropertyChangedSignal("AbsoluteCanvasSize"):Connect(function()
-				-- Ð¡ÐºÑÐ¾Ð»Ð»Ð¸Ð¼ ÑÐ¾Ð»ÑÐºÐ¾ ÐµÑÐ»Ð¸ Ð¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÐµÐ»Ñ ÑÐ¶Ðµ Ð²Ð½Ð¸Ð·Ñ (Ð¸Ð»Ð¸ Ð¿Ð¾ÑÑÐ¸)
-				local canvas=PubMsgArea.CanvasSize
-				local pos=PubMsgArea.CanvasPosition.Y
-				local viewH=PubMsgArea.AbsoluteSize.Y
-				local totalH=PubMsgArea.AbsoluteCanvasSize.Y
-				if totalH-pos-viewH < 60 then
-					PubMsgArea.CanvasPosition=Vector2.new(0,math.huge)
-				end
-			end)
+			-- ÐÐ²ÑÐ¾ÑÐºÑÐ¾Ð»Ð»: ÑÐ»ÑÑÐ°ÐµÐ¼ layout Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ ÐºÐ¾Ð½ÑÐµÐ½ÑÐ° Ð² PubMsgArea
+			local PubLayout
+			for _,ch in ipairs(PubMsgArea:GetChildren()) do
+				if ch:IsA("UIListLayout") then PubLayout=ch; break end
+			end
+			if PubLayout then
+				PubLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+					local pos   = PubMsgArea.CanvasPosition.Y
+					local viewH = PubMsgArea.AbsoluteSize.Y
+					local totalH = PubLayout.AbsoluteContentSize.Y
+					-- Ð¡ÐºÑÐ¾Ð»Ð»Ð¸Ð¼ ÐµÑÐ»Ð¸ Ð¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÐµÐ»Ñ Ð±Ð»Ð¸Ð·ÐºÐ¾ Ðº Ð½Ð¸Ð·Ñ (Ð¸Ð»Ð¸ Ð¿Ð°Ð½ÐµÐ»Ñ ÑÐ¾Ð»ÑÐºÐ¾ Ð¾ÑÐºÑÑÐ»Ð°ÑÑ)
+					if totalH - pos - viewH < 80 then
+						PubMsgArea.CanvasPosition = Vector2.new(0, 1e9)
+					end
+				end)
+			end
 
 			local function BuildMessage(area,displayName,text,isSystem,timestamp,uid)
 				MsgCount=MsgCount+1
