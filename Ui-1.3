@@ -4876,14 +4876,26 @@ function redzlib:MakeWindow(Configs)
 				TextColor3=Theme["Color Dark Text"],AutoButtonColor=false,Name="Private Chat"
 			}),"Frame")
 			Make("Corner",BtnPrivate,UDim.new(0,6))
-			local BtnGear    = InsertTheme(Create("TextButton",TopTabBar,{
+			local BtnGear = InsertTheme(Create("TextButton",TopTabBar,{
 				Size=UDim2.new(0,_gw,1,-4),
 				Position=UDim2.new(1,-(_gw+2),0,2),
 				BackgroundColor3=Theme["Color Hub 2"],
-				Font=Enum.Font.GothamBold,Text="â",TextSize=13,
+				Font=Enum.Font.GothamBold,Text="",TextSize=13,
 				TextColor3=Theme["Color Dark Text"],AutoButtonColor=false,Name="Gear"
 			}),"Frame")
 			Make("Corner",BtnGear,UDim.new(0,6))
+			-- Gear icon via ImageLabel (avoids UTF-8 encoding issues)
+			local GearIcon=Create("ImageLabel",BtnGear,{
+				Size=UDim2.fromOffset(12,12),
+				Position=UDim2.fromScale(0.5,0.5),
+				AnchorPoint=Vector2.new(0.5,0.5),
+				BackgroundTransparency=1,
+				Image="rbxassetid://3926305904",
+				ImageRectOffset=Vector2.new(324,284),
+				ImageRectSize=Vector2.new(44,44),
+				ImageColor3=Theme["Color Dark Text"]
+			})
+			-- Keep icon color in sync with active state
 			InsertTheme(Create("Frame",Wrapper,{
 				Size=UDim2.new(1,-16,0,1),Position=UDim2.new(0,8,0,TAB_H+1),
 				BackgroundColor3=Theme["Color Stroke"]
@@ -5001,33 +5013,49 @@ function redzlib:MakeWindow(Configs)
 					TextColor3=Theme["Color Dark Text"],TextXAlignment="Left",
 					Text="Display name shown as 'Anonymous'"
 				}),"DarkText")
-				local AnonToggleBg=InsertTheme(Create("Frame",AnonRow,{
-					Size=UDim2.fromOffset(38,20),Position=UDim2.new(1,-38,0.5),
-					AnchorPoint=Vector2.new(0,0.5),BackgroundColor3=Theme["Color Stroke"]
+				-- Toggle â same structure as AddToggle
+				local ToggleHolder=InsertTheme(Create("Frame",AnonRow,{
+					Size=UDim2.new(0,35,0,18),
+					Position=UDim2.new(1,-10,0.5),
+					AnchorPoint=Vector2.new(1,0.5),
+					BackgroundColor3=Theme["Color Stroke"]
 				}),"Stroke")
-				Make("Corner",AnonToggleBg,UDim.new(1,0))
-				local AnonToggleKnob=InsertTheme(Create("Frame",AnonToggleBg,{
-					Size=UDim2.fromOffset(16,16),Position=UDim2.new(0,2,0.5),
-					AnchorPoint=Vector2.new(0,0.5),BackgroundColor3=Theme["Color Dark Text"]
-				}),"DarkText")
-				Make("Corner",AnonToggleKnob,UDim.new(1,0))
-				local AnonToggleBtn=Create("TextButton",AnonToggleBg,{
-					Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text=""
+				Make("Corner",ToggleHolder,UDim.new(0.5,0))
+				local AnonSlider=Create("Frame",ToggleHolder,{
+					BackgroundTransparency=1,
+					Size=UDim2.new(0.8,0,0.8,0),
+					Position=UDim2.new(0.5,0,0.5,0),
+					AnchorPoint=Vector2.new(0.5,0.5)
+				})
+				local AnonToggleKnob=InsertTheme(Create("Frame",AnonSlider,{
+					Size=UDim2.new(0,12,0,12),
+					Position=UDim2.new(0,0,0.5),
+					AnchorPoint=Vector2.new(0,0.5),
+					BackgroundColor3=Theme["Color Theme"]
+				}),"Theme")
+				Make("Corner",AnonToggleKnob,UDim.new(0.5,0))
+				local AnonToggleBtn=Create("TextButton",AnonRow,{
+					Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text="",ZIndex=5
 				})
 				local AnonymousMode=false
 				local OriginalDisplay=PlayerDisplay
 				local function SetAnonMode(on)
 					AnonymousMode=on
 					if on then
-						CreateTween({AnonToggleBg,"BackgroundColor3",Theme["Color Theme"],0.2})
-						CreateTween({AnonToggleKnob,"Position",UDim2.new(1,-18,0.5,0),0.2})
+						CreateTween({ToggleHolder,"BackgroundColor3",Theme["Color Theme"],0.25})
+						CreateTween({AnonToggleKnob,"Position",UDim2.new(1,0,0.5),0.25})
+						CreateTween({AnonToggleKnob,"AnchorPoint",Vector2.new(1,0.5),0.25})
+						CreateTween({AnonToggleKnob,"BackgroundTransparency",0,0.25})
 						PlayerDisplay="Anonymous"
 					else
-						CreateTween({AnonToggleBg,"BackgroundColor3",Theme["Color Stroke"],0.2})
-						CreateTween({AnonToggleKnob,"Position",UDim2.new(0,2,0.5,0),0.2})
+						CreateTween({ToggleHolder,"BackgroundColor3",Theme["Color Stroke"],0.25})
+						CreateTween({AnonToggleKnob,"Position",UDim2.new(0,0,0.5),0.25})
+						CreateTween({AnonToggleKnob,"AnchorPoint",Vector2.new(0,0.5),0.25})
+						CreateTween({AnonToggleKnob,"BackgroundTransparency",0.8,0.25})
 						PlayerDisplay=OriginalDisplay
 					end
 				end
+				task.spawn(SetAnonMode,false)
 				AnonToggleBtn.Activated:Connect(function() SetAnonMode(not AnonymousMode) end)
 
 				-- Divider
@@ -5149,6 +5177,7 @@ function redzlib:MakeWindow(Configs)
 				BtnPublic.TextColor3  = isPub and Theme["Color Theme"] or Theme["Color Dark Text"]
 				BtnPrivate.TextColor3 = isPrv and Theme["Color Theme"] or Theme["Color Dark Text"]
 				BtnGear.TextColor3    = isSet and Theme["Color Theme"] or Theme["Color Dark Text"]
+				GearIcon.ImageColor3  = isSet and Theme["Color Theme"] or Theme["Color Dark Text"]
 				if not isSet then
 					ChatInput.PlaceholderText=isPub and "Type a message..."
 						or (ActiveDmUid and ("Message "..(OnlineUsers[ActiveDmUid] and OnlineUsers[ActiveDmUid].display or "...")) or "Select a player first")
