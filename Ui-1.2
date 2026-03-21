@@ -4881,14 +4881,34 @@ function redzlib:MakeWindow(Configs)
 				BackgroundTransparency=1,Visible=false,Name="PrivatePanel"
 			})
 			local LIST_W=90
+			-- Search bar Ð½Ð°Ð´ ÑÐ¿Ð¸ÑÐºÐ¾Ð¼ Ð¸Ð³ÑÐ¾ÐºÐ¾Ð²
+			local SearchHolder=InsertTheme(Create("Frame",PrivatePanel,{
+				Size=UDim2.new(0,LIST_W,0,22),Position=UDim2.new(0,0,0,2),
+				BackgroundColor3=Theme["Color Stroke"],Name="SearchHolder"
+			}),"Stroke")
+			Make("Corner",SearchHolder,UDim.new(0,6))
+			local SearchBox=InsertTheme(Create("TextBox",SearchHolder,{
+				Size=UDim2.new(1,-20,1,0),Position=UDim2.fromOffset(6,0),
+				BackgroundTransparency=1,Font=Enum.Font.Gotham,TextSize=9,
+				TextColor3=Theme["Color Text"],PlaceholderText="Search...",
+				PlaceholderColor3=Theme["Color Dark Text"],Text="",
+				ClearTextOnFocus=false,TextXAlignment="Left"
+			}),"Text")
+			Create("ImageLabel",SearchHolder,{
+				Size=UDim2.fromOffset(10,10),Position=UDim2.new(1,-14,0.5),
+				AnchorPoint=Vector2.new(0,0.5),BackgroundTransparency=1,
+				Image="rbxassetid://3926305904",ImageRectOffset=Vector2.new(964,324),
+				ImageRectSize=Vector2.new(36,36),ImageColor3=Theme["Color Dark Text"]
+			})
 			local PlayerListFrame=InsertTheme(Create("ScrollingFrame",PrivatePanel,{
-				Size=UDim2.new(0,LIST_W,1,0),BackgroundTransparency=1,
+				Size=UDim2.new(0,LIST_W,1,-26),Position=UDim2.fromOffset(0,26),
+				BackgroundTransparency=1,
 				ScrollBarThickness=2,ScrollBarImageColor3=Theme["Color Theme"],
 				ScrollBarImageTransparency=0.5,BorderSizePixel=0,
 				CanvasSize=UDim2.new(),AutomaticCanvasSize="Y",ScrollingDirection="Y",Name="PlayerList"
 			},{
 				Create("UIListLayout",{Padding=UDim.new(0,3),SortOrder="LayoutOrder"}),
-				Create("UIPadding",{PaddingLeft=UDim.new(0,4),PaddingRight=UDim.new(0,4),PaddingTop=UDim.new(0,6),PaddingBottom=UDim.new(0,4)})
+				Create("UIPadding",{PaddingLeft=UDim.new(0,4),PaddingRight=UDim.new(0,4),PaddingTop=UDim.new(0,4),PaddingBottom=UDim.new(0,4)})
 			}),"ScrollBar")
 			InsertTheme(Create("Frame",PrivatePanel,{
 				Size=UDim2.new(0,1,1,-8),Position=UDim2.new(0,LIST_W+2,0,4),
@@ -5128,24 +5148,64 @@ function redzlib:MakeWindow(Configs)
 			local lastId    = 0
 			local PollLoop  = true
 
-			local function UpdateOnlineFromList(onlineList)
-				if type(onlineList)~="table" then return end
-				local changed=false
-				for _,u in ipairs(onlineList) do
-					local uid=tostring(u.uid or "")
-					if uid~="" and not OnlineUsers[uid] then
-						OnlineUsers[uid]={display=u.display or uid,name=u.name or uid}
-						OnlineCount=OnlineCount+1
-						if OnlineLabel then OnlineLabel.Text=OnlineCount.." online" end
-						changed=true
+			local SearchQuery = ""
+			SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+				SearchQuery = SearchBox.Text
+				ApplySearch()
+			end)
+
+			local function ApplySearch()
+				local q = SearchQuery:lower()
+				for uid, entry in pairs(PlayerBtns) do
+					if entry.btn and entry.btn.Parent then
+						local info = OnlineUsers[uid]
+						local name = info and (info.display:lower()) or ""
+						entry.btn.Visible = (q == "" or name:find(q, 1, true) ~= nil)
 					end
 				end
+			end
+
+			local function UpdateOnlineFromList(onlineList)
+				if type(onlineList)~="table" then return end
+				local nowOnline = {}
+				for _,u in ipairs(onlineList) do
+					local uid = tostring(u.uid or "")
+					if uid ~= "" and uid ~= PlayerUserId then
+						nowOnline[uid] = {display=u.display or uid, name=u.name or uid}
+					end
+				end
+				local changed = false
+				for uid, info in pairs(nowOnline) do
+					if not OnlineUsers[uid] then
+						OnlineUsers[uid] = info
+						OnlineCount = OnlineCount + 1
+						changed = true
+					end
+				end
+				for uid in pairs(OnlineUsers) do
+					if uid ~= PlayerUserId and not nowOnline[uid] then
+						OnlineUsers[uid] = nil
+						OnlineCount = OnlineCount - 1
+						if PlayerBtns[uid] then
+							if PlayerBtns[uid].btn then PlayerBtns[uid].btn:Destroy() end
+							PlayerBtns[uid] = nil
+						end
+						if ActiveDmUid == uid then
+							ActiveDmUid = nil
+							DmHeader.Text = "Player went offline"
+						end
+						changed = true
+					end
+				end
+				if OnlineCount < 0 then OnlineCount = 0 end
+				if OnlineLabel then OnlineLabel.Text = OnlineCount .. " online" end
 				if changed then RefreshPlayerList() end
+				ApplySearch()
 			end
 
 			local function Poll()
 				if ServerUrl=="" then return end
-				local url=ServerUrl.."/messages?topic="..HTTP:UrlEncode(Topic).."&after="..lastId.."&uid="..PlayerUserId
+				local url=ServerUrl.."/messages?topic="..HTTP:UrlEncode(Topic).."&after="..lastId.."&uid="..PlayerUserId.."&display="..HTTP:UrlEncode(PlayerDisplay).."&name="..HTTP:UrlEncode(PlayerName)
 				local ok,res=pcall(HttpGet,url)
 				if not ok or not res or res.StatusCode~=200 then return end
 				local ok2,data=pcall(HTTP.JSONDecode,HTTP,res.Body)
@@ -5197,12 +5257,10 @@ function redzlib:MakeWindow(Configs)
 					StatusLabel.Text="No ServerUrl set"
 					return
 				end
-				-- send silent ping to register presence (no visible message)
-				local ok,_=pcall(HttpPost,ServerUrl.."/send",{
-					topic=Topic,msgType="ping",
-					display=PlayerDisplay,name=PlayerName,uid=PlayerUserId,
-					text="",time=GetTime()
-				})
+				-- ÐÐµÑÐ²ÑÐ¹ ping ÑÑÐ¾Ð±Ñ Ð·Ð°ÑÐµÐ³Ð¸ÑÑÑÐ¸ÑÐ¾Ð²Ð°ÑÑÑÑ (1 Ð·Ð°Ð¿ÑÐ¾Ñ Ð¿ÑÐ¸ Ð²ÑÐ¾Ð´Ðµ)
+				local ok,_=pcall(function()
+					HttpGet(ServerUrl.."/ping?topic="..HTTP:UrlEncode(Topic).."&uid="..PlayerUserId.."&display="..HTTP:UrlEncode(PlayerDisplay).."&name="..HTTP:UrlEncode(PlayerName))
+				end)
 				if ok then
 					Connected=true
 					StatusDot.BackgroundColor3=Color3.fromRGB(80,215,100)
@@ -5211,20 +5269,31 @@ function redzlib:MakeWindow(Configs)
 					StatusDot.BackgroundColor3=Color3.fromRGB(220,60,60)
 					StatusLabel.Text="Server unreachable"
 				end
-				-- polling loop every 1.5s
+				-- Adaptive polling:
+				-- ÐÐµÑ Ð½Ð¾Ð²ÑÑ ÑÐ¾Ð¾Ð±ÑÐµÐ½Ð¸Ð¹ 3 ÑÐ¸ÐºÐ»Ð° Ð¿Ð¾Ð´ÑÑÐ´ â Ð·Ð°Ð¼ÐµÐ´Ð»ÑÐµÐ¼ÑÑ Ð´Ð¾ 8s
+				-- ÐÑÑÑ Ð½Ð¾Ð²ÑÐµ â Ð²Ð¾Ð·Ð²ÑÐ°ÑÐ°ÐµÐ¼ÑÑ Ðº 4s
+				-- Heartbeat Ð²ÑÑÑÐ¾ÐµÐ½ Ð² /messages (lastSeen Ð¾Ð±Ð½Ð¾Ð²Ð»ÑÐµÑÑÑ ÑÐ°Ð¼)
+				-- ÐÑÐ´ÐµÐ»ÑÐ½ÑÐ¹ heartbeat ÑÐ±ÑÐ°Ð½ â ÑÐºÐ¾Ð½Ð¾Ð¼Ð¸Ñ ~4 Ð·Ð°Ð¿ÑÐ¾ÑÐ¾Ð² Ð² Ð¼Ð¸Ð½ÑÑÑ
 				task.spawn(function()
+					local idleCount = 0
 					while PollLoop do
-						pcall(Poll)
-						task.wait(1.5)
-					end
-				end)
-				-- heartbeat ping every 15s
-				task.spawn(function()
-					while PollLoop do
-						task.wait(15)
+						local hadNew = false
 						pcall(function()
-							HttpGet(ServerUrl.."/ping?topic="..HTTP:UrlEncode(Topic).."&uid="..PlayerUserId.."&display="..HTTP:UrlEncode(PlayerDisplay).."&name="..HTTP:UrlEncode(PlayerName))
+							local prevId = lastId
+							Poll()
+							if lastId > prevId then hadNew = true end
 						end)
+						if hadNew then
+							idleCount = 0
+							task.wait(4)
+						else
+							idleCount = idleCount + 1
+							if idleCount >= 3 then
+								task.wait(8) -- ÑÐ¸ÑÐ¾ â ÑÐµÐ¶Ðµ Ð¾Ð¿ÑÐ°ÑÐ¸Ð²Ð°ÐµÐ¼
+							else
+								task.wait(4)
+							end
+						end
 					end
 				end)
 			end
