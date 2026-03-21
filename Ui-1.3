@@ -4840,62 +4840,59 @@ function redzlib:MakeWindow(Configs)
 			local TopTabBar=Create("Frame",Wrapper,{
 				Size=UDim2.new(1,0,0,TAB_H),BackgroundTransparency=1,Name="TopTabBar"
 			})
-			-- TAB_W: ÐºÐ½Ð¾Ð¿ÐºÐ¸ Public Ð¸ Private Ð¿Ð¾ 1/3, ÑÐµÑÑÐµÑÑÐ½ÐºÐ° ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½Ð°Ñ
-			local TAB_GEAR_W = 28  -- ÑÐ¸ÑÐ¸Ð½Ð° ÐºÐ½Ð¾Ð¿ÐºÐ¸ ÑÐµÑÑÐµÑÑÐ½ÐºÐ¸
-			local function MakeTabBtn(text,xPos,xSz,isGear)
-				local Btn=InsertTheme(Create("TextButton",TopTabBar,{
-					Size=UDim2.new(0,xSz,1,-4),
-					Position=UDim2.new(0,xPos,0,2),
-					BackgroundColor3=Theme["Color Hub 2"],
-					Font=Enum.Font.GothamBold,Text=text,TextSize=isGear and 13 or 10,
-					TextColor3=Theme["Color Dark Text"],AutoButtonColor=false,Name=text
-				}),"Frame")
-				Make("Corner",Btn,UDim.new(0,6)); return Btn
-			end
-			-- Ð Ð°Ð²Ð½ÑÐ¹ ÑÐ°Ð·Ð¼ÐµÑ Public/Private, ÑÐµÑÑÐµÑÑÐ½ÐºÐ° ÑÐ¿ÑÐ°Ð²Ð°
-			local function CalcTabSizes()
-				-- ÐÑÐ´Ð°ÑÐ¼ Ð¿Ð¾Ð´ ÑÐµÑÑÐµÑÑÐ½ÐºÑ TAB_GEAR_W+4, Ð¾ÑÑÐ°Ð»ÑÐ½Ð¾Ðµ Ð´ÐµÐ»Ð¸Ð¼ Ð½Ð° 2
-				return TAB_GEAR_W
-			end
-			local _gw = CalcTabSizes()
-			-- ÐÐ¾Ð·Ð¸ÑÐ¸Ð¸: [Public][Private][â]
-			-- Public Ð¸ Private Ð·Ð°Ð½Ð¸Ð¼Ð°ÑÑ Ð¿Ð¾ Ð¿Ð¾Ð»Ð¾Ð²Ð¸Ð½Ðµ Ð¾ÑÑÐ°Ð²ÑÐµÐ³Ð¾ÑÑ Ð¼ÐµÑÑÐ°
-			local BtnPublic  = InsertTheme(Create("TextButton",TopTabBar,{
-				Size=UDim2.new(0.5,-(math.ceil(_gw/2)+3),1,-4),
-				Position=UDim2.new(0,2,0,2),
+			-- UIListLayout Ð¾Ð±ÐµÑÐ¿ÐµÑÐ¸Ð²Ð°ÐµÑ ÑÐ°Ð²Ð½ÑÐµ Ð¾ÑÑÑÑÐ¿Ñ Ð¼ÐµÐ¶Ð´Ñ Ð²ÑÐµÐ¼Ð¸ ÑÑÐµÐ¼Ñ ÐºÐ½Ð¾Ð¿ÐºÐ°Ð¼Ð¸
+			Create("UIListLayout",TopTabBar,{
+				FillDirection="Horizontal",
+				HorizontalAlignment="Left",
+				VerticalAlignment="Center",
+				Padding=UDim.new(0,3),
+				SortOrder="LayoutOrder"
+			})
+			Create("UIPadding",TopTabBar,{
+				PaddingLeft=UDim.new(0,2),PaddingRight=UDim.new(0,2),
+				PaddingTop=UDim.new(0,2),PaddingBottom=UDim.new(0,2)
+			})
+			-- Gear button ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½Ð°Ñ ÑÐ¸ÑÐ¸Ð½Ð° (ÐºÐ²Ð°Ð´ÑÐ°Ñ Ð¿Ð¾ Ð²ÑÑÐ¾ÑÐµ)
+			local GEAR_W = TAB_H - 4  -- ÐºÐ²Ð°Ð´ÑÐ°ÑÐ½Ð°Ñ ÐºÐ½Ð¾Ð¿ÐºÐ° = Ð²ÑÑÐ¾ÑÐ° ÑÐ°Ð±Ð±Ð°ÑÐ° Ð¼Ð¸Ð½ÑÑ Ð¿Ð°Ð´Ð´Ð¸Ð½Ð³Ð¸
+			-- Public Ð¸ Private Ð´ÐµÐ»ÑÑ Ð¾ÑÑÐ°Ð²ÑÐµÐµÑÑ Ð¼ÐµÑÑÐ¾ Ð¿Ð¾ÑÐ¾Ð²Ð½Ñ
+			-- ÐÐ±Ð° Ð¸Ð¼ÐµÑÑ Ð¾Ð´Ð¸Ð½Ð°ÐºÐ¾Ð²ÑÐ¹ UDim2.new(0.5, -(GEAR_W/2 + 4), 1, 0)
+			-- ÐÑÐ¿Ð¾Ð»ÑÐ·ÑÐµÐ¼ AbsoluteSize-Ð½ÐµÐ·Ð°Ð²Ð¸ÑÐ¸Ð¼ÑÐ¹ ÑÐ¿Ð¾ÑÐ¾Ð±: Size Ñ Ð¾Ð´Ð¸Ð½Ð°ÐºÐ¾Ð²ÑÐ¼ offset
+			local BTN_W_OFF = -(GEAR_W + 3*3 + 2*2) / 2  -- Ð²ÑÑÐ¸ÑÐ°ÐµÐ¼ gear + 3 gap + 2 padding, Ð´ÐµÐ»Ð¸Ð¼ Ð½Ð° 2
+			local BtnPublic = InsertTheme(Create("TextButton",TopTabBar,{
+				Size=UDim2.new(0.5, math.floor(BTN_W_OFF), 1, 0),
 				BackgroundColor3=Theme["Color Hub 2"],
-				Font=Enum.Font.GothamBold,Text="Public Chat",TextSize=10,
-				TextColor3=Theme["Color Dark Text"],AutoButtonColor=false,Name="Public Chat"
+				Font=Enum.Font.GothamBold, Text="Public Chat", TextSize=10,
+				TextColor3=Theme["Color Dark Text"], AutoButtonColor=false,
+				Name="Public Chat", LayoutOrder=1
 			}),"Frame")
 			Make("Corner",BtnPublic,UDim.new(0,6))
 			local BtnPrivate = InsertTheme(Create("TextButton",TopTabBar,{
-				Size=UDim2.new(0.5,-(math.ceil(_gw/2)+3),1,-4),
-				Position=UDim2.new(0.5,1,0,2),
+				Size=UDim2.new(0.5, math.floor(BTN_W_OFF), 1, 0),
 				BackgroundColor3=Theme["Color Hub 2"],
-				Font=Enum.Font.GothamBold,Text="Private Chat",TextSize=10,
-				TextColor3=Theme["Color Dark Text"],AutoButtonColor=false,Name="Private Chat"
+				Font=Enum.Font.GothamBold, Text="Private Chat", TextSize=10,
+				TextColor3=Theme["Color Dark Text"], AutoButtonColor=false,
+				Name="Private Chat", LayoutOrder=2
 			}),"Frame")
 			Make("Corner",BtnPrivate,UDim.new(0,6))
 			local BtnGear = InsertTheme(Create("TextButton",TopTabBar,{
-				Size=UDim2.new(0,_gw,1,-4),
-				Position=UDim2.new(1,-(_gw+2),0,2),
+				Size=UDim2.new(0, GEAR_W, 1, 0),
 				BackgroundColor3=Theme["Color Hub 2"],
-				Font=Enum.Font.GothamBold,Text="",TextSize=13,
-				TextColor3=Theme["Color Dark Text"],AutoButtonColor=false,Name="Gear"
+				Font=Enum.Font.GothamBold, Text="", TextSize=13,
+				TextColor3=Theme["Color Dark Text"], AutoButtonColor=false,
+				Name="Gear", LayoutOrder=3
 			}),"Frame")
 			Make("Corner",BtnGear,UDim.new(0,6))
-			-- Gear icon via ImageLabel (avoids UTF-8 encoding issues)
+			-- Gear icon: settings icon from Roblox UI spritesheet (3926305904)
 			local GearIcon=Create("ImageLabel",BtnGear,{
-				Size=UDim2.fromOffset(12,12),
+				Size=UDim2.fromOffset(13,13),
 				Position=UDim2.fromScale(0.5,0.5),
 				AnchorPoint=Vector2.new(0.5,0.5),
 				BackgroundTransparency=1,
 				Image="rbxassetid://3926305904",
-				ImageRectOffset=Vector2.new(324,284),
-				ImageRectSize=Vector2.new(44,44),
+				ImageRectOffset=Vector2.new(84,764),
+				ImageRectSize=Vector2.new(36,36),
 				ImageColor3=Theme["Color Dark Text"]
 			})
-			-- Keep icon color in sync with active state
 			InsertTheme(Create("Frame",Wrapper,{
 				Size=UDim2.new(1,-16,0,1),Position=UDim2.new(0,8,0,TAB_H+1),
 				BackgroundColor3=Theme["Color Stroke"]
@@ -5473,7 +5470,6 @@ function redzlib:MakeWindow(Configs)
 					StatusLabel.Text="No ServerUrl set"
 					return
 				end
-				-- ÃÂÃÂµÃÂÃÂ²ÃÂÃÂ¹ ping ÃÂÃÂÃÂ¾ÃÂ±ÃÂ ÃÂ·ÃÂ°ÃÂÃÂµÃÂ³ÃÂ¸ÃÂÃÂÃÂÃÂ¸ÃÂÃÂ¾ÃÂ²ÃÂ°ÃÂÃÂÃÂÃÂ (1 ÃÂ·ÃÂ°ÃÂ¿ÃÂÃÂ¾ÃÂ ÃÂ¿ÃÂÃÂ¸ ÃÂ²ÃÂÃÂ¾ÃÂ´ÃÂµ)
 				local ok,_=pcall(function()
 					HttpGet(ServerUrl.."/ping?topic="..HTTP:UrlEncode(Topic).."&uid="..PlayerUserId.."&display="..HTTP:UrlEncode(PlayerDisplay).."&name="..HTTP:UrlEncode(PlayerName))
 				end)
@@ -5485,11 +5481,6 @@ function redzlib:MakeWindow(Configs)
 					StatusDot.BackgroundColor3=Color3.fromRGB(220,60,60)
 					StatusLabel.Text="Server unreachable"
 				end
-				-- Adaptive polling:
-				-- ÃÂÃÂµÃÂ ÃÂ½ÃÂ¾ÃÂ²ÃÂÃÂ ÃÂÃÂ¾ÃÂ¾ÃÂ±ÃÂÃÂµÃÂ½ÃÂ¸ÃÂ¹ 3 ÃÂÃÂ¸ÃÂºÃÂ»ÃÂ° ÃÂ¿ÃÂ¾ÃÂ´ÃÂÃÂÃÂ´ Ã¢ÂÂ ÃÂ·ÃÂ°ÃÂ¼ÃÂµÃÂ´ÃÂ»ÃÂÃÂµÃÂ¼ÃÂÃÂ ÃÂ´ÃÂ¾ 8s
-				-- ÃÂÃÂÃÂÃÂ ÃÂ½ÃÂ¾ÃÂ²ÃÂÃÂµ Ã¢ÂÂ ÃÂ²ÃÂ¾ÃÂ·ÃÂ²ÃÂÃÂ°ÃÂÃÂ°ÃÂµÃÂ¼ÃÂÃÂ ÃÂº 4s
-				-- Heartbeat ÃÂ²ÃÂÃÂÃÂÃÂ¾ÃÂµÃÂ½ ÃÂ² /messages (lastSeen ÃÂ¾ÃÂ±ÃÂ½ÃÂ¾ÃÂ²ÃÂ»ÃÂÃÂµÃÂÃÂÃÂ ÃÂÃÂ°ÃÂ¼)
-				-- ÃÂÃÂÃÂ´ÃÂµÃÂ»ÃÂÃÂ½ÃÂÃÂ¹ heartbeat ÃÂÃÂ±ÃÂÃÂ°ÃÂ½ Ã¢ÂÂ ÃÂÃÂºÃÂ¾ÃÂ½ÃÂ¾ÃÂ¼ÃÂ¸ÃÂ ~4 ÃÂ·ÃÂ°ÃÂ¿ÃÂÃÂ¾ÃÂÃÂ¾ÃÂ² ÃÂ² ÃÂ¼ÃÂ¸ÃÂ½ÃÂÃÂÃÂ
 				task.spawn(function()
 					local idleCount = 0
 					while PollLoop do
@@ -5505,7 +5496,7 @@ function redzlib:MakeWindow(Configs)
 						else
 							idleCount = idleCount + 1
 							if idleCount >= 3 then
-								task.wait(8) -- ÃÂÃÂ¸ÃÂÃÂ¾ Ã¢ÂÂ ÃÂÃÂµÃÂ¶ÃÂµ ÃÂ¾ÃÂ¿ÃÂÃÂ°ÃÂÃÂ¸ÃÂ²ÃÂ°ÃÂµÃÂ¼
+								task.wait(8)
 							else
 								task.wait(4)
 							end
@@ -5514,7 +5505,6 @@ function redzlib:MakeWindow(Configs)
 				end)
 			end
 
-			-- Ã¢ÂÂÃ¢ÂÂ Profanity filter Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 			local MutedUntil   = 0
 			local LastSendTime = 0
 			local MUTE_DURATION   = 3600
@@ -5588,7 +5578,6 @@ function redzlib:MakeWindow(Configs)
 			local function MutePlayer()
 				MutedUntil = os.time() + MUTE_DURATION
 			end
-			-- Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
 			local function DoSend(txt)
 				txt=txt:match("^%s*(.-)%s*$")
@@ -5655,7 +5644,6 @@ function redzlib:MakeWindow(Configs)
 
 			task.spawn(Connect)
 
-			-- ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ Public API ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 			local ChatAPI={}
 			function ChatAPI:SendSystem(text) BuildMessage(PubMsgArea,"",text,true) end
 			function ChatAPI:Reconnect()
