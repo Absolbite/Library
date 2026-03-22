@@ -5017,6 +5017,10 @@ function redzlib:MakeWindow(Configs)
 				local AnonymousMode = AnonDefault
 				local OriginalDisplay = PlayerDisplay
 
+				local HideFlag = "ChatHideInPrivate"
+				local HideDefault = CheckFlag(HideFlag) and GetFlag(HideFlag) or false
+				local HideInPrivate = HideDefault
+
 				-- ButtonFrame equivalent: Make("Button") + labels
 				local AnonBtn = Make("Button", SP, {
 					Size=UDim2.new(1,0,0,25),AutomaticSize="Y",LayoutOrder=2,Name="Option"
@@ -5069,6 +5073,7 @@ function redzlib:MakeWindow(Configs)
 				local function SetAnonMode(val)
 					AnonymousMode=val
 					SetFlag(AnonFlag,val)
+					local newDisplay = val and "Anonymous" or OriginalDisplay
 					if val then
 						CreateTween({AnonToggleHolder,"BackgroundColor3",Theme["Color Theme"],0.25})
 						CreateTween({AnonKnob,"Position",UDim2.new(1,0,0.5),0.25})
@@ -5081,6 +5086,15 @@ function redzlib:MakeWindow(Configs)
 						CreateTween({AnonKnob,"AnchorPoint",Vector2.new(0,0.5),0.25})
 						CreateTween({AnonKnob,"BackgroundTransparency",0.8,0.25})
 						PlayerDisplay=OriginalDisplay
+					end
+					-- Update all already-sent own messages in real-time
+					for i=#myNameLabels,1,-1 do
+						local entry=myNameLabels[i]
+						if entry.label and entry.label.Parent then
+							entry.label.Text=newDisplay
+						else
+							table.remove(myNameLabels,i) -- cleanup destroyed rows
+						end
 					end
 				end
 				task.spawn(SetAnonMode, AnonDefault)
@@ -5126,6 +5140,72 @@ function redzlib:MakeWindow(Configs)
 					MsgCount=0
 					BuildMessage(PubMsgArea,"","Chat cleared.",true)
 				end)
+
+				-- ââ Do not display in Private Chat toggle ââââââââââââââââââââââââââââââ
+				local HideBtn = Make("Button", SP, {
+					Size=UDim2.new(1,0,0,25),AutomaticSize="Y",LayoutOrder=4,Name="Option"
+				})
+				Make("Corner",HideBtn,UDim.new(0,6))
+				local HideLabelHolder=Create("Frame",HideBtn,{
+					AutomaticSize="Y",BackgroundTransparency=1,
+					Size=UDim2.new(1,-38,0,0),Position=UDim2.new(0,10,0,0),
+					AnchorPoint=Vector2.new(0,0)
+				},{
+					Create("UIListLayout",{SortOrder="LayoutOrder",VerticalAlignment="Center",Padding=UDim.new(0,2)}),
+					Create("UIPadding",{PaddingBottom=UDim.new(0,5),PaddingTop=UDim.new(0,5)}),
+					InsertTheme(Create("TextLabel",{
+						Font=Enum.Font.GothamMedium,TextColor3=Theme["Color Text"],
+						Size=UDim2.new(1,-20,0,0),AutomaticSize="Y",
+						BackgroundTransparency=1,TextTruncate="AtEnd",
+						TextSize=10,TextXAlignment="Left",
+						Text="Do not display in Private Chat",RichText=true,LayoutOrder=1
+					}),"Text"),
+					InsertTheme(Create("TextLabel",{
+						Font=Enum.Font.Gotham,TextColor3=Theme["Color Dark Text"],
+						Size=UDim2.new(1,-20,0,0),AutomaticSize="Y",
+						BackgroundTransparency=1,TextWrapped=true,
+						TextSize=8,TextXAlignment="Left",
+						Text="You won't appear in other players' DM list",RichText=true,LayoutOrder=2
+					}),"DarkText")
+				})
+				local HideToggleHolder=InsertTheme(Create("Frame",HideBtn,{
+					Size=UDim2.new(0,35,0,18),
+					Position=UDim2.new(1,-10,0.5),
+					AnchorPoint=Vector2.new(1,0.5),
+					BackgroundColor3=Theme["Color Stroke"]
+				}),"Stroke")
+				Make("Corner",HideToggleHolder,UDim.new(0.5,0))
+				local HideSlider=Create("Frame",HideToggleHolder,{
+					BackgroundTransparency=1,
+					Size=UDim2.new(0.8,0,0.8,0),
+					Position=UDim2.new(0.5,0,0.5,0),
+					AnchorPoint=Vector2.new(0.5,0.5)
+				})
+				local HideKnob=InsertTheme(Create("Frame",HideSlider,{
+					Size=UDim2.new(0,12,0,12),
+					Position=UDim2.new(0,0,0.5),
+					AnchorPoint=Vector2.new(0,0.5),
+					BackgroundColor3=Theme["Color Theme"]
+				}),"Theme")
+				Make("Corner",HideKnob,UDim.new(0.5,0))
+
+				local function SetHideInPrivate(val)
+					HideInPrivate=val
+					SetFlag(HideFlag,val)
+					if val then
+						CreateTween({HideToggleHolder,"BackgroundColor3",Theme["Color Theme"],0.25})
+						CreateTween({HideKnob,"Position",UDim2.new(1,0,0.5),0.25})
+						CreateTween({HideKnob,"AnchorPoint",Vector2.new(1,0.5),0.25})
+						CreateTween({HideKnob,"BackgroundTransparency",0,0.25})
+					else
+						CreateTween({HideToggleHolder,"BackgroundColor3",Theme["Color Stroke"],0.25})
+						CreateTween({HideKnob,"Position",UDim2.new(0,0,0.5),0.25})
+						CreateTween({HideKnob,"AnchorPoint",Vector2.new(0,0.5),0.25})
+						CreateTween({HideKnob,"BackgroundTransparency",0.8,0.25})
+					end
+				end
+				task.spawn(SetHideInPrivate, HideDefault)
+				HideBtn.Activated:Connect(function() SetHideInPrivate(not HideInPrivate) end)
 			end
 
 			-- ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Status bar + Input row ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
@@ -5217,6 +5297,8 @@ function redzlib:MakeWindow(Configs)
 
 			-- ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Message builder ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
 			local MsgCount=0
+			local MAX_MESSAGES = 100
+			local myNameLabels = {} -- tracks TextLabel references for own messages (for real-time anon update)
 			local function ScrollBottom(area)
 				task.defer(function()
 					area.CanvasPosition=Vector2.new(0,1e9)
@@ -5239,19 +5321,20 @@ function redzlib:MakeWindow(Configs)
 				end)
 			end
 
-			local MAX_MESSAGES = 100
 			local function BuildMessage(area,displayName,text,isSystem,timestamp,uid)
 				MsgCount=MsgCount+1
-				-- ÐÐ¸Ð¼Ð¸Ñ 100 ÑÐ¾Ð¾Ð±ÑÐµÐ½Ð¸Ð¹ â ÑÐ´Ð°Ð»ÑÐµÐ¼ ÑÐ°Ð¼Ð¾Ðµ ÑÑÐ°ÑÐ¾Ðµ
-				local list={}
-				for _,c in ipairs(area:GetChildren()) do if c:IsA("Frame") then table.insert(list,c) end end
-				if #list>=MAX_MESSAGES then
-					table.sort(list,function(a,b)return a.LayoutOrder<b.LayoutOrder end)
-					list[1]:Destroy()
+				do
+					local list={}
+					for _,c in ipairs(area:GetChildren()) do if c:IsA("Frame") then table.insert(list,c) end end
+					local limit = MaxMsg or MAX_MESSAGES
+					if #list>=limit then
+						table.sort(list,function(a,b)return a.LayoutOrder<b.LayoutOrder end)
+						list[1]:Destroy()
+					end
 				end
 				local Row=Create("Frame",area,{
 					Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,
-					BackgroundTransparency=1,Name="M"..MsgCount,LayoutOrder=MsgCount,ClipsDescendants=false
+					BackgroundTransparency=1,Name="M"..MsgCount,LayoutOrder=MsgCount
 				})
 				Create("UIPadding",Row,{PaddingTop=UDim.new(0,2),PaddingBottom=UDim.new(0,2)})
 				if isSystem then
@@ -5273,146 +5356,38 @@ function redzlib:MakeWindow(Configs)
 					Position=UDim2.fromOffset(40,0),BackgroundTransparency=1
 				})
 				Create("UIListLayout",RightBlock,{Padding=UDim.new(0,2),SortOrder="LayoutOrder"})
-
-				-- HeaderRow: Ð³Ð¾ÑÐ¸Ð·Ð¾Ð½ÑÐ°Ð»ÑÐ½ÑÐ¹ UIListLayout â [Name] [Time], Ð²ÑÑ Ð½Ð° Ð¾Ð´Ð½Ð¾Ð¹ ÑÑÑÐ¾ÐºÐµ Ð²Ð¿Ð»Ð¾ÑÐ½ÑÑ
-				local HeaderRow=Create("Frame",RightBlock,{
-					Size=UDim2.new(1,0,0,16),BackgroundTransparency=1,LayoutOrder=1,
-					AutomaticSize=Enum.AutomaticSize.None,ClipsDescendants=true
-				})
-				Create("UIListLayout",HeaderRow,{
-					FillDirection=Enum.FillDirection.Horizontal,
-					VerticalAlignment=Enum.VerticalAlignment.Center,
-					HorizontalAlignment=Enum.HorizontalAlignment.Left,
-					Padding=UDim.new(0,5),SortOrder="LayoutOrder"
-				})
+				local HeaderRow=Create("Frame",RightBlock,{Size=UDim2.new(1,0,0,16),BackgroundTransparency=1,LayoutOrder=1})
 				local nc=GetNameColor(displayName or "x")
-				Create("TextLabel",HeaderRow,{
-					Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,
-					BackgroundTransparency=1,Font=Enum.Font.GothamBold,TextSize=10,
-					TextColor3=nc,TextXAlignment="Left",Text=displayName or "Unknown",LayoutOrder=1
+				local NameLabel=Create("TextLabel",HeaderRow,{
+					Size=UDim2.new(1,-54,1,0),BackgroundTransparency=1,
+					Font=Enum.Font.GothamBold,TextSize=10,TextColor3=nc,
+					TextXAlignment="Left",TextTruncate="AtEnd",Text=displayName or "Unknown"
 				})
+				-- Track own message name labels for real-time Anonymous Mode
+				if uid==PlayerUserId then
+					table.insert(myNameLabels,{label=NameLabel,row=Row})
+				end
 				Create("TextLabel",HeaderRow,{
-					Size=UDim2.new(0,38,1,0),
+					Size=UDim2.fromOffset(38,14),Position=UDim2.new(1,-38,0,0),
 					BackgroundTransparency=1,Font=Enum.Font.Gotham,TextSize=8,
-					TextColor3=Theme["Color Dark Text"],TextXAlignment="Left",
-					Text=timestamp or GetTime(),LayoutOrder=2
+					TextColor3=Theme["Color Dark Text"],TextXAlignment="Right",Text=timestamp or GetTime()
 				})
-
 				local MsgText=Create("TextLabel",RightBlock,{
 					Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,
 					BackgroundTransparency=1,Font=Enum.Font.Gotham,TextSize=11,
 					TextColor3=Theme["Color Text"],TextXAlignment="Left",TextWrapped=true,
 					Text=text,LayoutOrder=2
 				})
-
-				-- ÐÑÐ°Ð²Ð°Ñ Ð¿Ð°Ð½ÐµÐ»Ñ ÐºÐ½Ð¾Ð¿Ð¾Ðº: [Copy] [â¢â¢â¢] â Ð¾Ð±Ð° Ð½Ð° Ð¾Ð´Ð½Ð¾Ð¼ ÑÑÐ¾Ð²Ð½Ðµ (Y=2, Ð²ÑÑÐ¾ÑÐ° 14)
-				-- ÐÐ½Ð¾Ð¿ÐºÐ° "â¢â¢â¢" (ÑÑÐ¸ ÑÐ¾ÑÐºÐ¸ ASCII, Ð½Ðµ unicode ellipsis)
-				local DotBtn=InsertTheme(Create("TextButton",Row,{
-					Size=UDim2.fromOffset(20,14),Position=UDim2.new(1,-4,0,2),
-					AnchorPoint=Vector2.new(1,0),BackgroundColor3=Theme["Color Hub 2"],
-					Font=Enum.Font.GothamBold,TextSize=8,TextColor3=Theme["Color Dark Text"],
-					Text="...",AutoButtonColor=false,BackgroundTransparency=1,ZIndex=5
-				}),"Frame")
-				Make("Corner",DotBtn,UDim.new(0,4))
-
-				-- Copy button: Ð½Ð° ÑÐ¾Ð¼ Ð¶Ðµ ÑÑÐ¾Ð²Ð½Ðµ Y=2, Ð¿ÑÐ°Ð²ÐµÐµ â¢â¢â¢
+				-- Copy button
 				local CopyBtn=InsertTheme(Create("TextButton",Row,{
-					Size=UDim2.fromOffset(36,14),Position=UDim2.new(1,-28,0,2),
+					Size=UDim2.fromOffset(36,14),Position=UDim2.new(1,-4,0,2),
 					AnchorPoint=Vector2.new(1,0),BackgroundColor3=Theme["Color Hub 2"],
 					Font=Enum.Font.GothamBold,TextSize=7,TextColor3=Theme["Color Dark Text"],
 					Text="Copy",AutoButtonColor=false,BackgroundTransparency=1,ZIndex=5
 				}),"Frame")
 				Make("Corner",CopyBtn,UDim.new(0,4))
-
-				-- Dropdown menu frame (ÑÐºÑÑÑ Ð¿Ð¾ ÑÐ¼Ð¾Ð»ÑÐ°Ð½Ð¸Ñ)
-				local DropMenu=InsertTheme(Create("Frame",Row,{
-					Size=UDim2.fromOffset(130,0),AutomaticSize=Enum.AutomaticSize.Y,
-					Position=UDim2.new(1,-4,0,18),AnchorPoint=Vector2.new(1,0),
-					BackgroundColor3=Theme["Color Hub 2"],Visible=false,ZIndex=20,
-					ClipsDescendants=false
-				}),"Frame")
-				Make("Corner",DropMenu,UDim.new(0,6))
-				Make("Stroke",DropMenu)
-				Create("UIListLayout",DropMenu,{Padding=UDim.new(0,1),SortOrder="LayoutOrder"})
-				Create("UIPadding",DropMenu,{
-					PaddingLeft=UDim.new(0,4),PaddingRight=UDim.new(0,4),
-					PaddingTop=UDim.new(0,4),PaddingBottom=UDim.new(0,4)
-				})
-
-				local function MakeDropItem(label, order)
-					local Item=InsertTheme(Create("TextButton",DropMenu,{
-						Size=UDim2.new(1,0,0,22),BackgroundColor3=Theme["Color Hub 2"],
-						Font=Enum.Font.Gotham,TextSize=10,TextColor3=Theme["Color Text"],
-						Text=label,AutoButtonColor=false,TextXAlignment="Left",
-						BackgroundTransparency=0.5,ZIndex=21,LayoutOrder=order
-					}),"Frame")
-					Make("Corner",Item,UDim.new(0,4))
-					Create("UIPadding",Item,{PaddingLeft=UDim.new(0,6)})
-					Item.MouseEnter:Connect(function() CreateTween({Item,"BackgroundTransparency",0,0.1}) end)
-					Item.MouseLeave:Connect(function() CreateTween({Item,"BackgroundTransparency",0.5,0.1}) end)
-					return Item
-				end
-
-				local ClearItem = MakeDropItem("Clear Message", 1)
-				local DmItem    = MakeDropItem("Write in PrivateChat", 2)
-
-				local dropOpen = false
-				local function CloseDropdown()
-					dropOpen = false
-					DropMenu.Visible = false
-					CreateTween({DotBtn,"BackgroundTransparency",1,0.1})
-				end
-				DotBtn.Activated:Connect(function()
-					dropOpen = not dropOpen
-					DropMenu.Visible = dropOpen
-					CreateTween({DotBtn,"BackgroundTransparency",dropOpen and 0 or 1,0.1})
-				end)
-
-				-- Clear Message â ÑÐ´Ð°Ð»ÑÐµÑ ÑÐ¾Ð»ÑÐºÐ¾ ÑÑÐ¾Ñ Row Ñ ÑÐµÐ±Ñ Ð»Ð¾ÐºÐ°Ð»ÑÐ½Ð¾
-				ClearItem.Activated:Connect(function()
-					CloseDropdown()
-					Row:Destroy()
-				end)
-
-				-- Write in PrivateChat â Ð¿ÐµÑÐµÐºÐ»ÑÑÐ°ÐµÑ Ð½Ð° Private Ð¸ Ð¾ÑÐºÑÑÐ²Ð°ÐµÑ DM Ñ ÑÑÐ¸Ð¼ Ð¸Ð³ÑÐ¾ÐºÐ¾Ð¼
-				DmItem.Activated:Connect(function()
-					CloseDropdown()
-					if uid and uid ~= PlayerUserId then
-						-- Ð£Ð±ÐµÐ´Ð¸Ð¼ÑÑ ÑÑÐ¾ Ð¸Ð³ÑÐ¾Ðº ÐµÑÑÑ Ð² OnlineUsers
-						if not OnlineUsers[uid] then
-							OnlineUsers[uid] = {display=displayName or uid, name=displayName or uid}
-							OnlineCount = OnlineCount + 1
-							if OnlineLabel then OnlineLabel.Text = OnlineCount.." online" end
-							RefreshPlayerList()
-						end
-						ActiveDmUid = uid
-						local info = OnlineUsers[uid]
-						DmHeader.Text = "DM: "..(info and info.display or displayName or uid)
-						for _,c in ipairs(DmMsgArea:GetChildren()) do if c:IsA("Frame") then c:Destroy() end end
-						if DmHistory[uid] then
-							for _,m in ipairs(DmHistory[uid]) do
-								BuildMessage(DmMsgArea,m.display,m.text,false,m.ts,m.uid)
-							end
-						end
-						if PlayerBtns[uid] then
-							PlayerBtns[uid].unread.Visible = false
-							PlayerBtns[uid].unreadNum = 0
-							PlayerBtns[uid].count.Text = "0"
-						end
-						SetActiveTab("private")
-						ChatInput.PlaceholderText = "Message "..(info and info.display or displayName or uid)
-					end
-				end)
-
-				-- ÐÐ¾ÐºÐ°Ð·ÑÐ²Ð°ÐµÐ¼ ÐºÐ½Ð¾Ð¿ÐºÐ¸ Ð¿ÑÐ¸ Ð½Ð°Ð²ÐµÐ´ÐµÐ½Ð¸Ð¸
-				Row.MouseEnter:Connect(function()
-					CreateTween({CopyBtn,"BackgroundTransparency",0,0.1})
-					CreateTween({DotBtn,"BackgroundTransparency",dropOpen and 0 or 0.1,0.1})
-				end)
-				Row.MouseLeave:Connect(function()
-					CreateTween({CopyBtn,"BackgroundTransparency",1,0.1})
-					if not dropOpen then CreateTween({DotBtn,"BackgroundTransparency",1,0.1}) end
-				end)
+				Row.MouseEnter:Connect(function() CreateTween({CopyBtn,"BackgroundTransparency",0,0.1}) end)
+				Row.MouseLeave:Connect(function() CreateTween({CopyBtn,"BackgroundTransparency",1,0.1}) end)
 				CopyBtn.Activated:Connect(function()
 					pcall(setclipboard,text); CopyBtn.Text="Copied!"
 					task.delay(1.5,function() if CopyBtn and CopyBtn.Parent then CopyBtn.Text="Copy" end end)
@@ -5496,7 +5471,7 @@ function redzlib:MakeWindow(Configs)
 				end
 			end
 
-			local function UpdateOnlineFromList(onlineList)
+			local function UpdateOnlineFromList(onlineList, serverCount)
 				if type(onlineList)~="table" then return end
 				local nowOnline = {}
 				for _,u in ipairs(onlineList) do
@@ -5529,20 +5504,25 @@ function redzlib:MakeWindow(Configs)
 					end
 				end
 				if OnlineCount < 0 then OnlineCount = 0 end
-				if OnlineLabel then OnlineLabel.Text = OnlineCount .. " online" end
+				-- ÐÑÐ¿Ð¾Ð»ÑÐ·ÑÐµÐ¼ ÑÐµÑÐ²ÐµÑÐ½ÑÐ¹ ÑÑÑÑÑÐ¸Ðº (Ð²ÐºÐ»ÑÑÐ°ÐµÑ ÑÐºÑÑÑÑÑ Ð¸Ð³ÑÐ¾ÐºÐ¾Ð²) ÐµÑÐ»Ð¸ Ð¾Ð½ Ð¿ÑÐ¸ÑÑÐ»
+				if OnlineLabel then
+					local displayCount = (type(serverCount)=="number" and serverCount > 0) and serverCount or OnlineCount
+					OnlineLabel.Text = displayCount .. " online"
+				end
 				if changed then RefreshPlayerList() end
 				ApplySearch()
 			end
 
 			local function Poll()
 				if ServerUrl=="" then return end
-				local url=ServerUrl.."/messages?topic="..HTTP:UrlEncode(Topic).."&after="..lastId.."&uid="..PlayerUserId.."&display="..HTTP:UrlEncode(PlayerDisplay).."&name="..HTTP:UrlEncode(PlayerName)
+				local hiddenParam = HideInPrivate and "&hidden=1" or ""
+				local url=ServerUrl.."/messages?topic="..HTTP:UrlEncode(Topic).."&after="..lastId.."&uid="..PlayerUserId.."&display="..HTTP:UrlEncode(PlayerDisplay).."&name="..HTTP:UrlEncode(PlayerName)..hiddenParam
 				local ok,res=pcall(HttpGet,url)
 				if not ok or not res or res.StatusCode~=200 then return end
 				local ok2,data=pcall(HTTP.JSONDecode,HTTP,res.Body)
 				if not ok2 or type(data)~="table" then return end
 
-				UpdateOnlineFromList(data.onlineList)
+				UpdateOnlineFromList(data.onlineList, data.onlineCount)
 
 				if type(data.messages)=="table" then
 					for _,m in ipairs(data.messages) do
@@ -5560,9 +5540,11 @@ function redzlib:MakeWindow(Configs)
 							-- skip own messages (already shown locally)
 						elseif msgType=="public" then
 							MarkOnline(uid,display,name)
+							RefreshPlayerList()
 							BuildMessage(PubMsgArea,display,text,false,ts,uid)
 						elseif msgType=="private" and toUid==PlayerUserId then
 							MarkOnline(uid,display,name)
+							RefreshPlayerList()
 							if not DmHistory[uid] then DmHistory[uid]={} end
 							table.insert(DmHistory[uid],{display=display,text=text,ts=ts,uid=uid})
 							if ActiveTab=="private" and ActiveDmUid==uid then
@@ -5588,7 +5570,8 @@ function redzlib:MakeWindow(Configs)
 				end
 				-- ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂµÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ²ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¹ ping ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ±ÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂ·ÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂµÃÂÃÂÃÂÃÂ³ÃÂÃÂÃÂÃÂ¸ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¸ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ²ÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ (1 ÃÂÃÂÃÂÃÂ·ÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¸ ÃÂÃÂÃÂÃÂ²ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ´ÃÂÃÂÃÂÃÂµ)
 				local ok,_=pcall(function()
-					HttpGet(ServerUrl.."/ping?topic="..HTTP:UrlEncode(Topic).."&uid="..PlayerUserId.."&display="..HTTP:UrlEncode(PlayerDisplay).."&name="..HTTP:UrlEncode(PlayerName))
+					local hiddenParam = HideInPrivate and "&hidden=1" or ""
+					HttpGet(ServerUrl.."/ping?topic="..HTTP:UrlEncode(Topic).."&uid="..PlayerUserId.."&display="..HTTP:UrlEncode(PlayerDisplay).."&name="..HTTP:UrlEncode(PlayerName)..hiddenParam)
 				end)
 				if ok then
 					Connected=true
