@@ -5239,15 +5239,15 @@ function redzlib:MakeWindow(Configs)
 				end)
 			end
 
+			local MAX_MESSAGES = 100
 			local function BuildMessage(area,displayName,text,isSystem,timestamp,uid)
 				MsgCount=MsgCount+1
-				if MaxMsg then
-					local list={}
-					for _,c in ipairs(area:GetChildren()) do if c:IsA("Frame") then table.insert(list,c) end end
-					if #list>=MaxMsg then
-						table.sort(list,function(a,b)return a.LayoutOrder<b.LayoutOrder end)
-						list[1]:Destroy()
-					end
+				-- ÐÐ¸Ð¼Ð¸Ñ 100 ÑÐ¾Ð¾Ð±ÑÐµÐ½Ð¸Ð¹ â ÑÐ´Ð°Ð»ÑÐµÐ¼ ÑÐ°Ð¼Ð¾Ðµ ÑÑÐ°ÑÐ¾Ðµ
+				local list={}
+				for _,c in ipairs(area:GetChildren()) do if c:IsA("Frame") then table.insert(list,c) end end
+				if #list>=MAX_MESSAGES then
+					table.sort(list,function(a,b)return a.LayoutOrder<b.LayoutOrder end)
+					list[1]:Destroy()
 				end
 				local Row=Create("Frame",area,{
 					Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,
@@ -5274,29 +5274,29 @@ function redzlib:MakeWindow(Configs)
 				})
 				Create("UIListLayout",RightBlock,{Padding=UDim.new(0,2),SortOrder="LayoutOrder"})
 
-				-- Header: [Name] [Time]  (time sits right after name)
-				local HeaderRow=Create("Frame",RightBlock,{Size=UDim2.new(1,0,0,16),BackgroundTransparency=1,LayoutOrder=1})
+				-- HeaderRow: Ð³Ð¾ÑÐ¸Ð·Ð¾Ð½ÑÐ°Ð»ÑÐ½ÑÐ¹ UIListLayout â [Name] [Time], Ð²ÑÑ Ð½Ð° Ð¾Ð´Ð½Ð¾Ð¹ ÑÑÑÐ¾ÐºÐµ Ð²Ð¿Ð»Ð¾ÑÐ½ÑÑ
+				local HeaderRow=Create("Frame",RightBlock,{
+					Size=UDim2.new(1,0,0,16),BackgroundTransparency=1,LayoutOrder=1,
+					AutomaticSize=Enum.AutomaticSize.None,ClipsDescendants=true
+				})
+				Create("UIListLayout",HeaderRow,{
+					FillDirection=Enum.FillDirection.Horizontal,
+					VerticalAlignment=Enum.VerticalAlignment.Center,
+					HorizontalAlignment=Enum.HorizontalAlignment.Left,
+					Padding=UDim.new(0,5),SortOrder="LayoutOrder"
+				})
 				local nc=GetNameColor(displayName or "x")
-				local NameLabel=Create("TextLabel",HeaderRow,{
+				Create("TextLabel",HeaderRow,{
 					Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,
 					BackgroundTransparency=1,Font=Enum.Font.GothamBold,TextSize=10,
-					TextColor3=nc,TextXAlignment="Left",Text=displayName or "Unknown",
-					Name="NameLabel"
+					TextColor3=nc,TextXAlignment="Left",Text=displayName or "Unknown",LayoutOrder=1
 				})
-				local TimeLabel=Create("TextLabel",HeaderRow,{
+				Create("TextLabel",HeaderRow,{
 					Size=UDim2.new(0,38,1,0),
-					Position=UDim2.new(0,0,0,0), -- Ð±ÑÐ´ÐµÑ Ð²ÑÑÐ¾Ð²Ð½ÐµÐ½ Ð´Ð¸Ð½Ð°Ð¼Ð¸ÑÐµÑÐºÐ¸
 					BackgroundTransparency=1,Font=Enum.Font.Gotham,TextSize=8,
 					TextColor3=Theme["Color Dark Text"],TextXAlignment="Left",
-					Text=timestamp or GetTime(), Name="TimeLabel"
+					Text=timestamp or GetTime(),LayoutOrder=2
 				})
-				-- ÐÐ¾Ð·Ð¸ÑÐ¸Ð¾Ð½Ð¸ÑÑÐµÐ¼ TimeLabel Ð¿ÑÐ°Ð²ÐµÐµ Ð¸Ð¼ÐµÐ½Ð¸ ÑÐµÑÐµÐ· ÑÐ¸Ð³Ð½Ð°Ð» Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ
-				local function UpdateTimePos()
-					local nameW = NameLabel.TextBounds.X
-					TimeLabel.Position = UDim2.fromOffset(nameW + 6, 0)
-				end
-				NameLabel:GetPropertyChangedSignal("TextBounds"):Connect(UpdateTimePos)
-				task.defer(UpdateTimePos)
 
 				local MsgText=Create("TextLabel",RightBlock,{
 					Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,
@@ -5305,23 +5305,24 @@ function redzlib:MakeWindow(Configs)
 					Text=text,LayoutOrder=2
 				})
 
-				-- Copy button (ÑÑÑÑ Ð´Ð°Ð»ÑÑÐµ Ð¾Ñ Ð²ÑÐµÐ¼ÐµÐ½Ð¸ â Ð¿ÑÐ¸Ð¶Ð°Ñ Ðº Ð¿ÑÐ°Ð²Ð¾Ð¼Ñ ÐºÑÐ°Ñ Ñ Ð¾ÑÑÑÑÐ¿Ð¾Ð¼ 48)
+				-- ÐÑÐ°Ð²Ð°Ñ Ð¿Ð°Ð½ÐµÐ»Ñ ÐºÐ½Ð¾Ð¿Ð¾Ðº: [Copy] [â¢â¢â¢] â Ð¾Ð±Ð° Ð½Ð° Ð¾Ð´Ð½Ð¾Ð¼ ÑÑÐ¾Ð²Ð½Ðµ (Y=2, Ð²ÑÑÐ¾ÑÐ° 14)
+				-- ÐÐ½Ð¾Ð¿ÐºÐ° "â¢â¢â¢" (ÑÑÐ¸ ÑÐ¾ÑÐºÐ¸ ASCII, Ð½Ðµ unicode ellipsis)
+				local DotBtn=InsertTheme(Create("TextButton",Row,{
+					Size=UDim2.fromOffset(20,14),Position=UDim2.new(1,-4,0,2),
+					AnchorPoint=Vector2.new(1,0),BackgroundColor3=Theme["Color Hub 2"],
+					Font=Enum.Font.GothamBold,TextSize=8,TextColor3=Theme["Color Dark Text"],
+					Text="...",AutoButtonColor=false,BackgroundTransparency=1,ZIndex=5
+				}),"Frame")
+				Make("Corner",DotBtn,UDim.new(0,4))
+
+				-- Copy button: Ð½Ð° ÑÐ¾Ð¼ Ð¶Ðµ ÑÑÐ¾Ð²Ð½Ðµ Y=2, Ð¿ÑÐ°Ð²ÐµÐµ â¢â¢â¢
 				local CopyBtn=InsertTheme(Create("TextButton",Row,{
-					Size=UDim2.fromOffset(36,14),Position=UDim2.new(1,-48,0,2),
+					Size=UDim2.fromOffset(36,14),Position=UDim2.new(1,-28,0,2),
 					AnchorPoint=Vector2.new(1,0),BackgroundColor3=Theme["Color Hub 2"],
 					Font=Enum.Font.GothamBold,TextSize=7,TextColor3=Theme["Color Dark Text"],
 					Text="Copy",AutoButtonColor=false,BackgroundTransparency=1,ZIndex=5
 				}),"Frame")
 				Make("Corner",CopyBtn,UDim.new(0,4))
-
-				-- Â«â¦Â» dropdown button
-				local DotBtn=InsertTheme(Create("TextButton",Row,{
-					Size=UDim2.fromOffset(18,14),Position=UDim2.new(1,-4,0,2),
-					AnchorPoint=Vector2.new(1,0),BackgroundColor3=Theme["Color Hub 2"],
-					Font=Enum.Font.GothamBold,TextSize=9,TextColor3=Theme["Color Dark Text"],
-					Text="â¦",AutoButtonColor=false,BackgroundTransparency=1,ZIndex=5
-				}),"Frame")
-				Make("Corner",DotBtn,UDim.new(0,4))
 
 				-- Dropdown menu frame (ÑÐºÑÑÑ Ð¿Ð¾ ÑÐ¼Ð¾Ð»ÑÐ°Ð½Ð¸Ñ)
 				local DropMenu=InsertTheme(Create("Frame",Row,{
