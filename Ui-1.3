@@ -4759,547 +4759,530 @@ function redzlib:MakeWindow(Configs)
 
 		-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 		--  Tab:AddGlobalChat(Configs)
-		--  Configs:
 		--    Topic       = "PlaceName_GlobalChat_v1"
 		--    ServerUrl   = "https://..."
-		--    PublicChat  = true   (Ð¿Ð¾ÐºÐ°Ð·ÑÐ²Ð°ÑÑ Ð²ÐºÐ»Ð°Ð´ÐºÑ Public Chat)
-		--    PrivateChat = false  (Ð¿Ð¾ÐºÐ°Ð·ÑÐ²Ð°ÑÑ Ð²ÐºÐ»Ð°Ð´ÐºÑ Private Chat)
-		--
-		--  Flags (writefile):
-		--    gc_anon_nick   "1" / "0"
-		--    gc_anon_avatar "1" / "0"
+		--    PublicChat  = true
+		--    PrivateChat = false
+		--  Flags (writefile): gc_anon_nick, gc_anon_avatar
 		-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 		function Tab:AddGlobalChat(Configs)
 			local Topic       = Configs.Topic     or "GlobalChat_v1"
 			local ServerUrl   = Configs.ServerUrl or ""
-			local showPublic  = Configs.PublicChat  ~= false  -- default true
-			local showPrivate = Configs.PrivateChat == true   -- default false
+			local showPublic  = Configs.PublicChat  ~= false
+			local showPrivate = Configs.PrivateChat == true
 
-			local MAX_MESSAGES = 100  -- Ð¿Ð¾Ð»Ð½Ð°Ñ Ð¾ÑÐ¸ÑÑÐºÐ° Ð¿ÑÐ¸ Ð´Ð¾ÑÑÐ¸Ð¶ÐµÐ½Ð¸Ð¸
+			local MAX_MESSAGES = 100
 
-			-- ââ flag helpers âââââââââââââââââââââââââââââââââââââââââââ
-			local FLAG_NICK    = "gc_anon_nick"
-			local FLAG_AVATAR  = "gc_anon_avatar"
+			-- ââ flag helpers (writefile) âââââââââââââââââââââââââââââââ
+			local FLAG_NICK   = "gc_anon_nick"
+			local FLAG_AV     = "gc_anon_avatar"
 			local function readFlag(f)
 				local ok, v = pcall(readfile, f)
 				return ok and v == "1"
 			end
-			local function writeFlag(f, v)
+			local function saveFlag(f, v)
 				pcall(writefile, f, v and "1" or "0")
 			end
 
 			-- ââ state ââââââââââââââââââââââââââââââââââââââââââââââââââ
-			local myName        = Player.DisplayName
-			local myUserId      = tostring(Player.UserId)
-			local messageCount  = 0
-			local lastMsgId     = 0
-			local pollInterval  = 4
-			local activeTab     = showPublic and "public" or "private"
-			local dmTarget      = nil
-			local myNameLabels  = {}   -- {label, thumbImg} per own message
-			local isAnonNick    = readFlag(FLAG_NICK)
-			local isAnonAvatar  = readFlag(FLAG_AVATAR)
-			local isMuted       = false
-			local muteUntil     = 0
-			local isHidden      = false
-			local unreadPublic  = 0
-			local unreadPrivate = 0
-			local settingsOpen  = false
+			local myName       = Player.DisplayName
+			local myUserId     = tostring(Player.UserId)
+			local messageCount = 0
+			local lastMsgId    = 0
+			local pollInterval = 4
+			local dmTarget     = nil
+			local myRows       = {}   -- {nameLabel, thumbImg} own messages
+			local isAnonNick   = readFlag(FLAG_NICK)
+			local isAnonAvatar = readFlag(FLAG_AV)
+			local isMuted      = false
+			local muteUntil    = 0
+			local isHidden     = false
+			local unreadPub    = 0
+			local unreadPriv   = 0
 
-			-- anonymous avatar placeholder (grey silhouette asset)
+			-- which of the 3 sub-tabs is active
+			-- values: "public" | "private" | "settings"
+			local activePage = showPublic and "public" or (showPrivate and "private" or "settings")
+
 			local ANON_AVATAR = "rbxassetid://6023426923"
 
-			-- midnight MSK auto-clear
+			-- midnight MSK
 			local function getMSKHour()
 				return math.floor((os.time() % 86400 + 10800) % 86400 / 3600)
 			end
 			local lastHour = getMSKHour()
 
-			-- ââ helpers ââââââââââââââââââââââââââââââââââââââââââââââââ
+			-- ââ net helpers ââââââââââââââââââââââââââââââââââââââââââââ
 			local function nameColor(uid)
-				local hash = 0
-				for i = 1, #uid do hash = (hash * 31 + string.byte(uid, i)) % 0xFFFFFF end
-				return Color3.fromRGB((hash // 0x10000) % 256, (hash // 0x100) % 256, hash % 256)
+				local h = 0
+				for i = 1, #uid do h = (h * 31 + string.byte(uid, i)) % 0xFFFFFF end
+				return Color3.fromRGB((h // 0x10000) % 256, (h // 0x100) % 256, h % 256)
 			end
-
-			local function getDisplayName()
-				return isAnonNick and "Anonymous" or myName
-			end
-
+			local function getDisplayName() return isAnonNick and "Anonymous" or myName end
 			local function httpGet(url)
-				local ok, res = pcall(function() return game:HttpGet(url) end)
-				return ok and res or nil
+				local ok, r = pcall(function() return game:HttpGet(url) end)
+				return ok and r or nil
 			end
-
 			local function httpPost(url, body)
-				local ok, res = pcall(function()
-					return syn and syn.request({Url=url, Method="POST",
-						Headers={["Content-Type"]="application/json"}, Body=body})
-					or (http and http.request({Url=url, Method="POST",
-						Headers={["Content-Type"]="application/json"}, Body=body}))
+				local ok = pcall(function()
+					if syn then syn.request({Url=url,Method="POST",Headers={["Content-Type"]="application/json"},Body=body})
+					elseif http then http.request({Url=url,Method="POST",Headers={["Content-Type"]="application/json"},Body=body}) end
 				end)
-				return ok and res or nil
 			end
-
 			local function decodeJSON(s)
 				local ok, v = pcall(HttpService.JSONDecode, HttpService, s)
 				return ok and v or nil
 			end
 
-			-- ââ layout constants âââââââââââââââââââââââââââââââââââââââ
-			-- top: [tabBar?][iconBar]  bottom: [inputBar]
-			local tabBarH  = (showPublic and showPrivate) and 26 or 0
-			local iconBarH = 24
-			local inputBarH = 28
-			local topOffset = tabBarH + iconBarH + 2
-			local botOffset = inputBarH + 2
-
-			-- ââ outer frame ââââââââââââââââââââââââââââââââââââââââââââ
+			-- ââ root frame âââââââââââââââââââââââââââââââââââââââââââââ
 			local ChatRoot = Create("Frame", Container, {
-				Size = UDim2.new(1, 0, 1, 0),
+				Size       = UDim2.new(1, 0, 1, 0),
 				BackgroundTransparency = 1,
-				Name = "GlobalChat",
+				Name       = "GlobalChat",
 				ClipsDescendants = true,
 			})
 
-			-- ââ tab bar (public / private) âââââââââââââââââââââââââââââ
-			local TabBar
-			local pubBadge, privBadge
-			if showPublic and showPrivate then
-				TabBar = InsertTheme(Create("Frame", ChatRoot, {
-					Size = UDim2.new(1, 0, 0, tabBarH),
-					BackgroundColor3 = Theme["Color Hub 2"],
-					BorderSizePixel = 0,
-				}), "Frame")
-				Make("Corner", TabBar, UDim.new(0, 6))
+			-- ââ SUB-TAB BAR ââââââââââââââââââââââââââââââââââââââââââââ
+			-- Uses the same visual language as MakeTab:
+			-- TextButton with left colored indicator bar
+			local TAB_H = 24
+			local tabCount = (showPublic and 1 or 0) + (showPrivate and 1 or 0) + 1  -- always +Settings
+			local tabW = math.floor(1 / tabCount * 100) / 100  -- fraction
 
-				local function makeTabBtn(label, xOff)
-					local btn = InsertTheme(Create("TextButton", TabBar, {
-						Size = UDim2.new(0.5, -4, 1, -6),
-						Position = UDim2.new(xOff, 3, 0, 3),
-						Text = label,
-						Font = Enum.Font.GothamBold,
-						TextSize = 11,
-						TextColor3 = Theme["Color Text"],
-						BackgroundColor3 = Theme["Color Stroke"],
-					}), "Frame")
-					Make("Corner", btn, UDim.new(0, 5))
-					local badge = Create("TextLabel", btn, {
-						Size = UDim2.new(0, 14, 0, 14),
-						AnchorPoint = Vector2.new(1, 0),
-						Position = UDim2.new(1, 2, 0, -4),
-						Text = "0",
-						Font = Enum.Font.GothamBold,
-						TextSize = 8,
-						TextColor3 = Color3.fromRGB(255,255,255),
-						BackgroundColor3 = Color3.fromRGB(220,50,50),
-						Visible = false,
-					})
-					Make("Corner", badge, UDim.new(1, 0))
-					return btn, badge
-				end
-
-				local pubBtn, privBtn
-				pubBtn,  pubBadge  = makeTabBtn("Public",  0)
-				privBtn, privBadge = makeTabBtn("Private", 0.5)
-
-				local function switchTab(key)
-					activeTab = key
-					if key == "public" then
-						unreadPublic = 0
-						if pubBadge  then pubBadge.Visible  = false end
-					else
-						unreadPrivate = 0
-						if privBadge then privBadge.Visible = false end
-					end
-				end
-				pubBtn.Activated:Connect(function()  switchTab("public")  end)
-				privBtn.Activated:Connect(function() switchTab("private") end)
-			end
-
-			-- ââ icon bar: Public | Private | â ââââââââââââââââââââââââââ
-			local IconBar = Create("Frame", ChatRoot, {
-				Size = UDim2.new(1, 0, 0, iconBarH),
-				Position = UDim2.new(0, 0, 0, tabBarH),
+			local SubTabBar = Create("Frame", ChatRoot, {
+				Size            = UDim2.new(1, 0, 0, TAB_H),
 				BackgroundTransparency = 1,
 			})
 
-			-- helper: small icon button (16Ã16) at absolute X
-			local function iconBtn(icon, xRight)
-				local b = InsertTheme(Create("TextButton", IconBar, {
-					Size = UDim2.new(0, 20, 0, 20),
-					AnchorPoint = Vector2.new(1, 0.5),
-					Position = UDim2.new(1, -xRight, 0.5, 0),
-					Text = icon,
-					Font = Enum.Font.GothamBold,
-					TextSize = 13,
-					TextColor3 = Theme["Color Dark Text"],
-					BackgroundColor3 = Theme["Color Stroke"],
-				}), "Frame")
-				Make("Corner", b, UDim.new(0, 5))
-				return b
-			end
-
-			-- icon bar label (shows current mode)
-			local ModeLabel = InsertTheme(Create("TextLabel", IconBar, {
-				Size = UDim2.new(1, -70, 1, 0),
-				Position = UDim2.new(0, 4, 0, 0),
+			-- pages
+			local PageScroll = Create("ScrollingFrame", ChatRoot, {
+				Size                   = UDim2.new(1, 0, 1, -(TAB_H + 32)),
+				Position               = UDim2.new(0, 0, 0, TAB_H + 2),
 				BackgroundTransparency = 1,
-				Font = Enum.Font.GothamBold,
-				TextSize = 10,
-				TextColor3 = Theme["Color Dark Text"],
-				TextXAlignment = "Left",
-				Text = showPublic and "ð Global Chat" or "ð Private Chat",
-			}), "DarkText")
-
-			-- 3 icon buttons (right side)
-			local SettingsIcon = iconBtn("â", 4)
-			local HideIcon     = iconBtn("ð", 28)
-			-- 3rd slot free for future use
-
-			-- ââ settings panel (overlay, anchored below icon bar) ââââââ
-			local SettingsPanel = InsertTheme(Create("Frame", ChatRoot, {
-				Size = UDim2.new(1, 0, 0, 68),
-				Position = UDim2.new(0, 0, 0, topOffset),
-				BackgroundColor3 = Theme["Color Hub 2"],
-				Visible = false,
-				ZIndex = 10,
-			}), "Frame")
-			Make("Corner", SettingsPanel, UDim.new(0, 6))
-			Make("Stroke", SettingsPanel)
-
-			-- helper: toggle row inside settings panel
-			local function settingsToggleRow(labelText, yPos, isOn)
-				local row = Create("Frame", SettingsPanel, {
-					Size = UDim2.new(1, -10, 0, 26),
-					Position = UDim2.new(0, 5, 0, yPos),
-					BackgroundTransparency = 1,
-				})
-				InsertTheme(Create("TextLabel", row, {
-					Size = UDim2.new(1, -44, 1, 0),
-					BackgroundTransparency = 1,
-					Font = Enum.Font.Gotham,
-					TextSize = 10,
-					TextColor3 = Theme["Color Text"],
-					TextXAlignment = "Left",
-					Text = labelText,
-				}), "Text")
-				local dot = InsertTheme(Create("TextButton", row, {
-					Size = UDim2.new(0, 38, 0, 18),
-					AnchorPoint = Vector2.new(1, 0.5),
-					Position = UDim2.new(1, 0, 0.5, 0),
-					Text = isOn and "ON" or "OFF",
-					Font = Enum.Font.GothamBold,
-					TextSize = 9,
-					TextColor3 = Color3.fromRGB(255,255,255),
-					BackgroundColor3 = isOn and Theme["Color Theme"] or Theme["Color Stroke"],
-				}), "Frame")
-				Make("Corner", dot, UDim.new(0, 5))
-				return dot
-			end
-
-			local NickToggle    = settingsToggleRow("Anonymous Nickname",  2, isAnonNick)
-			local AvatarToggle  = settingsToggleRow("Anonymous Avatar",   30, isAnonAvatar)
-
-			-- ââ message scroll area ââââââââââââââââââââââââââââââââââââ
-			local ScrollFrame = Create("ScrollingFrame", ChatRoot, {
-				Size = UDim2.new(1, 0, 1, -(topOffset + botOffset)),
-				Position = UDim2.new(0, 0, 0, topOffset),
-				BackgroundTransparency = 1,
-				ScrollBarThickness = 3,
-				ScrollBarImageColor3 = Theme["Color Theme"],
-				CanvasSize = UDim2.new(0, 0, 0, 0),
-				AutomaticCanvasSize = "Y",
-				BorderSizePixel = 0,
+				ScrollBarThickness     = 2,
+				ScrollBarImageColor3   = Theme["Color Theme"],
+				CanvasSize             = UDim2.new(0,0,0,0),
+				AutomaticCanvasSize    = "Y",
+				BorderSizePixel        = 0,
+				Visible                = true,
 			})
-			Make("ListLayout", ScrollFrame, {Padding = UDim.new(0, 3), SortOrder = "LayoutOrder"})
-			Make("Padding", ScrollFrame, {
+			Make("ListLayout", PageScroll, {Padding = UDim.new(0, 3), SortOrder = "LayoutOrder"})
+			Create("UIPadding", PageScroll, {
 				PaddingLeft   = UDim.new(0, 4),
 				PaddingRight  = UDim.new(0, 4),
-				PaddingTop    = UDim.new(0, 2),
-				PaddingBottom = UDim.new(0, 2),
+				PaddingTop    = UDim.new(0, 3),
+				PaddingBottom = UDim.new(0, 3),
 			})
 
-			-- ââ input bar ââââââââââââââââââââââââââââââââââââââââââââââ
+			-- settings page (separate frame, not scroll)
+			local SettingsPage = InsertTheme(Create("Frame", ChatRoot, {
+				Size       = UDim2.new(1, 0, 1, -(TAB_H + 32)),
+				Position   = UDim2.new(0, 0, 0, TAB_H + 2),
+				BackgroundTransparency = 1,
+				Visible    = false,
+			}), "")
+			Create("UIListLayout", SettingsPage, {Padding = UDim.new(0, 5), SortOrder = "LayoutOrder"})
+			Create("UIPadding", SettingsPage, {
+				PaddingLeft   = UDim.new(0, 0),
+				PaddingRight  = UDim.new(0, 0),
+				PaddingTop    = UDim.new(0, 4),
+				PaddingBottom = UDim.new(0, 4),
+			})
+
+			-- input bar (always visible for chat pages, hidden in settings)
 			local InputBar = InsertTheme(Create("Frame", ChatRoot, {
-				Size = UDim2.new(1, 0, 0, inputBarH),
-				AnchorPoint = Vector2.new(0, 1),
-				Position = UDim2.new(0, 0, 1, 0),
+				Size            = UDim2.new(1, 0, 0, 28),
+				AnchorPoint     = Vector2.new(0, 1),
+				Position        = UDim2.new(0, 0, 1, 0),
 				BackgroundColor3 = Theme["Color Hub 2"],
 			}), "Frame")
 			Make("Corner", InputBar, UDim.new(0, 6))
 
 			local SendInput = InsertTheme(Create("TextBox", InputBar, {
-				Size = UDim2.new(1, -36, 1, -6),
-				Position = UDim2.new(0, 4, 0, 3),
+				Size                = UDim2.new(1, -36, 1, -6),
+				Position            = UDim2.new(0, 8, 0, 3),
 				BackgroundTransparency = 1,
-				Font = Enum.Font.Gotham,
-				TextSize = 11,
-				TextColor3 = Theme["Color Text"],
-				PlaceholderText = "Message...",
-				Text = "",
-				TextXAlignment = "Left",
-				ClearTextOnFocus = false,
+				Font                = Enum.Font.Gotham,
+				TextSize            = 11,
+				TextColor3          = Theme["Color Text"],
+				PlaceholderText     = "Message...",
+				Text                = "",
+				TextXAlignment      = "Left",
+				ClearTextOnFocus    = false,
 			}), "Text")
 
-			local SendBtn = Create("TextButton", InputBar, {
-				Size = UDim2.new(0, 28, 0, 20),
-				AnchorPoint = Vector2.new(1, 0.5),
-				Position = UDim2.new(1, -4, 0.5, 0),
-				Text = "â¶",
-				Font = Enum.Font.GothamBold,
-				TextSize = 11,
-				TextColor3 = Color3.fromRGB(255,255,255),
+			local SendBtn = InsertTheme(Create("TextButton", InputBar, {
+				Size            = UDim2.new(0, 26, 0, 20),
+				AnchorPoint     = Vector2.new(1, 0.5),
+				Position        = UDim2.new(1, -4, 0.5, 0),
+				Text            = "â¶",
+				Font            = Enum.Font.GothamBold,
+				TextSize        = 12,
+				TextColor3      = Color3.fromRGB(255,255,255),
 				BackgroundColor3 = Theme["Color Theme"],
-			})
+				AutoButtonColor = false,
+			}), "Theme")
 			Make("Corner", SendBtn, UDim.new(0, 5))
 
-			-- ââ settings panel toggle ââââââââââââââââââââââââââââââââââ
-			SettingsIcon.Activated:Connect(function()
-				settingsOpen = not settingsOpen
-				SettingsPanel.Visible = settingsOpen
-				SettingsIcon.TextColor3 = settingsOpen and Theme["Color Theme"] or Theme["Color Dark Text"]
-			end)
-
-			-- ââ hide toggle ââââââââââââââââââââââââââââââââââââââââââââ
-			HideIcon.Activated:Connect(function()
-				isHidden = not isHidden
-				HideIcon.TextColor3 = isHidden and Theme["Color Theme"] or Theme["Color Dark Text"]
-			end)
-
-			-- ââ anonymous nickname toggle ââââââââââââââââââââââââââââââ
-			local function applyAnonNick()
-				NickToggle.Text = isAnonNick and "ON" or "OFF"
-				NickToggle.BackgroundColor3 = isAnonNick and Theme["Color Theme"] or Theme["Color Stroke"]
-				writeFlag(FLAG_NICK, isAnonNick)
-				-- retroactive update of own name labels in scroll
-				local newName = isAnonNick and "Anonymous" or myName
-				for _, entry in ipairs(myNameLabels) do
-					if entry.nameLabel and entry.nameLabel.Parent then
-						-- text format: "[ð ]Name  HH:MM"
-						entry.nameLabel.Text = entry.nameLabel.Text:gsub("^(ð ?)([^ ]+)", "%1" .. newName)
+			-- ââ sub-tab button factory âââââââââââââââââââââââââââââââââ
+			local subTabBtns = {}
+			local function setPage(key)
+				activePage = key
+				-- show/hide pages
+				PageScroll.Visible   = (key == "public" or key == "private")
+				SettingsPage.Visible = (key == "settings")
+				InputBar.Visible     = (key ~= "settings")
+				-- reset unread
+				if key == "public"  then unreadPub  = 0 end
+				if key == "private" then unreadPriv = 0 end
+				-- update tab indicators
+				for k, t in pairs(subTabBtns) do
+					local active = (k == key)
+					CreateTween({t.indicator, "Size",                UDim2.new(0, 3, active and 0.7 or 0.25, 0), 0.25})
+					CreateTween({t.indicator, "BackgroundTransparency", active and 0 or 1, 0.25})
+					CreateTween({t.label,     "TextTransparency",    active and 0 or 0.45, 0.25})
+					if t.badge then
+						t.badge.Visible = (k == "public" and unreadPub > 0) or (k == "private" and unreadPriv > 0)
 					end
 				end
 			end
 
-			NickToggle.Activated:Connect(function()
-				isAnonNick = not isAnonNick
-				applyAnonNick()
-			end)
+			local tabIdx = 0
+			local function makeSubTab(label, key)
+				local xFrac = tabIdx * tabW
+				tabIdx = tabIdx + 1
 
-			-- ââ anonymous avatar toggle ââââââââââââââââââââââââââââââââ
-			local function applyAnonAvatar()
-				AvatarToggle.Text = isAnonAvatar and "ON" or "OFF"
-				AvatarToggle.BackgroundColor3 = isAnonAvatar and Theme["Color Theme"] or Theme["Color Stroke"]
-				writeFlag(FLAG_AVATAR, isAnonAvatar)
-				-- retroactive update of own thumbnails in scroll
-				for _, entry in ipairs(myNameLabels) do
-					if entry.thumbImg and entry.thumbImg.Parent then
-						if isAnonAvatar then
-							entry.thumbImg.Image = ANON_AVATAR
-						else
-							-- restore real avatar
-							pcall(function()
-								entry.thumbImg.Image = Players:GetUserThumbnailAsync(
-									Player.UserId,
-									Enum.ThumbnailType.HeadShot,
-									Enum.ThumbnailSize.Size48x48)
-							end)
+				local btn = InsertTheme(Create("TextButton", SubTabBar, {
+					Size             = UDim2.new(tabW, (tabIdx < tabCount and -2 or 0), 1, 0),
+					Position         = UDim2.new(xFrac, 0, 0, 0),
+					Text             = "",
+					BackgroundColor3 = Theme["Color Hub 2"],
+					AutoButtonColor  = false,
+				}), "Frame")
+				Make("Corner", btn, UDim.new(0, 6))
+
+				-- left indicator bar (same as MakeTab)
+				local indicator = InsertTheme(Create("Frame", btn, {
+					Size             = UDim2.new(0, 3, 0.25, 0),
+					Position         = UDim2.new(0, 1, 0.5, 0),
+					AnchorPoint      = Vector2.new(0, 0.5),
+					BackgroundColor3 = Theme["Color Theme"],
+					BackgroundTransparency = 1,
+				}), "Theme")
+				Make("Corner", indicator, UDim.new(0.5, 0))
+
+				local lbl = InsertTheme(Create("TextLabel", btn, {
+					Size             = UDim2.new(1, -16, 1, 0),
+					Position         = UDim2.new(0, 8, 0, 0),
+					BackgroundTransparency = 1,
+					Font             = Enum.Font.GothamMedium,
+					TextSize         = 10,
+					TextColor3       = Theme["Color Text"],
+					TextTransparency = 0.45,
+					Text             = label,
+					TextXAlignment   = "Center",
+					TextTruncate     = "AtEnd",
+				}), "Text")
+
+				-- unread badge (only for pub/priv)
+				local badge
+				if key == "public" or key == "private" then
+					badge = Create("TextLabel", btn, {
+						Size             = UDim2.new(0, 14, 0, 14),
+						AnchorPoint      = Vector2.new(1, 0),
+						Position         = UDim2.new(1, 1, 0, -3),
+						Text             = "0",
+						Font             = Enum.Font.GothamBold,
+						TextSize         = 8,
+						TextColor3       = Color3.fromRGB(255,255,255),
+						BackgroundColor3 = Color3.fromRGB(220,50,50),
+						Visible          = false,
+					})
+					Make("Corner", badge, UDim.new(1, 0))
+				end
+
+				subTabBtns[key] = {btn=btn, indicator=indicator, label=lbl, badge=badge}
+
+				btn.MouseEnter:Connect(function() btn.BackgroundTransparency = 0.4 end)
+				btn.MouseLeave:Connect(function() btn.BackgroundTransparency = 0   end)
+				btn.Activated:Connect(function() setPage(key) end)
+			end
+
+			if showPublic  then makeSubTab("Public",   "public")  end
+			if showPrivate then makeSubTab("Private",  "private") end
+			makeSubTab("Settings", "settings")
+
+			-- activate initial tab
+			setPage(activePage)
+
+			-- ââ SETTINGS PAGE content ââââââââââââââââââââââââââââââââââ
+			-- Uses the exact same ToggleHolder+ToggleKnob pattern as AddToggle
+
+			local function makeSettingToggle(parent, title, desc, defaultVal, onChanged)
+				local Button, LabelFunc = ButtonFrame(parent, title, desc, UDim2.new(1, -48))
+				LabelFunc:SetTitle(title)
+				if desc ~= "" then LabelFunc:SetDesc(desc) end
+
+				local ToggleHolder = InsertTheme(Create("Frame", Button, {
+					Size             = UDim2.new(0, 35, 0, 18),
+					Position         = UDim2.new(1, -10, 0.5, 0),
+					AnchorPoint      = Vector2.new(1, 0.5),
+					BackgroundColor3 = Theme["Color Stroke"],
+				}), "Stroke")
+				Make("Corner", ToggleHolder, UDim.new(0.5, 0))
+
+				local Slider = Create("Frame", ToggleHolder, {
+					BackgroundTransparency = 1,
+					Size     = UDim2.new(0.8, 0, 0.8, 0),
+					Position = UDim2.new(0.5, 0, 0.5, 0),
+					AnchorPoint = Vector2.new(0.5, 0.5),
+				})
+
+				local Knob = InsertTheme(Create("Frame", Slider, {
+					Size        = UDim2.new(0, 12, 0, 12),
+					Position    = UDim2.new(0, 0, 0.5, 0),
+					AnchorPoint = Vector2.new(0, 0.5),
+					BackgroundColor3 = Theme["Color Theme"],
+				}), "Theme")
+				Make("Corner", Knob, UDim.new(0.5, 0))
+
+				local current = defaultVal
+				local busy    = false
+				local function setVal(v)
+					if busy then return end
+					busy, current = true, v
+					if v then
+						CreateTween({Knob, "Position",             UDim2.new(1, 0, 0.5, 0), 0.25})
+						CreateTween({Knob, "AnchorPoint",          Vector2.new(1, 0.5),      0.25})
+						CreateTween({Knob, "BackgroundTransparency", 0,                      0.25})
+					else
+						CreateTween({Knob, "Position",             UDim2.new(0, 0, 0.5, 0), 0.25})
+						CreateTween({Knob, "AnchorPoint",          Vector2.new(0, 0.5),      0.25})
+						CreateTween({Knob, "BackgroundTransparency", 0.8,                    0.25})
+					end
+					busy = false
+					if onChanged then onChanged(v) end
+				end
+				task.spawn(setVal, current)
+				Button.Activated:Connect(function() setVal(not current) end)
+				return setVal  -- expose setter
+			end
+
+			-- Anonymous Nickname toggle
+			local setNickToggle = makeSettingToggle(
+				SettingsPage,
+				"Anonymous Nickname",
+				"Other players see \"Anonymous\"",
+				isAnonNick,
+				function(v)
+					isAnonNick = v
+					saveFlag(FLAG_NICK, v)
+					local newName = v and "Anonymous" or myName
+					for _, r in ipairs(myRows) do
+						if r.nameLabel and r.nameLabel.Parent then
+							r.nameLabel.Text = r.nameLabel.Text:gsub("(ð ?)%S+", "%1" .. newName, 1)
+							                               :gsub("^%S+", newName, 1)
 						end
 					end
 				end
-			end
+			)
 
-			AvatarToggle.Activated:Connect(function()
-				isAnonAvatar = not isAnonAvatar
-				applyAnonAvatar()
-			end)
-
-			-- ââ unread badge helper ââââââââââââââââââââââââââââââââââââ
-			local function bumpBadge(isPrivate)
-				if not TabBar then return end
-				local btns = {}
-				for _, c in ipairs(TabBar:GetChildren()) do
-					if c:IsA("TextButton") then btns[#btns+1] = c end
-				end
-				local idx = isPrivate and 2 or 1
-				if btns[idx] then
-					local badge = btns[idx]:FindFirstChildWhichIsA("TextLabel")
-					if badge then
-						local n = (isPrivate and unreadPrivate or unreadPublic)
-						badge.Text = tostring(n)
-						badge.Visible = n > 0
+			-- Anonymous Avatar toggle
+			local setAvatarToggle = makeSettingToggle(
+				SettingsPage,
+				"Anonymous Avatar",
+				"Shows grey silhouette instead",
+				isAnonAvatar,
+				function(v)
+					isAnonAvatar = v
+					saveFlag(FLAG_AV, v)
+					for _, r in ipairs(myRows) do
+						if r.thumbImg and r.thumbImg.Parent then
+							if v then
+								r.thumbImg.Image = ANON_AVATAR
+							else
+								pcall(function()
+									r.thumbImg.Image = Players:GetUserThumbnailAsync(
+										Player.UserId,
+										Enum.ThumbnailType.HeadShot,
+										Enum.ThumbnailSize.Size48x48)
+								end)
+							end
+						end
 					end
 				end
-			end
+			)
 
-			-- ââ render one message âââââââââââââââââââââââââââââââââââââ
+			-- Hidden toggle (don't appear in /ping online list)
+			makeSettingToggle(
+				SettingsPage,
+				"Hidden",
+				"Hide from online players list",
+				isHidden,
+				function(v) isHidden = v end
+			)
+
+			-- ââ MESSAGE RENDERING ââââââââââââââââââââââââââââââââââââââ
 			local function addMessageUI(data)
 				local isPrivate = data.isPrivate
 				local isForMe   = data.targetId == myUserId or data.senderId == myUserId
 
-				if isPrivate and not isForMe then return end
+				if isPrivate and not isForMe      then return end
 				if not showPublic  and not isPrivate then return end
 				if not showPrivate and isPrivate     then return end
 
 				messageCount = messageCount + 1
-
-				-- 100-message hard clear
 				if messageCount > MAX_MESSAGES then
-					for _, ch in ipairs(ScrollFrame:GetChildren()) do
+					for _, ch in ipairs(PageScroll:GetChildren()) do
 						if ch:IsA("Frame") then ch:Destroy() end
 					end
 					messageCount = 1
-					myNameLabels = {}
+					myRows = {}
 				end
 
-				-- unread badge
-				if isPrivate and activeTab ~= "private" then
-					unreadPrivate += 1; bumpBadge(true)
-				elseif not isPrivate and activeTab ~= "public" then
-					unreadPublic  += 1; bumpBadge(false)
+				-- update unread badge
+				if isPrivate and activePage ~= "private" then
+					unreadPriv += 1
+					local t = subTabBtns["private"]
+					if t and t.badge then t.badge.Text = tostring(unreadPriv); t.badge.Visible = true end
+				elseif not isPrivate and activePage ~= "public" then
+					unreadPub  += 1
+					local t = subTabBtns["public"]
+					if t and t.badge then t.badge.Text = tostring(unreadPub);  t.badge.Visible = true end
 				end
 
-				local isMine    = data.senderId == myUserId
-				local senderId  = data.senderId or "0"
-				local senderName = data.sender  or "?"
+				local isMine   = data.senderId == myUserId
+				local senderId = data.senderId or "0"
 
-				-- decide avatar to show
-				local avatarImage = ""
+				-- avatar image
+				local avatarImg = ""
 				if isMine and isAnonAvatar then
-					avatarImage = ANON_AVATAR
+					avatarImg = ANON_AVATAR
 				else
 					pcall(function()
-						avatarImage = Players:GetUserThumbnailAsync(
+						avatarImg = Players:GetUserThumbnailAsync(
 							tonumber(senderId) or 0,
 							Enum.ThumbnailType.HeadShot,
 							Enum.ThumbnailSize.Size48x48)
 					end)
 				end
 
-				-- row container
-				local row = Create("Frame", ScrollFrame, {
-					Size = UDim2.new(1, 0, 0, 0),
-					AutomaticSize = "Y",
+				-- ââ row ââââââââââââââââââââââââââââââââââââââââââââââââ
+				local row = Create("Frame", PageScroll, {
+					Size             = UDim2.new(1, 0, 0, 0),
+					AutomaticSize    = "Y",
 					BackgroundTransparency = 1,
-					LayoutOrder = data.id or messageCount,
+					LayoutOrder      = data.id or messageCount,
 				})
 
-				-- ââ avatar (26Ã26) âââââââââââââââââââââââââââââââââââââ
+				-- avatar 26Ã26
 				local thumb = Create("ImageLabel", row, {
-					Size = UDim2.new(0, 26, 0, 26),
-					Position = UDim2.new(0, 0, 0, 0),
+					Size             = UDim2.new(0, 26, 0, 26),
+					Position         = UDim2.new(0, 0, 0, 0),
 					BackgroundColor3 = Theme["Color Stroke"],
-					Image = avatarImage,
+					Image            = avatarImg,
 				})
 				Make("Corner", thumb, UDim.new(0, 5))
 
-				-- ââ header row: name  Â·  time  Â·  [copy] âââââââââââââ
-				local headerH = 14
-				local header = Create("Frame", row, {
-					Size = UDim2.new(1, -32, 0, headerH),
-					Position = UDim2.new(0, 30, 0, 0),
+				-- header frame: [Name]  [time]  [Copy]
+				local hdr = Create("Frame", row, {
+					Size             = UDim2.new(1, -32, 0, 14),
+					Position         = UDim2.new(0, 30, 0, 0),
 					BackgroundTransparency = 1,
 				})
 
-				local nameColor3 = nameColor(senderId)
-				local nameLabel  = InsertTheme(Create("TextLabel", header, {
-					Size = UDim2.new(0, 0, 1, 0),
-					AutomaticSize = "X",
+				local nameLabel = InsertTheme(Create("TextLabel", hdr, {
+					Size             = UDim2.new(0, 0, 1, 0),
+					AutomaticSize    = "X",
 					BackgroundTransparency = 1,
-					Font = Enum.Font.GothamBold,
-					TextSize = 10,
-					TextColor3 = nameColor3,
-					TextXAlignment = "Left",
-					Text = (isPrivate and "ð " or "") .. senderName,
-				}), "Text")
+					Font             = Enum.Font.GothamBold,
+					TextSize         = 10,
+					TextColor3       = nameColor(senderId),
+					TextXAlignment   = "Left",
+					Text             = (isPrivate and "ð " or "") .. (data.sender or "?"),
+				}), "")
 
-				-- time label (placed after name)
-				local tsLabel = InsertTheme(Create("TextLabel", header, {
-					Size = UDim2.new(0, 36, 1, 0),
-					Position = UDim2.new(0, 0, 0, 0),  -- repositioned below
+				local tsLabel = InsertTheme(Create("TextLabel", hdr, {
+					Size             = UDim2.new(0, 32, 1, 0),
+					Position         = UDim2.new(0, 0, 0, 0),
 					BackgroundTransparency = 1,
-					Font = Enum.Font.Gotham,
-					TextSize = 9,
-					TextColor3 = Theme["Color Dark Text"],
-					TextXAlignment = "Left",
-					Text = data.ts or "",
+					Font             = Enum.Font.Gotham,
+					TextSize         = 9,
+					TextColor3       = Theme["Color Dark Text"],
+					TextXAlignment   = "Left",
+					Text             = data.ts or "",
 				}), "DarkText")
 
+				-- position tsLabel after name (deferred so AbsoluteSize is ready)
+				task.defer(function()
+					if nameLabel.Parent then
+						tsLabel.Position = UDim2.new(0, nameLabel.AbsoluteSize.X + 5, 0, 0)
+					end
+				end)
+
 				-- copy button
-				local copyBtn = InsertTheme(Create("TextButton", header, {
-					Size = UDim2.new(0, 30, 0, 12),
-					AnchorPoint = Vector2.new(1, 0.5),
-					Position = UDim2.new(1, 0, 0.5, 0),
-					Text = "Copy",
-					Font = Enum.Font.Gotham,
-					TextSize = 8,
-					TextColor3 = Theme["Color Dark Text"],
+				local copyBtn = InsertTheme(Create("TextButton", hdr, {
+					Size             = UDim2.new(0, 28, 0, 12),
+					AnchorPoint      = Vector2.new(1, 0.5),
+					Position         = UDim2.new(1, 0, 0.5, 0),
+					Text             = "Copy",
+					Font             = Enum.Font.Gotham,
+					TextSize         = 8,
+					TextColor3       = Theme["Color Dark Text"],
 					BackgroundColor3 = Theme["Color Stroke"],
+					AutoButtonColor  = false,
 				}), "Frame")
 				Make("Corner", copyBtn, UDim.new(0, 3))
-
-				-- position time label right after name
-				-- use GetTextSize to offset tsLabel
-				task.defer(function()
-					if not nameLabel.Parent then return end
-					local nameW = nameLabel.AbsoluteSize.X
-					tsLabel.Position = UDim2.new(0, nameW + 5, 0, 0)
-				end)
-
-				-- copy logic
-				local copyDelay = false
+				local cpDelay = false
+				copyBtn.MouseEnter:Connect(function() copyBtn.BackgroundTransparency = 0.4 end)
+				copyBtn.MouseLeave:Connect(function() copyBtn.BackgroundTransparency = 0   end)
 				copyBtn.Activated:Connect(function()
-					if copyDelay then return end
+					if cpDelay then return end
 					setclipboard(data.text or "")
+					cpDelay = true
 					copyBtn.Text = "â"
-					copyDelay = true
 					task.wait(1.5)
 					copyBtn.Text = "Copy"
-					copyDelay = false
+					cpDelay = false
 				end)
 
-				-- ââ message text âââââââââââââââââââââââââââââââââââââââ
+				-- message text
 				Create("TextLabel", row, {
-					Size = UDim2.new(1, -32, 0, 0),
-					AutomaticSize = "Y",
-					Position = UDim2.new(0, 30, 0, headerH + 2),
+					Size             = UDim2.new(1, -32, 0, 0),
+					AutomaticSize    = "Y",
+					Position         = UDim2.new(0, 30, 0, 16),
 					BackgroundTransparency = 1,
-					Font = Enum.Font.Gotham,
-					TextSize = 10,
-					TextColor3 = Theme["Color Text"],
-					TextXAlignment = "Left",
-					TextWrapped = true,
-					Text = data.text or "",
+					Font             = Enum.Font.Gotham,
+					TextSize         = 10,
+					TextColor3       = Theme["Color Text"],
+					TextXAlignment   = "Left",
+					TextWrapped      = true,
+					Text             = data.text or "",
 				})
 
-				-- track own messages for retroactive anon updates
 				if isMine then
-					table.insert(myNameLabels, {nameLabel = nameLabel, thumbImg = thumb})
+					table.insert(myRows, {nameLabel = nameLabel, thumbImg = thumb})
 				end
 
-				-- auto-scroll to bottom
-				ScrollFrame.CanvasPosition = Vector2.new(0, 1e9)
+				PageScroll.CanvasPosition = Vector2.new(0, 1e9)
 			end
 
-			-- ââ send message âââââââââââââââââââââââââââââââââââââââââââ
+			-- ââ SEND âââââââââââââââââââââââââââââââââââââââââââââââââââ
 			local function sendMessage(text)
 				if isMuted and os.time() < muteUntil then return end
 				if isMuted then isMuted = false end
-				if text:gsub("%s","") == "" then return end
+				if text:gsub("%s", "") == "" then return end
 				if #text > 200 then text = text:sub(1, 200) end
-
-				local payload = {
-					topic     = Topic,
-					sender    = getDisplayName(),
-					senderId  = myUserId,
-					text      = text,
-					isPrivate = activeTab == "private" and showPrivate,
-					targetId  = activeTab == "private" and dmTarget or nil,
-					hidden    = isHidden,
-					anonAvatar = isAnonAvatar,  -- ÑÐµÑÐ²ÐµÑ Ð¼Ð¾Ð¶ÐµÑ ÑÑÐ°Ð½Ð¸ÑÑ ÑÐ»Ð°Ð³
-				}
-				httpPost(ServerUrl .. "/send", HttpService:JSONEncode(payload))
+				httpPost(ServerUrl .. "/send", HttpService:JSONEncode({
+					topic      = Topic,
+					sender     = getDisplayName(),
+					senderId   = myUserId,
+					text       = text,
+					isPrivate  = (activePage == "private") and showPrivate,
+					targetId   = (activePage == "private") and dmTarget or nil,
+					hidden     = isHidden,
+					anonAvatar = isAnonAvatar,
+				}))
 				SendInput.Text = ""
 			end
 
@@ -5308,29 +5291,25 @@ function redzlib:MakeWindow(Configs)
 				if enter then sendMessage(SendInput.Text) end
 			end)
 
-			-- ââ polling ââââââââââââââââââââââââââââââââââââââââââââââââ
+			-- ââ POLL âââââââââââââââââââââââââââââââââââââââââââââââââââ
 			local pollConn
 			local accumulator = 0
-
 			local function poll()
-				local curHour = getMSKHour()
-				if curHour == 0 and lastHour ~= 0 then
-					for _, ch in ipairs(ScrollFrame:GetChildren()) do
+				local h = getMSKHour()
+				if h == 0 and lastHour ~= 0 then
+					for _, ch in ipairs(PageScroll:GetChildren()) do
 						if ch:IsA("Frame") then ch:Destroy() end
 					end
-					messageCount = 0
-					myNameLabels = {}
+					messageCount = 0; myRows = {}
 				end
-				lastHour = curHour
+				lastHour = h
 
 				local url = ServerUrl .. "/messages?topic=" .. Topic .. "&after=" .. lastMsgId
-				if isHidden then url = url .. "&hidden=1" end
-
-				local raw = httpGet(url)
+				if isHidden then url ..= "&hidden=1" end
+				local raw  = httpGet(url)
 				if not raw then return end
 				local data = decodeJSON(raw)
 				if not data or not data.messages then return end
-
 				local msgs = data.messages
 				if #msgs > 0 then
 					for _, msg in ipairs(msgs) do
@@ -5344,7 +5323,7 @@ function redzlib:MakeWindow(Configs)
 			end
 
 			pollConn = RunService.Heartbeat:Connect(function(dt)
-				accumulator = accumulator + dt
+				accumulator += dt
 				if accumulator >= pollInterval then
 					accumulator = 0
 					pcall(poll)
@@ -5362,8 +5341,9 @@ function redzlib:MakeWindow(Configs)
 				ChatRoot.Visible = Bool
 			end
 			function GlobalChat:SetDMTarget(userId)
-				dmTarget = tostring(userId)
-				activeTab = "private"
+				dmTarget    = tostring(userId)
+				activePage  = "private"
+				setPage("private")
 			end
 			function GlobalChat:Mute(seconds)
 				isMuted   = true
