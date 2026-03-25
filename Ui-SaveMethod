@@ -2339,6 +2339,9 @@ end
 
 local function SaveSettings()
 	if not writefile then return end
+	if isfolder and makefolder then
+		if not isfolder("smoothlib") then makefolder("smoothlib") end
+	end
 	local ok, json = pcall(function() return HttpService:JSONEncode(redzlib.Save) end)
 	if ok then pcall(writefile, "smoothlib/Settings.json", json) end
 end
@@ -2630,8 +2633,10 @@ function redzlib:MakeWindow(Configs)
 	local function LoadFile()
 		if not readfile or not isfile or not isfolder then return end
 		-- ensure folders exist
-		if not isfolder("smoothlib") then makefolder("smoothlib") end
-		if not isfolder(_folder) then makefolder(_folder) end
+		if makefolder then
+			if not isfolder("smoothlib") then makefolder("smoothlib") end
+			if not isfolder(_folder) then makefolder(_folder) end
+		end
 
 		-- load library settings
 		local ok1, r1 = pcall(isfile, "smoothlib/Settings.json")
