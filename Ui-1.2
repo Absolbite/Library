@@ -5354,7 +5354,7 @@ function redzlib:MakeWindow(Configs)
 						Create("TextLabel",noticeRow,{
 							Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,
 							Font=Enum.Font.Gotham,TextSize=8,TextColor3=Theme["Color Dark Text"],
-							TextXAlignment="Center",Text="â Chat cleared (message limit reached) â"
+							TextXAlignment="Center",Text="-- Chat cleared (message limit reached) --"
 						})
 					end
 				end
@@ -5560,6 +5560,9 @@ function redzlib:MakeWindow(Configs)
 						local ts=tostring(m.time or GetTime())
 						local msgType=m.msgType or "public"
 						local toUid=tostring(m.toUid or "")
+
+						-- skip empty messages
+						if text:match("^%s*$") then continue end
 
 						-- skip own messages we already showed locally
 						if uid==PlayerUserId then
@@ -5771,7 +5774,7 @@ function redzlib:MakeWindow(Configs)
 				local t=ChatInput.Text; if t:match("%S") then DoSend(t);ChatInput.Text="" end
 			end)
 			ChatInput.FocusLost:Connect(function(enter)
-				if enter then local t=ChatInput.Text; if t:match("%S") then DoSend(t);ChatInput.Text="" end end
+				if enter then local t=ChatInput.Text; if t:match("%S") then DoSend(t) end; ChatInput.Text="" end
 			end)
 
 			task.spawn(Connect)
