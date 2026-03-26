@@ -2143,11 +2143,11 @@ local Funcs = {} do
 		Obj.Visible = Bool ~= nil and Bool or not Obj.Visible
 	end
 
-	function Funcs:ToggleParent(Obj, Parent)
+	function Funcs:ToggleParent(Obj, Bool, Parent)
 		if Bool ~= nil then
-			Obj.Parent = Bool
+			Obj.Parent = Bool and Parent or nil
 		else
-			Obj.Parent = not Obj.Parent and Parent
+			Obj.Parent = Obj.Parent and nil or Parent
 		end
 	end
 
@@ -2974,14 +2974,14 @@ function redzlib:MakeWindow(Configs)
 			return track, fill, knob
 		end
 
-		MkLabel("ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¼  IMAGE (rbxassetid / url)", 1)
+		MkLabel("IMAGE (rbxassetid / url)", 1)
 		local _, ImageInput = MkInput("rbxassetid://...", 2)
-		MkLabel("ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ  SIZE  (20 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ 120)", 3)
+		MkLabel("SIZE  (20 - 120)", 3)
 		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
-		local _, SizeInput = MkInput("20 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ 120", 5)
-		MkLabel("ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ§  TRANSPARENCY  (0.0 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ 1.0)", 6)
+		local _, SizeInput = MkInput("20 - 120", 5)
+		MkLabel("TRANSPARENCY  (0.0 - 1.0)", 6)
 		local TransTrack, TransFill, TransKnob = MkSlider(7)
-		local _, TransInput = MkInput("0.0 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ 1.0", 8)
+		local _, TransInput = MkInput("0.0 - 1.0", 8)
 
 		local ClosePanel = Create("TextButton", Panel, {
 			Size = UDim2.fromOffset(14, 14),
@@ -2991,7 +2991,7 @@ function redzlib:MakeWindow(Configs)
 			Font = Enum.Font.GothamBold,
 			TextSize = 12,
 			TextColor3 = Theme["Color Dark Text"],
-			Text = "ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ",
+			Text = "x",
 			ZIndex = 25
 		})
 
