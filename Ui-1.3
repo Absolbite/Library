@@ -370,7 +370,6 @@ local redzlib = {
 			["Color Text"] = Color3.fromRGB(210, 200, 255),
 			["Color Dark Text"] = Color3.fromRGB(140, 125, 200)
 		},
-		-- ===== NEW 30 THEMES =====
 		Mint = {
 			["Color Hub 1"] = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(8, 28, 22)),
@@ -719,7 +718,6 @@ local redzlib = {
 			["Color Text"] = Color3.fromRGB(255, 225, 250),
 			["Color Dark Text"] = Color3.fromRGB(215, 160, 205)
 		},
-		-- ===== NEW 40 THEMES (total 100) =====
 		Titan = {
 			["Color Hub 1"] = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(12, 12, 18)),
@@ -2120,7 +2118,7 @@ local SetProps, SetChildren, InsertTheme, Create do
 		end
 	end
 
-	pcall(Save, "redz library V5.json")
+	pcall(Save, "smooth library.json")
 end
 
 local Funcs = {} do
@@ -2143,11 +2141,11 @@ local Funcs = {} do
 		Obj.Visible = Bool ~= nil and Bool or not Obj.Visible
 	end
 
-	function Funcs:ToggleParent(Obj, Bool, Parent)
+	function Funcs:ToggleParent(Obj, Parent)
 		if Bool ~= nil then
-			Obj.Parent = Bool and Parent or nil
+			Obj.Parent = Bool
 		else
-			Obj.Parent = Obj.Parent and nil or Parent
+			Obj.Parent = not Obj.Parent and Parent
 		end
 	end
 
@@ -2256,7 +2254,7 @@ local GetFlag, SetFlag, CheckFlag do
 end
 
 local ScreenGui = Create("ScreenGui", CoreGui, {
-	Name = "redz Library V5",
+	Name = "smooth library",
 }, {
 	Create("UIScale", {
 		Scale = UIScale,
@@ -2354,7 +2352,6 @@ end
 local Theme = redzlib.Themes[redzlib.Save.Theme]
 
 local CurrentTransparency = redzlib.Save.Transparency or 0.03
-
 local _MainFrame = nil
 
 local function AddEle(Name, Func)
@@ -2537,7 +2534,7 @@ function redzlib:SetTheme(NewTheme)
 	if not VerifyTheme(NewTheme) then return end
 
 	redzlib.Save.Theme = NewTheme
-	SaveJson("redz library V5.json", redzlib.Save)
+	SaveJson("smooth library.json", redzlib.Save)
 	Theme = redzlib.Themes[NewTheme]
 
 	Connection:FireConnection("ThemeChanged", NewTheme)
@@ -2549,7 +2546,6 @@ function redzlib:SetTheme(NewTheme)
 		elseif Val.Type == "Frame" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
 		elseif Val.Type == "Main" then
-			-- MainFrame (ImageButton) uses gradient, just update bg color
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
 		elseif Val.Type == "Stroke" then
 			local prop = GetColor(inst)
@@ -2574,7 +2570,7 @@ function redzlib:SetTransparency(value)
 	value = math.clamp(tonumber(value) or 0, 0, 0.95)
 	CurrentTransparency = value
 	redzlib.Save.Transparency = value
-	SaveJson("redz library V5.json", redzlib.Save)
+	SaveJson("smooth library.json", redzlib.Save)
 	if _MainFrame then
 		_MainFrame.BackgroundTransparency = value
 	end
@@ -2612,10 +2608,23 @@ function redzlib:SetScale(NewScale)
 end
 
 function redzlib:MakeWindow(Configs)
-	local WTitle = Configs[1] or Configs.Name or Configs.Title or "redz Library V5"
+	local WTitle = Configs[1] or Configs.Name or Configs.Title or "smooth library"
 	local WMiniText = Configs[2] or Configs.SubTitle or "by : redz9999"
 
-	Settings.ScriptFile = Configs[3] or Configs.SaveFolder or false
+	local SaveFolder = Configs[3] or Configs.SaveFolder or false
+
+	local function BuildScriptFile()
+		if not SaveFolder then return false end
+		if not makefolder or not isfolder or not writefile then return false end
+		local PlayerName = Player.Name
+		local Root = "smoothlib"
+		local GameFolder = Root .. "/" .. tostring(SaveFolder)
+		if not isfolder(Root) then makefolder(Root) end
+		if not isfolder(GameFolder) then makefolder(GameFolder) end
+		return GameFolder .. "/" .. PlayerName .. ".json"
+	end
+
+	Settings.ScriptFile = BuildScriptFile()
 
 	local function LoadFile()
 		local File = Settings.ScriptFile
@@ -2684,7 +2693,6 @@ function redzlib:MakeWindow(Configs)
 		Name = "SubTitle"
 	}), "DarkText")
 
-	-- TagHolder ÑÑÐ´Ð¾Ð¼ Ñ SubTitle
 	local TagHolder = Create("Frame", SubTitle, {
 		AnchorPoint = Vector2.new(0, 0.5),
 		Position = UDim2.new(1, 8, 0.5, 0),
@@ -2765,13 +2773,13 @@ function redzlib:MakeWindow(Configs)
 	ConnectSave(ControlSize1, function()
 		if not Minimized then
 			redzlib.Save.UISize = {MainFrame.Size.X.Offset, MainFrame.Size.Y.Offset}
-			SaveJson("redz library V5.json", redzlib.Save)
+			SaveJson("smooth library.json", redzlib.Save)
 		end
 	end)
 
 	ConnectSave(ControlSize2, function()
 		redzlib.Save.TabSize = MainScroll.Size.X.Offset
-		SaveJson("redz library V5.json", redzlib.Save)
+		SaveJson("smooth library.json", redzlib.Save)
 	end)
 
 	local ButtonsFolder = Create("Folder", TopBar, { Name = "Buttons" })
@@ -2854,7 +2862,7 @@ function redzlib:MakeWindow(Configs)
 				posX  = Button and Button.Position.X.Offset or nil,
 				posY  = Button and Button.Position.Y.Offset or nil,
 			}
-			SaveJson("redz library V5.json", redzlib.Save)
+			SaveJson("smooth library.json", redzlib.Save)
 		end
 
 		local Button = MakeDrag(Create("ImageButton", ScreenGui, {
@@ -2893,7 +2901,7 @@ function redzlib:MakeWindow(Configs)
 				redzlib.Save.MinimizeButtons[BtnId] = redzlib.Save.MinimizeButtons[BtnId] or {}
 				redzlib.Save.MinimizeButtons[BtnId].posX = p.X.Offset
 				redzlib.Save.MinimizeButtons[BtnId].posY = p.Y.Offset
-				SaveJson("redz library V5.json", redzlib.Save)
+				SaveJson("smooth library.json", redzlib.Save)
 			end)
 		end)
 
@@ -2974,14 +2982,14 @@ function redzlib:MakeWindow(Configs)
 			return track, fill, knob
 		end
 
-		MkLabel("IMAGE (rbxassetid / url)", 1)
+		MkLabel("ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¼  IMAGE (rbxassetid / url)", 1)
 		local _, ImageInput = MkInput("rbxassetid://...", 2)
-		MkLabel("SIZE  (20 - 120)", 3)
+		MkLabel("ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ  SIZE  (20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120)", 3)
 		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
-		local _, SizeInput = MkInput("20 - 120", 5)
-		MkLabel("TRANSPARENCY  (0.0 - 1.0)", 6)
+		local _, SizeInput = MkInput("20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120", 5)
+		MkLabel("ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ§  TRANSPARENCY  (0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0)", 6)
 		local TransTrack, TransFill, TransKnob = MkSlider(7)
-		local _, TransInput = MkInput("0.0 - 1.0", 8)
+		local _, TransInput = MkInput("0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0", 8)
 
 		local ClosePanel = Create("TextButton", Panel, {
 			Size = UDim2.fromOffset(14, 14),
@@ -2991,7 +2999,7 @@ function redzlib:MakeWindow(Configs)
 			Font = Enum.Font.GothamBold,
 			TextSize = 12,
 			TextColor3 = Theme["Color Dark Text"],
-			Text = "x",
+			Text = "ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ",
 			ZIndex = 25
 		})
 
@@ -3120,7 +3128,7 @@ function redzlib:MakeWindow(Configs)
 				posX  = p.X.Offset ~= 0 and p.X.Offset or nil,
 				posY  = p.Y.Offset ~= 0 and p.Y.Offset or nil,
 			}
-			SaveJson("redz library V5.json", redzlib.Save)
+			SaveJson("smooth library.json", redzlib.Save)
 		end
 
 		return {
@@ -3238,7 +3246,7 @@ function redzlib:MakeWindow(Configs)
 			BackgroundTransparency = 1,
 			AutoButtonColor = false
 		})
- 
+
 		InsertTheme(Create("Frame", Frame, {
 			Size = UDim2.new(1, -24, 0, 1),
 			Position = UDim2.fromOffset(12, 36),
@@ -3467,7 +3475,7 @@ function redzlib:MakeWindow(Configs)
 					for _, btn in pairs(redzlib.Save.MinimizeButtons) do
 						btn.image = id
 					end
-					SaveJson("redz library V5.json", redzlib.Save)
+					SaveJson("smooth library.json", redzlib.Save)
 				end
 			end
 
@@ -3508,7 +3516,7 @@ function redzlib:MakeWindow(Configs)
 		function Dialog:Button(Cfg)
 			local Name = Cfg[1] or Cfg.Name or Cfg.Title or ""
 			local Callback = Cfg[2] or Cfg.Callback or function()end
-			local BtnColor = Cfg.Color
+			local BtnColor = Cfg.Color -- ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¸ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ»ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¹ ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ²ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂµÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¸
 			ButtonCount = ButtonCount + 1
 			local Btn = Make("Button", ButtonsHolder)
 			Make("Corner", Btn, UDim.new(0, 5))
@@ -3725,6 +3733,29 @@ function redzlib:MakeWindow(Configs)
 		end
 		function Tab:Destroy() TabSelect:Destroy(); Container:Destroy() end
 
+		function Tab:AddDivider()
+			local DividerFrame = Create("Frame", Container, {
+				Size = UDim2.new(1, 0, 0, 10),
+				BackgroundTransparency = 1,
+				Name = "Option"
+			})
+
+			local Line = InsertTheme(Create("Frame", DividerFrame, {
+				Size = UDim2.new(1, -20, 0, 1),
+				Position = UDim2.new(0, 10, 0.5, 0),
+				AnchorPoint = Vector2.new(0, 0.5),
+				BackgroundColor3 = Theme["Color Stroke"]
+			}), "Stroke")
+
+			local Divider = {}
+			function Divider:Visible(Bool)
+				if Bool == nil then DividerFrame.Visible = not DividerFrame.Visible return end
+				DividerFrame.Visible = Bool
+			end
+			function Divider:Destroy() DividerFrame:Destroy() end
+			return Divider
+		end
+
 		function Tab:AddSection(Configs)
 			local SectionName = type(Configs) == "string" and Configs or Configs[1] or Configs.Name or Configs.Title or Configs.Section
 
@@ -3757,30 +3788,6 @@ function redzlib:MakeWindow(Configs)
 				if New then SectionLabel.Text = GetStr(New) end
 			end
 			return Section
-		end
-
-
-		function Tab:AddSeparator()
-			local SepFrame = Create("Frame", Container, {
-				Size = UDim2.new(1, 0, 0, 10),
-				BackgroundTransparency = 1,
-				Name = "Option"
-			})
-
-			local Line = InsertTheme(Create("Frame", SepFrame, {
-				Size = UDim2.new(1, -20, 0, 1),
-				Position = UDim2.new(0, 10, 0.5, 0),
-				AnchorPoint = Vector2.new(0, 0.5),
-				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke")
-
-			local Separator = {}
-			function Separator:Visible(Bool)
-				if Bool == nil then SepFrame.Visible = not SepFrame.Visible return end
-				SepFrame.Visible = Bool
-			end
-			function Separator:Destroy() SepFrame:Destroy() end
-			return Separator
 		end
 
 
@@ -4249,7 +4256,7 @@ function redzlib:MakeWindow(Configs)
 				end
 
 				AddNewOptions = function(List, Clear)
-					if Clear then  
+					if Clear then
 						for k, v in pairs(Options) do
 							if v.nodes and v.nodes[1] then
 								v.nodes[1]:Destroy()
@@ -4490,7 +4497,7 @@ function redzlib:MakeWindow(Configs)
 				if Max == Min then return 0 end
 				return (v - Min) / (Max - Min)
 			end
- 
+
 			local function ScaleToValue(s)
 				local raw = s * (Max - Min) + Min
 				local stepped = math.floor(raw / Increase + 0.5) * Increase
