@@ -2296,8 +2296,8 @@ local function CreateTween(Configs)
 	local Time = Configs[4] or Configs.Time or 0.5
 	local TweenWait = Configs[5] or Configs.wait or false
 
-	-- ÐÑÐ¼ÐµÐ½ÑÐµÐ¼ Ð¿ÑÐµÐ´ÑÐ´ÑÑÐ¸Ð¹ tween Ð´Ð»Ñ ÑÐ¾Ð³Ð¾ Ð¶Ðµ instance+property
-	local key = tostring(Inst) .. Prop
+	-- Ð£Ð½Ð¸ÐºÐ°Ð»ÑÐ½ÑÐ¹ ÐºÐ»ÑÑ Ð¿Ð¾ ÑÐºÐ°Ð·Ð°ÑÐµÐ»Ñ Ð¸Ð½ÑÑÐ°Ð½ÑÐ° (GetDebugId) + property
+	local key = Inst:GetDebugId() .. Prop
 	if ActiveTweens[key] then
 		ActiveTweens[key]:Cancel()
 		ActiveTweens[key] = nil
@@ -4315,18 +4315,21 @@ function redzlib:MakeWindow(Configs)
 			end
 
 			Button.Activated:Connect(Minimize)
-			NoClickFrame.MouseButton1Down:Connect(function()
+
+			-- ÐÐ°ÐºÑÑÐ²Ð°ÐµÐ¼ ÑÐ¾Ð»ÑÐºÐ¾ ÐµÑÐ»Ð¸ ÐºÐ»Ð¸Ðº ÐÐÐ DropFrame (Ð° Ð½Ðµ ÑÐ¾Ð»ÑÐºÐ¾ Ð²Ð½Ðµ SearchHolder)
+			local function IsInsideDropFrame()
 				local mouse = PlayerMouse
-				local sh = SearchHolder.AbsolutePosition
-				local ss = SearchHolder.AbsoluteSize
-				if mouse.X >= sh.X and mouse.X <= sh.X + ss.X and mouse.Y >= sh.Y and mouse.Y <= sh.Y + ss.Y then return end
+				local df = DropFrame.AbsolutePosition
+				local ds = DropFrame.AbsoluteSize
+				return mouse.X >= df.X and mouse.X <= df.X + ds.X and mouse.Y >= df.Y and mouse.Y <= df.Y + ds.Y
+			end
+
+			NoClickFrame.MouseButton1Down:Connect(function()
+				if IsInsideDropFrame() then return end
 				Disable()
 			end)
 			NoClickFrame.MouseButton1Click:Connect(function()
-				local mouse = PlayerMouse
-				local sh = SearchHolder.AbsolutePosition
-				local ss = SearchHolder.AbsoluteSize
-				if mouse.X >= sh.X and mouse.X <= sh.X + ss.X and mouse.Y >= sh.Y and mouse.Y <= sh.Y + ss.Y then return end
+				if IsInsideDropFrame() then return end
 				Disable()
 			end)
 			MainFrame:GetPropertyChangedSignal("Visible"):Connect(Disable)
