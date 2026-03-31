@@ -4059,14 +4059,15 @@ function redzlib:MakeWindow(Configs)
 			local ScrollSize, WaitDrop = 5
 
 			local function Disable()
+				if WaitDrop then return end
 				WaitDrop = true
 				CreateTween({Arrow, "Rotation", 0, 0.2})
-				CreateTween({DropFrame, "Size", UDim2.new(0, 152, 0, 0), 0.2, true})
 				CreateTween({Arrow, "ImageColor3", Color3.fromRGB(255, 255, 255), 0.2})
 				Arrow.Image = "rbxassetid://10709791523"
 				NoClickFrame.Visible = false
 				SearchBox.Text = ""
-				WaitDrop = false
+				CreateTween({DropFrame, "Size", UDim2.new(0, 152, 0, 0), 0.2})
+				task.delay(0.21, function() WaitDrop = false end)
 			end
 
 			local function GetFrameSize()
@@ -4092,16 +4093,16 @@ function redzlib:MakeWindow(Configs)
 				if NoClickFrame.Visible then
 					Arrow.Image = "rbxassetid://10709791523"
 					CreateTween({Arrow, "ImageColor3", Color3.fromRGB(255, 255, 255), 0.2})
-					CreateTween({DropFrame, "Size", UDim2.new(0, 152, 0, 0), 0.2, true})
+					CreateTween({DropFrame, "Size", UDim2.new(0, 152, 0, 0), 0.2})
 					NoClickFrame.Visible = false
 					SearchBox.Text = ""
 				else
 					NoClickFrame.Visible = true
 					Arrow.Image = "rbxassetid://10709790948"
 					CreateTween({Arrow, "ImageColor3", Theme["Color Theme"], 0.2})
-					CreateTween({DropFrame, "Size", GetFrameSize(), 0.2, true})
+					CreateTween({DropFrame, "Size", GetFrameSize(), 0.2})
 				end
-				WaitDrop = false
+				task.delay(0.21, function() WaitDrop = false end)
 			end
 
 			local function CalculatePos()
@@ -4199,6 +4200,7 @@ function redzlib:MakeWindow(Configs)
 						end
 					else
 						Selected = Opt.Value
+						task.defer(Disable)
 					end
 					CallbackSelected()
 					UpdateSelected()
