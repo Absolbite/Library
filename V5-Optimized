@@ -4200,7 +4200,6 @@ function redzlib:MakeWindow(Configs)
 						end
 					else
 						Selected = Opt.Value
-						task.defer(Disable)
 					end
 					CallbackSelected()
 					UpdateSelected()
@@ -4295,12 +4294,12 @@ function redzlib:MakeWindow(Configs)
 						end
 						UpdateLabel()
 					end
-					for _,v in ipairs(List) do AddOption(v) end
+					for i,v in ipairs(List) do AddOption(i, v) end
 					CallbackSelected()
 					UpdateSelected()
 				end
 
-				for _,v in ipairs(DOptions) do AddOption(v) end
+				for i,v in ipairs(DOptions) do AddOption(i, v) end
 				CallbackSelected()
 				UpdateSelected()
 
@@ -4350,9 +4349,9 @@ function redzlib:MakeWindow(Configs)
 			function Dropdown:Add(...)
 				local NewOptions = {...}
 				if type(NewOptions[1]) == "table" then
-					for _,Name in ipairs(NewOptions[1]) do AddOption(Name) end
+					for i,Name in ipairs(NewOptions[1]) do AddOption(i, Name) end
 				else
-					for _,Name in ipairs(NewOptions) do AddOption(Name) end
+					for i,Name in ipairs(NewOptions) do AddOption(i, Name) end
 				end
 			end
 
