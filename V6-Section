@@ -3822,7 +3822,7 @@ function redzlib:MakeWindow(Configs)
 				BackgroundTransparency = 1,
 				TextTruncate     = Enum.TextTruncate.AtEnd,
 				Name             = "SectionTitle"
-			}), "Text")
+			})
 
 			-- Ð¡ÑÑÐµÐ»ÐºÐ° ÑÐ¿ÑÐ°Ð²Ð° (ImageLabel + Rotation â Ð½Ðµ Ð·Ð°Ð²Ð¸ÑÐ¸Ñ Ð¾Ñ ÑÑÐ¸ÑÑÐ°)
 			local ArrowLabel = InsertTheme(Create("ImageLabel", HeaderBtn, {
