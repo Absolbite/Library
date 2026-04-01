@@ -3733,19 +3733,39 @@ function redzlib:MakeWindow(Configs)
 		end
 		function Tab:Destroy() TabSelect:Destroy(); Container:Destroy() end
 
-		function Tab:AddDivider()
+		function Tab:AddDivider(Configs)
+			local DText = type(Configs) == "string" and Configs
+				or (type(Configs) == "table" and (Configs[1] or Configs.Text or Configs.Title or Configs.Name))
+				or nil
+
 			local DividerFrame = Create("Frame", Container, {
-				Size = UDim2.new(1, 0, 0, 10),
+				Size = UDim2.new(1, 0, 0, DText and 18 or 10),
 				BackgroundTransparency = 1,
 				Name = "Option"
 			})
 
-			local Line = InsertTheme(Create("Frame", DividerFrame, {
-				Size = UDim2.new(1, -20, 0, 1),
-				Position = UDim2.new(0, 10, 0.5, 0),
-				AnchorPoint = Vector2.new(0, 0.5),
-				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke")
+			if DText then
+				-- Ð¢ÐµÐºÑÑÐ¾Ð²ÑÐ¹ ÑÐ°Ð·Ð´ÐµÐ»Ð¸ÑÐµÐ»Ñ: Ð¿ÑÐ¾ÑÑÐ¾ ÑÐµÐºÑÑ Ð¿Ð¾ ÑÐµÐ½ÑÑÑ
+				InsertTheme(Create("TextLabel", DividerFrame, {
+					Font             = Enum.Font.GothamBold,
+					Text             = DText,
+					TextColor3       = Theme["Color Dark Text"],
+					TextSize         = 9,
+					Size             = UDim2.new(1, 0, 1, 0),
+					BackgroundTransparency = 1,
+					TextXAlignment   = Enum.TextXAlignment.Center,
+					TextYAlignment   = Enum.TextYAlignment.Center,
+					Name             = "DividerLabel"
+				}), "DarkText")
+			else
+				-- ÐÐ±ÑÑÐ½ÑÐ¹ ÑÐ°Ð·Ð´ÐµÐ»Ð¸ÑÐµÐ»Ñ â Ð»Ð¸Ð½Ð¸Ñ
+				InsertTheme(Create("Frame", DividerFrame, {
+					Size = UDim2.new(1, -20, 0, 1),
+					Position = UDim2.new(0, 10, 0.5, 0),
+					AnchorPoint = Vector2.new(0, 0.5),
+					BackgroundColor3 = Theme["Color Stroke"]
+				}), "Stroke")
+			end
 
 			local Divider = {}
 			function Divider:Visible(Bool)
@@ -3804,16 +3824,15 @@ function redzlib:MakeWindow(Configs)
 				Name             = "SectionTitle"
 			}), "Text")
 
-			-- Ð¡ÑÑÐµÐ»ÐºÐ° ÑÐ¿ÑÐ°Ð²Ð°
-			local ArrowLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
-				Font             = Enum.Font.GothamBold,
-				Text             = ">",
-				TextColor3       = Theme["Color Dark Text"],
-				TextSize         = 11,
-				Size             = UDim2.new(0, 18, 1, 0),
-				Position         = UDim2.new(1, -22, 0, 0),
+			-- Ð¡ÑÑÐµÐ»ÐºÐ° ÑÐ¿ÑÐ°Ð²Ð° (ImageLabel + Rotation â Ð½Ðµ Ð·Ð°Ð²Ð¸ÑÐ¸Ñ Ð¾Ñ ÑÑÐ¸ÑÑÐ°)
+			local ArrowLabel = InsertTheme(Create("ImageLabel", HeaderBtn, {
+				Image            = "rbxassetid://10709791437",
+				ImageColor3      = Theme["Color Dark Text"],
+				Size             = UDim2.new(0, 10, 0, 10),
+				Position         = UDim2.new(1, -18, 0.5, 0),
+				AnchorPoint      = Vector2.new(1, 0.5),
 				BackgroundTransparency = 1,
-				TextXAlignment   = Enum.TextXAlignment.Center,
+				Rotation         = 0,
 				Name             = "ArrowLabel"
 			}), "DarkText")
 
@@ -3878,7 +3897,8 @@ function redzlib:MakeWindow(Configs)
 
 			local function SetOpen(newState)
 				isOpen = newState
-				ArrowLabel.Text = isOpen and "â¨" or ">"
+				-- 0 = > (Ð·Ð°ÐºÑÑÑÐ¾), 90 = v (Ð¾ÑÐºÑÑÑÐ¾)
+				CreateTween({ ArrowLabel, "Rotation", isOpen and 90 or 0, 0.18 })
 				CreateTween({ BottomLine, "BackgroundTransparency", isOpen and 0 or 1, 0.15 })
 				CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.08 or 0, 0.15 })
 				RefreshWrapperSize()
@@ -3907,7 +3927,7 @@ function redzlib:MakeWindow(Configs)
 			if StartOpen then
 				task.defer(function() SetOpen(true) end)
 			else
-				ArrowLabel.Text = ">"
+				ArrowLabel.Rotation = 0
 				BottomLine.BackgroundTransparency = 1
 				SectionWrapper.Size = UDim2.new(1, 0, 0, 26)
 				InnerContainer.Size = UDim2.new(1, 0, 0, 0)
@@ -3951,60 +3971,24 @@ function redzlib:MakeWindow(Configs)
 
 
 		function Tab:AddParagraph(Configs)
-			Configs = type(Configs) == "string" and { Name = Configs } or (Configs or {})
-			local PName = Configs[1] or Configs.Title or Configs.Name or ""
-			local PDesc = Configs[2] or Configs.Text or Configs.Description or ""
+			local PName = Configs[1] or Configs.Title or "Paragraph"
+			local PDesc = Configs[2] or Configs.Text or ""
 
-			-- ÐÑÐ°Ð¿Ð¿ÐµÑ ÑÐµÐºÑÐ¸Ð¸-ÑÐ°Ð·Ð´ÐµÐ»Ð¸ÑÐµÐ»Ñ
-			local PFrame = Create("Frame", Container, {
-				Size             = UDim2.new(1, 0, 0, 18),
-				BackgroundTransparency = 1,
-				AutomaticSize    = Enum.AutomaticSize.Y,
-				Name             = "Option"
-			})
-
-			-- ÐÐµÐ²Ð°Ñ Ð»Ð¸Ð½Ð¸Ñ
-			InsertTheme(Create("Frame", PFrame, {
-				Size             = UDim2.new(0.45, -6, 0, 1),
-				Position         = UDim2.new(0, 0, 0, 9),
-				BackgroundColor3 = Theme["Color Stroke"],
-				AnchorPoint      = Vector2.new(0, 0)
-			}), "Stroke")
-
-			-- ÐÑÐ°Ð²Ð°Ñ Ð»Ð¸Ð½Ð¸Ñ
-			InsertTheme(Create("Frame", PFrame, {
-				Size             = UDim2.new(0.45, -6, 0, 1),
-				Position         = UDim2.new(0.55, 6, 0, 9),
-				BackgroundColor3 = Theme["Color Stroke"],
-				AnchorPoint      = Vector2.new(0, 0)
-			}), "Stroke")
-
-			-- Ð¢ÐµÐºÑÑ Ð¿Ð¾ ÑÐµÐ½ÑÑÑ (Title Ð¸Ð»Ð¸ Description)
-			local DisplayText = PName ~= "" and PName or PDesc
-			InsertTheme(Create("TextLabel", PFrame, {
-				Font             = Enum.Font.GothamBold,
-				Text             = DisplayText,
-				TextColor3       = Theme["Color Dark Text"],
-				TextSize         = 9,
-				Size             = UDim2.new(0.1, 0, 0, 18),
-				Position         = UDim2.new(0.5, 0, 0, 0),
-				AnchorPoint      = Vector2.new(0.5, 0),
-				AutomaticSize    = Enum.AutomaticSize.X,
-				BackgroundTransparency = 1,
-				TextXAlignment   = Enum.TextXAlignment.Center,
-				TextTruncate     = Enum.TextTruncate.AtEnd,
-				Name             = "ParagraphLabel"
-			}), "DarkText")
+			local Frame, LabelFunc = ButtonFrame(Container, PName, PDesc, UDim2.new(1, -20))
 
 			local Paragraph = {}
-			function Paragraph:Visible(Bool)
-				if Bool == nil then PFrame.Visible = not PFrame.Visible return end
-				PFrame.Visible = Bool
+			function Paragraph:Visible(...) Funcs:ToggleVisible(Frame, ...) end
+			function Paragraph:Destroy() Frame:Destroy() end
+			function Paragraph:SetTitle(Val) LabelFunc:SetTitle(GetStr(Val)) end
+			function Paragraph:SetDesc(Val) LabelFunc:SetDesc(GetStr(Val)) end
+			function Paragraph:Set(Val1, Val2)
+				if Val1 and Val2 then
+					LabelFunc:SetTitle(GetStr(Val1))
+					LabelFunc:SetDesc(GetStr(Val2))
+				elseif Val1 then
+					LabelFunc:SetDesc(GetStr(Val1))
+				end
 			end
-			function Paragraph:Destroy() PFrame:Destroy() end
-			function Paragraph:SetTitle(Val) end
-			function Paragraph:SetDesc(Val) end
-			function Paragraph:Set(Val1, Val2) end
 			return Paragraph
 		end
 
