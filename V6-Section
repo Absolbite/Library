@@ -3863,18 +3863,16 @@ function redzlib:MakeWindow(Configs)
 			local isOpen = false
 
 			local function GetInnerHeight()
-				local layout = InnerContainer:FindFirstChildOfClass("UIListLayout")
-				local padding = InnerContainer:FindFirstChildOfClass("UIPadding")
-				local count = 0
-				local h = 0
-				for _, child in ipairs(InnerContainer:GetChildren()) do
-					if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Visible then
-						h = h + child.AbsoluteSize.Y
-						count = count + 1
-					end
-				end
-				if count > 0 then
-					h = h + (count - 1) * 5 -- gaps between elements
+			    local count = 0
+			    local h = 0
+			    for _, child in ipairs(InnerContainer:GetChildren()) do
+			        if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Visible then
+				            h = h + child.Size.Y.Offset
+				            count = count + 1
+			        end
+			    end
+			    if count > 0 then
+			        h = h + (count - 1) * 5
 				end
 				h = h + 10 -- top + bottom padding
 				return h
