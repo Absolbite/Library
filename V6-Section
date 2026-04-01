@@ -3739,18 +3739,17 @@ function redzlib:MakeWindow(Configs)
 				or nil
 
 			local DividerFrame = Create("Frame", Container, {
-				Size = UDim2.new(1, 0, 0, DText and 28 or 10),
+				Size = UDim2.new(1, 0, 0, DText and 20 or 10),
 				BackgroundTransparency = 1,
 				Name = "Option"
 			})
 
 			if DText then
-				-- Ð¢ÐµÐºÑÑÐ¾Ð²ÑÐ¹ ÑÐ°Ð·Ð´ÐµÐ»Ð¸ÑÐµÐ»Ñ: Ð¿ÑÐ¾ÑÑÐ¾ ÑÐµÐºÑÑ Ð¿Ð¾ ÑÐµÐ½ÑÑÑ
 				InsertTheme(Create("TextLabel", DividerFrame, {
 					Font             = Enum.Font.GothamBold,
 					Text             = DText,
 					TextColor3       = Theme["Color Dark Text"],
-					TextSize         = 18,
+					TextSize         = 11,
 					Size             = UDim2.new(1, 0, 1, 0),
 					BackgroundTransparency = 1,
 					TextXAlignment   = Enum.TextXAlignment.Center,
@@ -3758,11 +3757,10 @@ function redzlib:MakeWindow(Configs)
 					Name             = "DividerLabel"
 				}), "DarkText")
 			else
-				-- ÐÐ±ÑÑÐ½ÑÐ¹ ÑÐ°Ð·Ð´ÐµÐ»Ð¸ÑÐµÐ»Ñ â Ð»Ð¸Ð½Ð¸Ñ
 				InsertTheme(Create("Frame", DividerFrame, {
-					Size = UDim2.new(1, -20, 0, 1),
-					Position = UDim2.new(0, 10, 0.5, 0),
-					AnchorPoint = Vector2.new(0, 0.5),
+					Size             = UDim2.new(1, 0, 0, 1),
+					Position         = UDim2.new(0, 0, 0.5, 0),
+					AnchorPoint      = Vector2.new(0, 0.5),
 					BackgroundColor3 = Theme["Color Stroke"]
 				}), "Stroke")
 			end
@@ -3802,13 +3800,14 @@ function redzlib:MakeWindow(Configs)
 			Make("Stroke", HeaderBtn)
 
 			-- ÐÐµÑÑÐ¸ÐºÐ°Ð»ÑÐ½Ð°Ñ Ð°ÐºÑÐµÐ½Ñ-Ð¿Ð¾Ð»Ð¾ÑÐºÐ° ÑÐ»ÐµÐ²Ð°
-			InsertTheme(Create("Frame", HeaderBtn, {
-				Size             = UDim2.new(0, 2, 0.55, 0),
-				Position         = UDim2.new(0, 0, 0.5, 0),
+			local AccentLine = InsertTheme(Create("Frame", HeaderBtn, {
+				Size             = UDim2.new(0, 3, 0.55, 0),
+				Position         = UDim2.new(0, 7, 0.5, 0),
 				AnchorPoint      = Vector2.new(0, 0.5),
 				BackgroundColor3 = Theme["Color Theme"],
 				Name             = "AccentLine"
 			}), "Theme")
+			Make("Corner", AccentLine, UDim.new(0.5, 0))
 
 			-- ÐÐ°Ð·Ð²Ð°Ð½Ð¸Ðµ
 			local HeaderLabel = Create("TextLabel", HeaderBtn, {
