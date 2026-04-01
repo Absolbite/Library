@@ -3763,15 +3763,15 @@ function redzlib:MakeWindow(Configs)
 
 			-- ââ ÐÐ½ÐµÑÐ½Ð¸Ð¹ ÐºÐ»Ð¸Ð¿Ð°ÑÑÐ¸Ð¹ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ âââââââââââââââââââââââââââââââ
 			local SectionWrapper = Create("Frame", Container, {
-				Size             = UDim2.new(1, 0, 0, 32),
+				Size             = UDim2.new(1, 0, 0, 26),
 				BackgroundTransparency = 1,
 				ClipsDescendants = true,
 				Name             = "Option"
 			})
 
-			-- ââ Ð¨Ð°Ð¿ÐºÐ° â Ð¿Ð¾Ð»Ð½Ð¾ÑÐ¸ÑÐ¸Ð½Ð½Ð°Ñ ÐºÐ½Ð¾Ð¿ÐºÐ° (ÑÑÐ¸Ð»Ñ ÐºÐ°Ðº Ð½Ð° ÑÐºÑÐ¸Ð½ÑÐ¾ÑÐµ) âââââ
+			-- ââ Ð¨Ð°Ð¿ÐºÐ° âââââââââââââââââââââââââââââââââââââââââââââââââââââ
 			local HeaderBtn = InsertTheme(Create("TextButton", SectionWrapper, {
-				Size             = UDim2.new(1, 0, 0, 32),
+				Size             = UDim2.new(1, 0, 0, 26),
 				BackgroundColor3 = Theme["Color Hub 2"],
 				BackgroundTransparency = 0,
 				Text             = "",
@@ -3779,50 +3779,57 @@ function redzlib:MakeWindow(Configs)
 				Name             = "SectionHeader"
 			}), "Frame")
 			Make("Corner", HeaderBtn, UDim.new(0, 7))
-
-			-- ÐÐ±Ð²Ð¾Ð´ÐºÐ° ÑÐ°Ð¿ÐºÐ¸
 			Make("Stroke", HeaderBtn)
 
-			-- ÐÐ°Ð·Ð²Ð°Ð½Ð¸Ðµ ÑÐµÐºÑÐ¸Ð¸ (ÑÐ»ÐµÐ²Ð°, ÐºÑÑÐ¿Ð½ÐµÐµ)
+			-- ÐÐµÑÑÐ¸ÐºÐ°Ð»ÑÐ½Ð°Ñ Ð°ÐºÑÐµÐ½Ñ-Ð¿Ð¾Ð»Ð¾ÑÐºÐ° ÑÐ»ÐµÐ²Ð°
+			InsertTheme(Create("Frame", HeaderBtn, {
+				Size             = UDim2.new(0, 2, 0.5, 0),
+				Position         = UDim2.new(0, 0, 0.5, 0),
+				AnchorPoint      = Vector2.new(0, 0.5),
+				BackgroundColor3 = Theme["Color Theme"],
+				Name             = "AccentLine"
+			}), "Theme")
+
+			-- ÐÐ°Ð·Ð²Ð°Ð½Ð¸Ðµ
 			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
 				Font             = Enum.Font.GothamBold,
 				Text             = SectionName,
 				TextColor3       = Theme["Color Text"],
-				TextSize         = 12,
+				TextSize         = 10,
 				TextXAlignment   = Enum.TextXAlignment.Left,
-				Size             = UDim2.new(1, -36, 1, 0),
-				Position         = UDim2.new(0, 12, 0, 0),
+				Size             = UDim2.new(1, -30, 1, 0),
+				Position         = UDim2.new(0, 10, 0, 0),
 				BackgroundTransparency = 1,
 				TextTruncate     = Enum.TextTruncate.AtEnd,
 				Name             = "SectionTitle"
 			}), "Text")
 
-			-- Ð¡ÑÑÐµÐ»ÐºÐ° ÑÐ¿ÑÐ°Ð²Ð°: > (Ð·Ð°ÐºÑÑÑÐ¾) / â¨ (Ð¾ÑÐºÑÑÑÐ¾)
+			-- Ð¡ÑÑÐµÐ»ÐºÐ° ÑÐ¿ÑÐ°Ð²Ð°
 			local ArrowLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
 				Font             = Enum.Font.GothamBold,
 				Text             = ">",
 				TextColor3       = Theme["Color Dark Text"],
-				TextSize         = 14,
-				Size             = UDim2.new(0, 20, 1, 0),
-				Position         = UDim2.new(1, -26, 0, 0),
+				TextSize         = 11,
+				Size             = UDim2.new(0, 18, 1, 0),
+				Position         = UDim2.new(1, -22, 0, 0),
 				BackgroundTransparency = 1,
 				TextXAlignment   = Enum.TextXAlignment.Center,
 				Name             = "ArrowLabel"
 			}), "DarkText")
 
-			-- ââ ÐÐ¸Ð¶Ð½Ð¸Ð¹ Ð°ÐºÑÐµÐ½Ñ-ÑÐ°Ð·Ð´ÐµÐ»Ð¸ÑÐµÐ»Ñ (Ð²Ð¸Ð´Ð¸Ð¼ ÑÐ¾Ð»ÑÐºÐ¾ ÐºÐ¾Ð³Ð´Ð° Ð¾ÑÐºÑÑÑÐ¾) ââââ
+			-- ÐÐ¸Ð¶Ð½ÑÑ Ð»Ð¸Ð½Ð¸Ñ ÑÐ²ÐµÑÐ° ÑÐµÐ¼Ñ (Ð²Ð¸Ð´Ð½Ð° ÐºÐ¾Ð³Ð´Ð° Ð¾ÑÐºÑÑÑÐ¾)
 			local BottomLine = InsertTheme(Create("Frame", SectionWrapper, {
-				Size             = UDim2.new(1, 0, 0, 2),
-				Position         = UDim2.new(0, 0, 0, 32),
+				Size             = UDim2.new(1, 0, 0, 1),
+				Position         = UDim2.new(0, 0, 0, 26),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 1,
 				Name             = "BottomLine"
 			}), "Theme")
 
-			-- ââ ÐÐ½ÑÑÑÐµÐ½Ð½Ð¸Ð¹ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ Ð´Ð»Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð² ââââââââââââââââââââââââ
+			-- ââ ÐÐ½ÑÑÑÐµÐ½Ð½Ð¸Ð¹ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ ââââââââââââââââââââââââââââââââââââââ
 			local InnerContainer = Create("Frame", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 0),
-				Position         = UDim2.new(0, 0, 0, 34),
+				Position         = UDim2.new(0, 0, 0, 27),
 				BackgroundTransparency = 1,
 				Name             = "SectionInner"
 			})
@@ -3833,20 +3840,26 @@ function redzlib:MakeWindow(Configs)
 			Create("UIPadding", InnerContainer, {
 				PaddingBottom = UDim.new(0, 5),
 				PaddingTop    = UDim.new(0, 5),
-				PaddingLeft   = UDim.new(0, 0),
-				PaddingRight  = UDim.new(0, 0)
 			})
 
-			-- ââ ÐÐ¾Ð³Ð¸ÐºÐ° Ð¾ÑÐºÑÑÑÐ¸Ñ/Ð·Ð°ÐºÑÑÑÐ¸Ñ ââââââââââââââââââââââââââââââââââ
+			-- ââ ÐÐ¾Ð³Ð¸ÐºÐ° Ð²ÑÑÐ¾ÑÑ âââââââââââââââââââââââââââââââââââââââââââââ
 			local isOpen = false
 
 			local function GetInnerHeight()
-				local h = 10
+				local layout = InnerContainer:FindFirstChildOfClass("UIListLayout")
+				local padding = InnerContainer:FindFirstChildOfClass("UIPadding")
+				local count = 0
+				local h = 0
 				for _, child in ipairs(InnerContainer:GetChildren()) do
-					if (child:IsA("Frame") or child:IsA("TextButton") or child:IsA("ScrollingFrame")) and child.Visible then
-						h = h + child.AbsoluteSize.Y + 5
+					if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Visible then
+						h = h + child.AbsoluteSize.Y
+						count = count + 1
 					end
 				end
+				if count > 0 then
+					h = h + (count - 1) * 5 -- gaps between elements
+				end
+				h = h + 10 -- top + bottom padding
 				return h
 			end
 
@@ -3854,34 +3867,30 @@ function redzlib:MakeWindow(Configs)
 				task.defer(function()
 					if isOpen then
 						local innerH = GetInnerHeight()
-						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 34 + innerH), 0.2 })
-						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, innerH), 0.2 })
+						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 27 + innerH), 0.18 })
+						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, innerH), 0.18 })
 					else
-						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 32), 0.2 })
-						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.2 })
+						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 26), 0.18 })
+						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.18 })
 					end
 				end)
 			end
 
 			local function SetOpen(newState)
 				isOpen = newState
-				-- Ð¡ÑÑÐµÐ»ÐºÐ°: > Ð·Ð°ÐºÑÑÑÐ¾, v Ð¾ÑÐºÑÑÑÐ¾
-				ArrowLabel.Text = isOpen and "v" or ">"
-				-- ÐÐ¸Ð¶Ð½ÑÑ Ð»Ð¸Ð½Ð¸Ñ ÑÐ²ÐµÑÐ° ÑÐµÐ¼Ñ Ð¿Ð¾ÑÐ²Ð»ÑÐµÑÑÑ ÐºÐ¾Ð³Ð´Ð° Ð¾ÑÐºÑÑÑÐ¾
+				ArrowLabel.Text = isOpen and "â¨" or ">"
 				CreateTween({ BottomLine, "BackgroundTransparency", isOpen and 0 or 1, 0.15 })
-				-- Hover-ÑÐ²ÐµÑ ÑÐ°Ð¿ÐºÐ¸ ÑÑÑÑ ÑÑÑÐµ ÐºÐ¾Ð³Ð´Ð° Ð¾ÑÐºÑÑÑÐ¾
-				CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.05 or 0, 0.15 })
+				CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.08 or 0, 0.15 })
 				RefreshWrapperSize()
 			end
 
-			-- Hover ÑÑÑÐµÐºÑ
 			HeaderBtn.MouseEnter:Connect(function()
 				if not isOpen then
-					CreateTween({ HeaderBtn, "BackgroundTransparency", 0.35, 0.12 })
+					CreateTween({ HeaderBtn, "BackgroundTransparency", 0.35, 0.1 })
 				end
 			end)
 			HeaderBtn.MouseLeave:Connect(function()
-				CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.05 or 0, 0.12 })
+				CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.08 or 0, 0.1 })
 			end)
 
 			HeaderBtn.Activated:Connect(function()
@@ -3895,18 +3904,17 @@ function redzlib:MakeWindow(Configs)
 				if isOpen then RefreshWrapperSize() end
 			end)
 
-			-- ÐÐ°ÑÐ°Ð»ÑÐ½Ð¾Ðµ ÑÐ¾ÑÑÐ¾ÑÐ½Ð¸Ðµ (Ð±ÐµÐ· Ð°Ð½Ð¸Ð¼Ð°ÑÐ¸Ð¸)
 			if StartOpen then
 				task.defer(function() SetOpen(true) end)
 			else
 				ArrowLabel.Text = ">"
 				BottomLine.BackgroundTransparency = 1
-				SectionWrapper.Size = UDim2.new(1, 0, 0, 32)
+				SectionWrapper.Size = UDim2.new(1, 0, 0, 26)
 				InnerContainer.Size = UDim2.new(1, 0, 0, 0)
 				isOpen = false
 			end
 
-			-- ââ ÐÑÐ±Ð»Ð¸ÑÐ½ÑÐ¹ API âââââââââââââââââââââââââââââââââââââââââââââ
+			-- ââ API âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 			local Section = {}
 			table.insert(redzlib.Options, { type = "Section", Name = SectionName, func = Section })
 
@@ -3921,7 +3929,6 @@ function redzlib:MakeWindow(Configs)
 			function Section:Toggle() SetOpen(not isOpen) end
 			function Section:Open(Bool) SetOpen(Bool ~= nil and Bool or true) end
 
-			-- ÐÐµÐ»ÐµÐ³Ð¸ÑÐ¾Ð²Ð°Ð½Ð¸Ðµ Add* Ð¼ÐµÑÐ¾Ð´Ð¾Ð² ÑÐµÑÐµÐ· Ð¿Ð¾Ð´Ð¼ÐµÐ½Ñ Container
 			local function WithInner(method, cfg)
 				local prev = Container
 				Container = InnerContainer
@@ -3944,24 +3951,60 @@ function redzlib:MakeWindow(Configs)
 
 
 		function Tab:AddParagraph(Configs)
-			local PName = Configs[1] or Configs.Title or "Paragraph"
-			local PDesc = Configs[2] or Configs.Text or ""
+			Configs = type(Configs) == "string" and { Name = Configs } or (Configs or {})
+			local PName = Configs[1] or Configs.Title or Configs.Name or ""
+			local PDesc = Configs[2] or Configs.Text or Configs.Description or ""
 
-			local Frame, LabelFunc = ButtonFrame(Container, PName, PDesc, UDim2.new(1, -20))
+			-- ÐÑÐ°Ð¿Ð¿ÐµÑ ÑÐµÐºÑÐ¸Ð¸-ÑÐ°Ð·Ð´ÐµÐ»Ð¸ÑÐµÐ»Ñ
+			local PFrame = Create("Frame", Container, {
+				Size             = UDim2.new(1, 0, 0, 18),
+				BackgroundTransparency = 1,
+				AutomaticSize    = Enum.AutomaticSize.Y,
+				Name             = "Option"
+			})
+
+			-- ÐÐµÐ²Ð°Ñ Ð»Ð¸Ð½Ð¸Ñ
+			InsertTheme(Create("Frame", PFrame, {
+				Size             = UDim2.new(0.45, -6, 0, 1),
+				Position         = UDim2.new(0, 0, 0, 9),
+				BackgroundColor3 = Theme["Color Stroke"],
+				AnchorPoint      = Vector2.new(0, 0)
+			}), "Stroke")
+
+			-- ÐÑÐ°Ð²Ð°Ñ Ð»Ð¸Ð½Ð¸Ñ
+			InsertTheme(Create("Frame", PFrame, {
+				Size             = UDim2.new(0.45, -6, 0, 1),
+				Position         = UDim2.new(0.55, 6, 0, 9),
+				BackgroundColor3 = Theme["Color Stroke"],
+				AnchorPoint      = Vector2.new(0, 0)
+			}), "Stroke")
+
+			-- Ð¢ÐµÐºÑÑ Ð¿Ð¾ ÑÐµÐ½ÑÑÑ (Title Ð¸Ð»Ð¸ Description)
+			local DisplayText = PName ~= "" and PName or PDesc
+			InsertTheme(Create("TextLabel", PFrame, {
+				Font             = Enum.Font.GothamBold,
+				Text             = DisplayText,
+				TextColor3       = Theme["Color Dark Text"],
+				TextSize         = 9,
+				Size             = UDim2.new(0.1, 0, 0, 18),
+				Position         = UDim2.new(0.5, 0, 0, 0),
+				AnchorPoint      = Vector2.new(0.5, 0),
+				AutomaticSize    = Enum.AutomaticSize.X,
+				BackgroundTransparency = 1,
+				TextXAlignment   = Enum.TextXAlignment.Center,
+				TextTruncate     = Enum.TextTruncate.AtEnd,
+				Name             = "ParagraphLabel"
+			}), "DarkText")
 
 			local Paragraph = {}
-			function Paragraph:Visible(...) Funcs:ToggleVisible(Frame, ...) end
-			function Paragraph:Destroy() Frame:Destroy() end
-			function Paragraph:SetTitle(Val) LabelFunc:SetTitle(GetStr(Val)) end
-			function Paragraph:SetDesc(Val) LabelFunc:SetDesc(GetStr(Val)) end
-			function Paragraph:Set(Val1, Val2)
-				if Val1 and Val2 then
-					LabelFunc:SetTitle(GetStr(Val1))
-					LabelFunc:SetDesc(GetStr(Val2))
-				elseif Val1 then
-					LabelFunc:SetDesc(GetStr(Val1))
-				end
+			function Paragraph:Visible(Bool)
+				if Bool == nil then PFrame.Visible = not PFrame.Visible return end
+				PFrame.Visible = Bool
 			end
+			function Paragraph:Destroy() PFrame:Destroy() end
+			function Paragraph:SetTitle(Val) end
+			function Paragraph:SetDesc(Val) end
+			function Paragraph:Set(Val1, Val2) end
 			return Paragraph
 		end
 
