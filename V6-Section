@@ -3516,7 +3516,7 @@ function redzlib:MakeWindow(Configs)
 		function Dialog:Button(Cfg)
 			local Name = Cfg[1] or Cfg.Name or Cfg.Title or ""
 			local Callback = Cfg[2] or Cfg.Callback or function()end
-			local BtnColor = Cfg.Color
+			local BtnColor = Cfg.Color -- ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¸ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ»ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¹ ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ²ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂµÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¸
 			ButtonCount = ButtonCount + 1
 			local Btn = Make("Button", ButtonsHolder)
 			Make("Corner", Btn, UDim.new(0, 5))
@@ -3748,14 +3748,14 @@ function redzlib:MakeWindow(Configs)
 				InsertTheme(Create("TextLabel", DividerFrame, {
 					Font             = Enum.Font.GothamBold,
 					Text             = DText,
-					TextColor3       = Theme["Color Dark Text"],
+					TextColor3       = Theme["Color Text"],
 					TextSize         = 11,
 					Size             = UDim2.new(1, 0, 1, 0),
 					BackgroundTransparency = 1,
 					TextXAlignment   = Enum.TextXAlignment.Center,
 					TextYAlignment   = Enum.TextYAlignment.Center,
 					Name             = "DividerLabel"
-				}), "DarkText")
+				}), "Text")
 			else
 				InsertTheme(Create("Frame", DividerFrame, {
 					Size             = UDim2.new(1, 0, 0, 1),
@@ -3781,7 +3781,7 @@ function redzlib:MakeWindow(Configs)
 
 			-- ââ ÐÐ½ÐµÑÐ½Ð¸Ð¹ ÐºÐ»Ð¸Ð¿Ð°ÑÑÐ¸Ð¹ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ âââââââââââââââââââââââââââââââ
 			local SectionWrapper = Create("Frame", Container, {
-				Size             = UDim2.new(1, 0, 0, 34),
+				Size             = UDim2.new(1, 0, 0, 26),
 				BackgroundTransparency = 1,
 				ClipsDescendants = true,
 				Name             = "Option"
@@ -3789,7 +3789,7 @@ function redzlib:MakeWindow(Configs)
 
 			-- ââ Ð¨Ð°Ð¿ÐºÐ° âââââââââââââââââââââââââââââââââââââââââââââââââââââ
 			local HeaderBtn = InsertTheme(Create("TextButton", SectionWrapper, {
-				Size             = UDim2.new(1, 0, 0, 34),
+				Size             = UDim2.new(1, 0, 0, 26),
 				BackgroundColor3 = Theme["Color Hub 2"],
 				BackgroundTransparency = 0,
 				Text             = "",
@@ -3801,7 +3801,7 @@ function redzlib:MakeWindow(Configs)
 
 			-- ÐÐµÑÑÐ¸ÐºÐ°Ð»ÑÐ½Ð°Ñ Ð°ÐºÑÐµÐ½Ñ-Ð¿Ð¾Ð»Ð¾ÑÐºÐ° ÑÐ»ÐµÐ²Ð°
 			local AccentLine = InsertTheme(Create("Frame", HeaderBtn, {
-				Size             = UDim2.new(0, 3, 0.55, 0),
+				Size             = UDim2.new(0, 3, 0.5, 0),
 				Position         = UDim2.new(0, 7, 0.5, 0),
 				AnchorPoint      = Vector2.new(0, 0.5),
 				BackgroundColor3 = Theme["Color Theme"],
@@ -3809,26 +3809,26 @@ function redzlib:MakeWindow(Configs)
 			}), "Theme")
 			Make("Corner", AccentLine, UDim.new(0.5, 0))
 
-			-- ÐÐ°Ð·Ð²Ð°Ð½Ð¸Ðµ
-			local HeaderLabel = Create("TextLabel", HeaderBtn, {
+			-- ÐÐ°Ð·Ð²Ð°Ð½Ð¸Ðµ (InsertTheme ÑÑÐ¾Ð±Ñ Ð¼ÐµÐ½ÑÐ»ÑÑ Ð¿ÑÐ¸ SetTheme)
+			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
 				Font             = Enum.Font.GothamBold,
 				Text             = SectionName,
-				TextColor3       = Color3.fromRGB(255, 255, 255),
-				TextSize         = 14,
+				TextColor3       = Theme["Color Text"],
+				TextSize         = 11,
 				TextXAlignment   = Enum.TextXAlignment.Left,
 				Size             = UDim2.new(1, -30, 1, 0),
-				Position         = UDim2.new(0, 10, 0, 0),
+				Position         = UDim2.new(0, 18, 0, 0),
 				BackgroundTransparency = 1,
 				TextTruncate     = Enum.TextTruncate.AtEnd,
 				Name             = "SectionTitle"
-			})
+			}), "Text")
 
-			-- Ð¡ÑÑÐµÐ»ÐºÐ° ÑÐ¿ÑÐ°Ð²Ð° (ImageLabel + Rotation â Ð½Ðµ Ð·Ð°Ð²Ð¸ÑÐ¸Ñ Ð¾Ñ ÑÑÐ¸ÑÑÐ°)
+			-- Ð¡ÑÑÐµÐ»ÐºÐ° ÑÐ¿ÑÐ°Ð²Ð°
 			local ArrowLabel = InsertTheme(Create("ImageLabel", HeaderBtn, {
 				Image            = "rbxassetid://10709791437",
 				ImageColor3      = Theme["Color Dark Text"],
-				Size             = UDim2.new(0, 10, 0, 10),
-				Position         = UDim2.new(1, -18, 0.5, 0),
+				Size             = UDim2.new(0, 9, 0, 9),
+				Position         = UDim2.new(1, -14, 0.5, 0),
 				AnchorPoint      = Vector2.new(1, 0.5),
 				BackgroundTransparency = 1,
 				Rotation         = 0,
@@ -3838,7 +3838,7 @@ function redzlib:MakeWindow(Configs)
 			-- ÐÐ¸Ð¶Ð½ÑÑ Ð»Ð¸Ð½Ð¸Ñ ÑÐ²ÐµÑÐ° ÑÐµÐ¼Ñ (Ð²Ð¸Ð´Ð½Ð° ÐºÐ¾Ð³Ð´Ð° Ð¾ÑÐºÑÑÑÐ¾)
 			local BottomLine = InsertTheme(Create("Frame", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 1),
-				Position         = UDim2.new(0, 0, 0, 34),
+				Position         = UDim2.new(0, 0, 0, 26),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 1,
 				Name             = "BottomLine"
@@ -3847,7 +3847,7 @@ function redzlib:MakeWindow(Configs)
 			-- ââ ÐÐ½ÑÑÑÐµÐ½Ð½Ð¸Ð¹ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑ ââââââââââââââââââââââââââââââââââââââ
 			local InnerContainer = Create("Frame", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 0),
-				Position         = UDim2.new(0, 0, 0, 35),
+				Position         = UDim2.new(0, 0, 0, 27),
 				BackgroundTransparency = 1,
 				Name             = "SectionInner"
 			})
@@ -3885,10 +3885,10 @@ function redzlib:MakeWindow(Configs)
 				task.defer(function()
 					if isOpen then
 						local innerH = GetInnerHeight()
-						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 35 + innerH), 0.18 })
+						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 27 + innerH), 0.18 })
 						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, innerH), 0.18 })
 					else
-						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 34), 0.18 })
+						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 26), 0.18 })
 						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.18 })
 					end
 				end)
@@ -3928,7 +3928,7 @@ function redzlib:MakeWindow(Configs)
 			else
 				ArrowLabel.Rotation = 0
 				BottomLine.BackgroundTransparency = 1
-				SectionWrapper.Size = UDim2.new(1, 0, 0, 34)
+				SectionWrapper.Size = UDim2.new(1, 0, 0, 26)
 				InnerContainer.Size = UDim2.new(1, 0, 0, 0)
 				isOpen = false
 			end
