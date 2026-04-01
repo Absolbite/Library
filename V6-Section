@@ -3739,7 +3739,7 @@ function redzlib:MakeWindow(Configs)
 				or nil
 
 			local DividerFrame = Create("Frame", Container, {
-				Size = UDim2.new(1, 0, 0, DText and 28 or 10),
+				Size = UDim2.new(1, 0, 0, DText and 25 or 10),
 				BackgroundTransparency = 1,
 				Name = "Option"
 			})
@@ -3750,7 +3750,7 @@ function redzlib:MakeWindow(Configs)
 					Font             = Enum.Font.GothamBold,
 					Text             = DText,
 					TextColor3       = Theme["Color Dark Text"],
-					TextSize         = 18,
+					TextSize         = 15,
 					Size             = UDim2.new(1, 0, 1, 0),
 					BackgroundTransparency = 1,
 					TextXAlignment   = Enum.TextXAlignment.Center,
