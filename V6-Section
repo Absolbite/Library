@@ -3823,11 +3823,10 @@ function redzlib:MakeWindow(Configs)
 				Name             = "SectionTitle"
 			}), "Text")
 
-			-- Ð¡ÑÑÐµÐ»ÐºÐ° ÑÐ¿ÑÐ°Ð²Ð°
 			local ArrowLabel = InsertTheme(Create("ImageLabel", HeaderBtn, {
 				Image            = "rbxassetid://10709791437",
 				ImageColor3      = Theme["Color Dark Text"],
-				Size             = UDim2.new(0, 9, 0, 9),
+				Size             = UDim2.new(0, 14, 0, 14),
 				Position         = UDim2.new(1, -14, 0.5, 0),
 				AnchorPoint      = Vector2.new(1, 0.5),
 				BackgroundTransparency = 1,
