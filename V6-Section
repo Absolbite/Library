@@ -3781,7 +3781,7 @@ function redzlib:MakeWindow(Configs)
 
 			-- Ã¢ÂÂÃ¢ÂÂ ÃÂÃÂ½ÃÂµÃÂÃÂ½ÃÂ¸ÃÂ¹ ÃÂºÃÂ»ÃÂ¸ÃÂ¿ÃÂ°ÃÂÃÂÃÂ¸ÃÂ¹ ÃÂºÃÂ¾ÃÂ½ÃÂÃÂµÃÂ¹ÃÂ½ÃÂµÃÂ Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 			local SectionWrapper = Create("Frame", Container, {
-				Size             = UDim2.new(1, 0, 0, 26),
+				Size             = UDim2.new(1, 0, 0, 23),
 				BackgroundTransparency = 1,
 				ClipsDescendants = true,
 				Name             = "Option"
@@ -3789,7 +3789,7 @@ function redzlib:MakeWindow(Configs)
 
 			-- Ã¢ÂÂÃ¢ÂÂ ÃÂ¨ÃÂ°ÃÂ¿ÃÂºÃÂ° Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 			local HeaderBtn = InsertTheme(Create("TextButton", SectionWrapper, {
-				Size             = UDim2.new(1, 0, 0, 26),
+				Size             = UDim2.new(1, 0, 0, 23),
 				BackgroundColor3 = Theme["Color Hub 2"],
 				BackgroundTransparency = 0,
 				Text             = "",
@@ -3799,14 +3799,13 @@ function redzlib:MakeWindow(Configs)
 			Make("Corner", HeaderBtn, UDim.new(0, 7))
 			Make("Stroke", HeaderBtn)
 
-			-- ÃÂÃÂµÃÂÃÂÃÂ¸ÃÂºÃÂ°ÃÂ»ÃÂÃÂ½ÃÂ°ÃÂ ÃÂ°ÃÂºÃÂÃÂµÃÂ½ÃÂ-ÃÂ¿ÃÂ¾ÃÂ»ÃÂ¾ÃÂÃÂºÃÂ° ÃÂÃÂ»ÃÂµÃÂ²ÃÂ°
 
 			-- ÃÂÃÂ°ÃÂ·ÃÂ²ÃÂ°ÃÂ½ÃÂ¸ÃÂµ (InsertTheme ÃÂÃÂÃÂ¾ÃÂ±ÃÂ ÃÂ¼ÃÂµÃÂ½ÃÂÃÂ»ÃÂÃÂ ÃÂ¿ÃÂÃÂ¸ SetTheme)
 			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
 				Font             = Enum.Font.GothamBold,
 				Text             = SectionName,
 				TextColor3       = Theme["Color Text"],
-				TextSize         = 12,
+				TextSize         = 10,
 				TextXAlignment   = Enum.TextXAlignment.Left,
 				Size             = UDim2.new(1, -40, 1, 0),
 				Position         = UDim2.new(0, 12, 0, 0),
@@ -3874,10 +3873,10 @@ function redzlib:MakeWindow(Configs)
 				task.defer(function()
 					if isOpen then
 						local innerH = GetInnerHeight()
-						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 27 + innerH), 0.18 })
+						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 24 + innerH), 0.18 })
 						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, innerH), 0.18 })
 					else
-						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 26), 0.18 })
+						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 23), 0.18 })
 						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.18 })
 					end
 				end)
