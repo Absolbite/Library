@@ -10,6 +10,124 @@ do
         b:Destroy()
     end
 end
+
+local Themes = {
+    Darker = {
+        ["Hub1"] = ColorSequence.new({
+            ColorSequenceKeypoint.new(0.00, Color3.fromRGB(25, 25, 25)),
+            ColorSequenceKeypoint.new(0.50, Color3.fromRGB(32, 32, 32)),
+            ColorSequenceKeypoint.new(1.00, Color3.fromRGB(25, 25, 25))
+        }),
+        ["Hub2"] = Color3.fromRGB(30, 30, 30),
+        ["Stroke"] = Color3.fromRGB(40, 40, 40),
+        ["Theme"] = Color3.fromRGB(88, 101, 242),
+        ["Text"] = Color3.fromRGB(243, 243, 243),
+        ["DarkText"] = Color3.fromRGB(180, 180, 180),
+        ["Bar"] = Color3.fromRGB(41, 74, 122),
+    },
+    Dark = {
+        ["Hub1"] = ColorSequence.new({
+            ColorSequenceKeypoint.new(0.00, Color3.fromRGB(40, 40, 40)),
+            ColorSequenceKeypoint.new(0.50, Color3.fromRGB(48, 48, 48)),
+            ColorSequenceKeypoint.new(1.00, Color3.fromRGB(40, 40, 40))
+        }),
+        ["Hub2"] = Color3.fromRGB(45, 45, 45),
+        ["Stroke"] = Color3.fromRGB(65, 65, 65),
+        ["Theme"] = Color3.fromRGB(65, 150, 255),
+        ["Text"] = Color3.fromRGB(245, 245, 245),
+        ["DarkText"] = Color3.fromRGB(190, 190, 190),
+        ["Bar"] = Color3.fromRGB(41, 74, 122),
+    },
+    Purple = {
+        ["Hub1"] = ColorSequence.new({
+            ColorSequenceKeypoint.new(0.00, Color3.fromRGB(27, 25, 30)),
+            ColorSequenceKeypoint.new(0.50, Color3.fromRGB(32, 32, 32)),
+            ColorSequenceKeypoint.new(1.00, Color3.fromRGB(27, 25, 30))
+        }),
+        ["Hub2"] = Color3.fromRGB(30, 30, 30),
+        ["Stroke"] = Color3.fromRGB(40, 40, 40),
+        ["Theme"] = Color3.fromRGB(150, 0, 255),
+        ["Text"] = Color3.fromRGB(240, 240, 240),
+        ["DarkText"] = Color3.fromRGB(180, 180, 180),
+        ["Bar"] = Color3.fromRGB(80, 20, 140),
+    },
+    Crimson = {
+        ["Hub1"] = ColorSequence.new({
+            ColorSequenceKeypoint.new(0.00, Color3.fromRGB(30, 10, 10)),
+            ColorSequenceKeypoint.new(0.50, Color3.fromRGB(40, 15, 15)),
+            ColorSequenceKeypoint.new(1.00, Color3.fromRGB(30, 10, 10))
+        }),
+        ["Hub2"] = Color3.fromRGB(35, 12, 12),
+        ["Stroke"] = Color3.fromRGB(55, 20, 20),
+        ["Theme"] = Color3.fromRGB(220, 40, 40),
+        ["Text"] = Color3.fromRGB(255, 230, 230),
+        ["DarkText"] = Color3.fromRGB(200, 160, 160),
+        ["Bar"] = Color3.fromRGB(120, 20, 20),
+    },
+    Ocean = {
+        ["Hub1"] = ColorSequence.new({
+            ColorSequenceKeypoint.new(0.00, Color3.fromRGB(10, 30, 50)),
+            ColorSequenceKeypoint.new(0.50, Color3.fromRGB(15, 40, 65)),
+            ColorSequenceKeypoint.new(1.00, Color3.fromRGB(10, 30, 50))
+        }),
+        ["Hub2"] = Color3.fromRGB(12, 35, 55),
+        ["Stroke"] = Color3.fromRGB(20, 55, 80),
+        ["Theme"] = Color3.fromRGB(0, 180, 220),
+        ["Text"] = Color3.fromRGB(220, 240, 255),
+        ["DarkText"] = Color3.fromRGB(140, 180, 210),
+        ["Bar"] = Color3.fromRGB(0, 80, 130),
+    },
+}
+
+local CurrentThemeName = "Darker"
+local CurrentTheme = Themes[CurrentThemeName]
+
+local ThemeInstances = {}
+local function TrackTheme(inst, themeType)
+    table.insert(ThemeInstances, {Instance = inst, Type = themeType})
+    return inst
+end
+
+local function ApplyThemeToAll()
+    local T = CurrentTheme
+    for _, v in ipairs(ThemeInstances) do
+        if not v or not v.Instance or not v.Instance.Parent then continue end
+        local inst = v.Instance
+        if v.Type == "Hub2" then
+            inst.BackgroundColor3 = T["Hub2"]
+        elseif v.Type == "Bar" then
+            inst.BackgroundColor3 = T["Bar"]
+        elseif v.Type == "Theme" then
+            if inst:IsA("ImageLabel") or inst:IsA("ImageButton") then
+                inst.ImageColor3 = T["Theme"]
+            else
+                inst.BackgroundColor3 = T["Theme"]
+            end
+        elseif v.Type == "Stroke" then
+            if inst:IsA("UIStroke") then
+                inst.Color = T["Stroke"]
+            else
+                inst.BackgroundColor3 = T["Stroke"]
+            end
+        elseif v.Type == "Text" then
+            if inst:IsA("TextLabel") or inst:IsA("TextButton") then
+                inst.TextColor3 = T["Text"]
+            end
+        elseif v.Type == "DarkText" then
+            if inst:IsA("TextLabel") or inst:IsA("TextButton") then
+                inst.TextColor3 = T["DarkText"]
+            end
+        end
+    end
+end
+
+local function SetTheme(name)
+    if not Themes[name] then return end
+    CurrentThemeName = name
+    CurrentTheme = Themes[name]
+    ApplyThemeToAll()
+end
+
 local b = Instance.new("ScreenGui")
 local c = Instance.new("Frame")
 local d = Instance.new("TextLabel")
@@ -124,10 +242,11 @@ f.Position = UDim2.new(1, -20, 1, -20)
 f.Size = UDim2.new(0, 20, 0, 20)
 g.Name = "Bar"
 g.Parent = e
-g.BackgroundColor3 = Color3.new(0.160784, 0.290196, 0.478431)
+g.BackgroundColor3 = CurrentTheme["Bar"]
 g.BorderSizePixel = 0
 g.Position = UDim2.new(0, 0, 0, 5)
 g.Size = UDim2.new(1, 0, 0, 15)
+TrackTheme(g, "Bar")
 h.Name = "Toggle"
 h.Parent = g
 h.BackgroundColor3 = Color3.new(1, 1, 1)
@@ -139,12 +258,12 @@ h.ZIndex = 2
 h.Image = "rbxassetid://95488535511703"
 i.Name = "Base"
 i.Parent = g
-i.BackgroundColor3 = Color3.new(0.160784, 0.290196, 0.478431)
+i.BackgroundColor3 = CurrentTheme["Bar"]
 i.BorderSizePixel = 0
 i.Position = UDim2.new(0, 0, 0.800000012, 0)
 i.Size = UDim2.new(1, 0, 0, 10)
 i.Image = "rbxassetid://2851926732"
-i.ImageColor3 = Color3.new(0.160784, 0.290196, 0.478431)
+i.ImageColor3 = CurrentTheme["Bar"]
 i.ScaleType = Enum.ScaleType.Slice
 i.SliceCenter = Rect.new(12, 12, 12, 12)
 j.Name = "Top"
@@ -154,7 +273,7 @@ j.BackgroundTransparency = 1
 j.Position = UDim2.new(0, 0, 0, -5)
 j.Size = UDim2.new(1, 0, 0, 10)
 j.Image = "rbxassetid://2851926732"
-j.ImageColor3 = Color3.new(0.160784, 0.290196, 0.478431)
+j.ImageColor3 = CurrentTheme["Bar"]
 j.ScaleType = Enum.ScaleType.Slice
 j.SliceCenter = Rect.new(12, 12, 12, 12)
 k.Name = "Tabs"
@@ -212,7 +331,7 @@ p.FillDirection = Enum.FillDirection.Horizontal
 p.SortOrder = Enum.SortOrder.LayoutOrder
 p.Padding = UDim.new(0, 2)
 q.Parent = m
-q.BackgroundColor3 = Color3.new(0.12549, 0.227451, 0.372549)
+q.BackgroundColor3 = Color3.fromRGB(32, 47, 74)
 q.BorderColor3 = Color3.new(0.105882, 0.164706, 0.207843)
 q.BorderSizePixel = 0
 q.Position = UDim2.new(0, 0, 1, 0)
@@ -371,7 +490,7 @@ I.ScaleType = Enum.ScaleType.Slice
 I.SliceCenter = Rect.new(4, 4, 4, 4)
 J.Name = "TabButton"
 J.Parent = c
-J.BackgroundColor3 = Color3.new(0.160784, 0.290196, 0.478431)
+J.BackgroundColor3 = CurrentTheme["Bar"]
 J.BackgroundTransparency = 1
 J.BorderSizePixel = 0
 J.Position = UDim2.new(0.185185179, 0, 0, 0)
@@ -402,7 +521,7 @@ L.ScaleType = Enum.ScaleType.Slice
 L.SliceCenter = Rect.new(4, 4, 4, 4)
 M.Name = "Button"
 M.Parent = L
-M.BackgroundColor3 = Color3.new(0.160784, 0.290196, 0.478431)
+M.BackgroundColor3 = CurrentTheme["Bar"]
 M.BackgroundTransparency = 1
 M.BorderSizePixel = 0
 M.Size = UDim2.new(1, 0, 0, 25)
@@ -418,7 +537,7 @@ N.BackgroundColor3 = Color3.new(1, 1, 1)
 N.BackgroundTransparency = 1
 N.Size = UDim2.new(1, 0, 1, 0)
 N.Image = "rbxassetid://2851929490"
-N.ImageColor3 = Color3.new(0.160784, 0.290196, 0.478431)
+N.ImageColor3 = CurrentTheme["Bar"]
 N.ScaleType = Enum.ScaleType.Slice
 N.SliceCenter = Rect.new(4, 4, 4, 4)
 O.Name = "Toggle"
@@ -657,7 +776,7 @@ ab.BackgroundColor3 = Color3.new(1, 1, 1)
 ab.BackgroundTransparency = 1
 ab.Size = UDim2.new(1, 0, 1, 0)
 ab.Image = "rbxassetid://2851929490"
-ab.ImageColor3 = Color3.new(0.160784, 0.290196, 0.478431)
+ab.ImageColor3 = CurrentTheme["Bar"]
 ab.ImageTransparency = 0.5
 ab.ScaleType = Enum.ScaleType.Slice
 ab.SliceCenter = Rect.new(4, 4, 4, 4)
@@ -674,7 +793,7 @@ ac.TextSize = 20
 ac.TextXAlignment = Enum.TextXAlignment.Left
 ad.Name = "Button"
 ad.Parent = c
-ad.BackgroundColor3 = Color3.new(0.160784, 0.290196, 0.478431)
+ad.BackgroundColor3 = CurrentTheme["Bar"]
 ad.BackgroundTransparency = 1
 ad.BorderSizePixel = 0
 ad.Size = UDim2.new(0, 91, 0, 25)
@@ -688,7 +807,7 @@ ae.BackgroundColor3 = Color3.new(1, 1, 1)
 ae.BackgroundTransparency = 1
 ae.Size = UDim2.new(1, 0, 1, 0)
 ae.Image = "rbxassetid://2851929490"
-ae.ImageColor3 = Color3.new(0.160784, 0.290196, 0.478431)
+ae.ImageColor3 = CurrentTheme["Bar"]
 ae.ScaleType = Enum.ScaleType.Slice
 ae.SliceCenter = Rect.new(4, 4, 4, 4)
 af.Name = "DropdownButton"
@@ -920,7 +1039,7 @@ function bd:AddWindow(bi, bj)
     bi = tostring(bi or "New Window")
     bj = typeof(bj) == "table" and bj or a
     bj.tween_time = bj.tween_time or 0.1
-    bj.title_bar = bj.title_bar or {Color3.fromRGB(41, 74, 122)}
+    bj.title_bar = bj.title_bar or {CurrentTheme["Bar"]}
     if typeof(bj.title_bar) == "Color3" then
         bj.title_bar = {bj.title_bar}
     end
@@ -1018,6 +1137,206 @@ function bd:AddWindow(bi, bj)
     end
     local f = e:WaitForChild("Resizer")
     local bx = {}
+
+    local MinimizeFloatBtn = Instance.new("ImageButton")
+    MinimizeFloatBtn.Name = "MinimizeFloatBtn"
+    MinimizeFloatBtn.Size = UDim2.fromOffset(40, 40)
+    MinimizeFloatBtn.Position = UDim2.fromOffset(20, 200)
+    MinimizeFloatBtn.BackgroundColor3 = CurrentTheme["Hub2"]
+    MinimizeFloatBtn.BackgroundTransparency = 0
+    MinimizeFloatBtn.Image = "rbxassetid://117114141006782"
+    MinimizeFloatBtn.ImageColor3 = CurrentTheme["Theme"]
+    MinimizeFloatBtn.ScaleType = Enum.ScaleType.Stretch
+    MinimizeFloatBtn.AutoButtonColor = false
+    MinimizeFloatBtn.ZIndex = 10
+    MinimizeFloatBtn.Parent = script.Parent
+    TrackTheme(MinimizeFloatBtn, "Theme")
+    local MinFloatCorner = Instance.new("UICorner")
+    MinFloatCorner.CornerRadius = UDim.new(0, 8)
+    MinFloatCorner.Parent = MinimizeFloatBtn
+    local MinFloatStroke = Instance.new("UIStroke")
+    MinFloatStroke.Color = CurrentTheme["Stroke"]
+    MinFloatStroke.Thickness = 1
+    MinFloatStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    MinFloatStroke.Parent = MinimizeFloatBtn
+    TrackTheme(MinFloatStroke, "Stroke")
+    MinimizeFloatBtn.MouseEnter:Connect(function()
+        az(MinimizeFloatBtn, {ImageColor3 = Color3.fromRGB(255, 255, 255)}, 0.18)
+    end)
+    MinimizeFloatBtn.MouseLeave:Connect(function()
+        az(MinimizeFloatBtn, {ImageColor3 = CurrentTheme["Theme"]}, 0.18)
+    end)
+
+    do
+        local DragStart2, StartPos2, InputOn2
+        MinimizeFloatBtn.MouseButton1Down:Connect(function()
+            InputOn2 = true
+        end)
+        MinimizeFloatBtn.InputBegan:Connect(function(inp)
+            if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+                StartPos2 = MinimizeFloatBtn.Position
+                DragStart2 = inp.Position
+                while al:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+                    an.Heartbeat:Wait()
+                    if InputOn2 then
+                        local delta = inp.Position - DragStart2
+                        MinimizeFloatBtn.Position = UDim2.new(StartPos2.X.Scale, StartPos2.X.Offset + delta.X, StartPos2.Y.Scale, StartPos2.Y.Offset + delta.Y)
+                    end
+                end
+                InputOn2 = false
+            end
+        end)
+    end
+
+    MinimizeFloatBtn.Activated:Connect(function()
+        e.Visible = not e.Visible
+    end)
+
+    local ControlSize1 = Instance.new("ImageButton")
+    ControlSize1.Name = "ControlHubSize"
+    ControlSize1.Size = UDim2.new(0, 35, 0, 35)
+    ControlSize1.Position = e.Size
+    ControlSize1.Active = true
+    ControlSize1.AnchorPoint = Vector2.new(0.8, 0.8)
+    ControlSize1.BackgroundTransparency = 1
+    ControlSize1.Image = "rbxassetid://10734942072"
+    ControlSize1.ImageColor3 = Color3.fromRGB(180, 180, 180)
+    ControlSize1.ZIndex = 15
+    ControlSize1.Parent = e
+
+    do
+        local DragStartCS, bz2, bA2, bB2
+        ControlSize1.InputBegan:Connect(function(bC)
+            if bC.UserInputType == Enum.UserInputType.MouseButton1 then
+                bA2 = true
+                bB2 = an.Heartbeat:Connect(function()
+                    if not bA2 then
+                        if bB2 then bB2:Disconnect(); bB2 = nil end
+                        return
+                    end
+                    local bD = b3()
+                    local b6 = bD.X - e.AbsolutePosition.X
+                    local b7 = bD.Y - e.AbsolutePosition.Y
+                    b6 = math.max(bj.min_size.X, b6)
+                    b7 = math.max(bj.min_size.Y, b7)
+                    e.Size = UDim2.new(0, b6, 0, b7)
+                    ControlSize1.Position = UDim2.fromOffset(b6, b7)
+                end)
+            end
+        end)
+        al.InputEnded:Connect(function(bC)
+            if bC.UserInputType == Enum.UserInputType.MouseButton1 then
+                bA2 = false
+                if bB2 then bB2:Disconnect(); bB2 = nil end
+            end
+        end)
+    end
+
+    local ThemePanelOpen = false
+    local ThemePanel = Instance.new("Frame")
+    ThemePanel.Name = "ThemePanel"
+    ThemePanel.Size = UDim2.fromOffset(180, 0)
+    ThemePanel.BackgroundColor3 = CurrentTheme["Hub2"]
+    ThemePanel.ClipsDescendants = true
+    ThemePanel.Visible = false
+    ThemePanel.ZIndex = 20
+    ThemePanel.Parent = script.Parent
+    TrackTheme(ThemePanel, "Hub2")
+    local ThemePanelCorner = Instance.new("UICorner")
+    ThemePanelCorner.CornerRadius = UDim.new(0, 8)
+    ThemePanelCorner.Parent = ThemePanel
+    local ThemePanelStroke = Instance.new("UIStroke")
+    ThemePanelStroke.Color = CurrentTheme["Stroke"]
+    ThemePanelStroke.Thickness = 1
+    ThemePanelStroke.Parent = ThemePanel
+    TrackTheme(ThemePanelStroke, "Stroke")
+    local ThemePanelPad = Instance.new("UIPadding")
+    ThemePanelPad.PaddingLeft = UDim.new(0, 8)
+    ThemePanelPad.PaddingRight = UDim.new(0, 8)
+    ThemePanelPad.PaddingTop = UDim.new(0, 8)
+    ThemePanelPad.PaddingBottom = UDim.new(0, 8)
+    ThemePanelPad.Parent = ThemePanel
+    local ThemePanelList = Instance.new("UIListLayout")
+    ThemePanelList.Padding = UDim.new(0, 5)
+    ThemePanelList.SortOrder = Enum.SortOrder.LayoutOrder
+    ThemePanelList.Parent = ThemePanel
+
+    for themeName, _ in pairs(Themes) do
+        local tBtn = Instance.new("TextButton")
+        tBtn.Size = UDim2.new(1, 0, 0, 24)
+        tBtn.BackgroundColor3 = CurrentTheme["Stroke"]
+        tBtn.Font = Enum.Font.GothamBold
+        tBtn.Text = themeName
+        tBtn.TextSize = 10
+        tBtn.TextColor3 = CurrentTheme["Text"]
+        tBtn.AutoButtonColor = false
+        tBtn.ZIndex = 21
+        tBtn.Parent = ThemePanel
+        TrackTheme(tBtn, "Text")
+        local tBtnCorner = Instance.new("UICorner")
+        tBtnCorner.CornerRadius = UDim.new(0, 5)
+        tBtnCorner.Parent = tBtn
+        tBtn.MouseEnter:Connect(function()
+            tBtn.BackgroundTransparency = 0.5
+        end)
+        tBtn.MouseLeave:Connect(function()
+            tBtn.BackgroundTransparency = 0
+        end)
+        tBtn.Activated:Connect(function()
+            SetTheme(themeName)
+            ThemePanel.Visible = false
+            ThemePanelOpen = false
+        end)
+    end
+
+    ThemePanelList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ThemePanel.Size = UDim2.fromOffset(180, ThemePanelList.AbsoluteContentSize.Y + 16)
+    end)
+
+    local ThemeBtn = Instance.new("ImageButton")
+    ThemeBtn.Name = "ThemeBtn"
+    ThemeBtn.Size = UDim2.fromOffset(22, 22)
+    ThemeBtn.Position = UDim2.new(1, -30, 0, 3)
+    ThemeBtn.BackgroundTransparency = 1
+    ThemeBtn.Image = "rbxassetid://10734950309"
+    ThemeBtn.ImageColor3 = Color3.fromRGB(180, 180, 180)
+    ThemeBtn.ZIndex = e.ZIndex + bc * 10 + 5
+    ThemeBtn.Parent = e:FindFirstChild("Bar") or e
+    ThemeBtn.MouseEnter:Connect(function()
+        az(ThemeBtn, {ImageColor3 = Color3.fromRGB(255, 255, 255)}, 0.15)
+    end)
+    ThemeBtn.MouseLeave:Connect(function()
+        az(ThemeBtn, {ImageColor3 = Color3.fromRGB(180, 180, 180)}, 0.15)
+    end)
+    ThemeBtn.Activated:Connect(function()
+        if ThemePanelOpen then
+            ThemePanel.Visible = false
+            ThemePanelOpen = false
+        else
+            local bp = ThemeBtn.AbsolutePosition
+            local bs = ThemeBtn.AbsoluteSize
+            ThemePanel.Position = UDim2.fromOffset(bp.X, bp.Y + bs.Y + 4)
+            ThemePanel.Visible = true
+            ThemePanelOpen = true
+        end
+    end)
+
+    al.InputBegan:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseButton1 and ThemePanelOpen then
+            local m2 = al:GetMouseLocation()
+            local pp = ThemePanel.AbsolutePosition
+            local ps = ThemePanel.AbsoluteSize
+            local bp2 = ThemeBtn.AbsolutePosition
+            local bs2 = ThemeBtn.AbsoluteSize
+            local inPanel = m2.X >= pp.X and m2.X <= pp.X + ps.X and m2.Y >= pp.Y and m2.Y <= pp.Y + ps.Y
+            local inBtn = m2.X >= bp2.X and m2.X <= bp2.X + bs2.X and m2.Y >= bp2.Y and m2.Y <= bp2.Y + bs2.Y
+            if not inPanel and not inBtn then
+                ThemePanel.Visible = false
+                ThemePanelOpen = false
+            end
+        end
+    end)
+
     e.Draggable = true
     do
         local by = aq.Icon
@@ -1932,6 +2251,232 @@ function bd:AddWindow(bi, bj)
                         return table.unpack(dw)
                     end
                     return du, dv
+                end
+                function bU:AddSection(sectionName, startOpen)
+                    local sectionWrapper = Instance.new("Frame")
+                    sectionWrapper.Size = UDim2.new(1, 0, 0, 23)
+                    sectionWrapper.BackgroundTransparency = 1
+                    sectionWrapper.ClipsDescendants = true
+                    sectionWrapper.Name = "SectionWrapper"
+                    local c1 = c0:FindFirstChild("TabScroller")
+                    sectionWrapper.Parent = c1 or c0
+
+                    local headerBtn = Instance.new("TextButton")
+                    headerBtn.Size = UDim2.new(1, 0, 0, 23)
+                    headerBtn.BackgroundColor3 = CurrentTheme["Hub2"]
+                    headerBtn.BackgroundTransparency = 0
+                    headerBtn.Text = ""
+                    headerBtn.AutoButtonColor = false
+                    headerBtn.Name = "SectionHeader"
+                    headerBtn.ZIndex = sectionWrapper.ZIndex + 1
+                    headerBtn.Parent = sectionWrapper
+                    TrackTheme(headerBtn, "Hub2")
+                    local hCorner = Instance.new("UICorner")
+                    hCorner.CornerRadius = UDim.new(0, 7)
+                    hCorner.Parent = headerBtn
+                    local hStroke = Instance.new("UIStroke")
+                    hStroke.Color = CurrentTheme["Stroke"]
+                    hStroke.Thickness = 1
+                    hStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                    hStroke.Parent = headerBtn
+                    TrackTheme(hStroke, "Stroke")
+
+                    local headerLabel = Instance.new("TextLabel")
+                    headerLabel.Font = Enum.Font.GothamBold
+                    headerLabel.Text = tostring(sectionName or "Section")
+                    headerLabel.TextColor3 = CurrentTheme["Text"]
+                    headerLabel.TextSize = 10
+                    headerLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    headerLabel.Size = UDim2.new(1, -40, 1, 0)
+                    headerLabel.Position = UDim2.new(0, 12, 0, 0)
+                    headerLabel.BackgroundTransparency = 1
+                    headerLabel.TextTruncate = Enum.TextTruncate.AtEnd
+                    headerLabel.ZIndex = headerBtn.ZIndex + 1
+                    headerLabel.Parent = headerBtn
+                    TrackTheme(headerLabel, "Text")
+
+                    local arrowLabel = Instance.new("ImageLabel")
+                    arrowLabel.Image = "rbxassetid://10709791437"
+                    arrowLabel.ImageColor3 = CurrentTheme["DarkText"]
+                    arrowLabel.Size = UDim2.new(0, 14, 0, 14)
+                    arrowLabel.Position = UDim2.new(1, -16, 0.5, 0)
+                    arrowLabel.AnchorPoint = Vector2.new(1, 0.5)
+                    arrowLabel.BackgroundTransparency = 1
+                    arrowLabel.Rotation = 0
+                    arrowLabel.ZIndex = headerBtn.ZIndex + 1
+                    arrowLabel.Parent = headerBtn
+                    TrackTheme(arrowLabel, "DarkText")
+
+                    local bottomLine = Instance.new("Frame")
+                    bottomLine.Size = UDim2.new(1, 0, 0, 1)
+                    bottomLine.Position = UDim2.new(0, 0, 0, 26)
+                    bottomLine.BackgroundColor3 = CurrentTheme["Theme"]
+                    bottomLine.BackgroundTransparency = 1
+                    bottomLine.Name = "BottomLine"
+                    bottomLine.Parent = sectionWrapper
+                    TrackTheme(bottomLine, "Theme")
+
+                    local innerContainer = Instance.new("Frame")
+                    innerContainer.Size = UDim2.new(1, 0, 0, 0)
+                    innerContainer.Position = UDim2.new(0, 0, 0, 27)
+                    innerContainer.BackgroundTransparency = 1
+                    innerContainer.Name = "SectionInner"
+                    innerContainer.Visible = false
+                    innerContainer.Parent = sectionWrapper
+                    local innerList = Instance.new("UIListLayout")
+                    innerList.SortOrder = Enum.SortOrder.LayoutOrder
+                    innerList.Padding = UDim.new(0, 5)
+                    innerList.Parent = innerContainer
+                    local innerPad = Instance.new("UIPadding")
+                    innerPad.PaddingBottom = UDim.new(0, 5)
+                    innerPad.PaddingTop = UDim.new(0, 5)
+                    innerPad.Parent = innerContainer
+
+                    local isOpen = false
+
+                    local function GetInnerHeight()
+                        local count = 0
+                        local h = 0
+                        for _, child in ipairs(innerContainer:GetChildren()) do
+                            if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Visible then
+                                h = h + child.Size.Y.Offset
+                                count = count + 1
+                            end
+                        end
+                        if count > 0 then
+                            h = h + (count - 1) * 5
+                        end
+                        h = h + 10
+                        return h
+                    end
+
+                    local function RefreshWrapperSize()
+                        task.defer(function()
+                            if isOpen then
+                                local innerH = GetInnerHeight()
+                                az(sectionWrapper, {Size = UDim2.new(1, 0, 0, 24 + innerH)}, 0.18)
+                                az(innerContainer, {Size = UDim2.new(1, 0, 0, innerH)}, 0.18)
+                            else
+                                az(sectionWrapper, {Size = UDim2.new(1, 0, 0, 23)}, 0.18)
+                                az(innerContainer, {Size = UDim2.new(1, 0, 0, 0)}, 0.18)
+                            end
+                        end)
+                    end
+
+                    local function SetOpen(newState)
+                        isOpen = newState
+                        innerContainer.Visible = isOpen
+                        az(arrowLabel, {Rotation = isOpen and 90 or 0}, 0.18)
+                        az(bottomLine, {BackgroundTransparency = isOpen and 0 or 1}, 0.15)
+                        az(headerBtn, {BackgroundTransparency = isOpen and 0.08 or 0}, 0.15)
+                        RefreshWrapperSize()
+                    end
+
+                    headerBtn.MouseEnter:Connect(function()
+                        if not isOpen then
+                            az(headerBtn, {BackgroundTransparency = 0.35}, 0.1)
+                        end
+                    end)
+                    headerBtn.MouseLeave:Connect(function()
+                        az(headerBtn, {BackgroundTransparency = isOpen and 0.08 or 0}, 0.1)
+                    end)
+                    headerBtn.Activated:Connect(function()
+                        SetOpen(not isOpen)
+                    end)
+                    innerContainer.ChildAdded:Connect(function()
+                        if isOpen then RefreshWrapperSize() end
+                    end)
+                    innerContainer.ChildRemoved:Connect(function()
+                        if isOpen then RefreshWrapperSize() end
+                    end)
+
+                    if startOpen then
+                        task.defer(function() SetOpen(true) end)
+                    else
+                        arrowLabel.Rotation = 0
+                        bottomLine.BackgroundTransparency = 1
+                        sectionWrapper.Size = UDim2.new(1, 0, 0, 26)
+                        innerContainer.Size = UDim2.new(1, 0, 0, 0)
+                        innerContainer.Visible = false
+                        isOpen = false
+                    end
+
+                    local Section = {}
+                    function Section:AddLabel(cl)
+                        cl = tostring(cl or "New Label")
+                        local cm = c:FindFirstChild("Label"):Clone()
+                        cm.Parent = innerContainer
+                        cm.Text = cl
+                        cm.Size = UDim2.new(0, b1(cm), 0, 25)
+                        cm.ZIndex = cm.ZIndex + bc * 10
+                        cm.TextSize = 20
+                        cm.Font = Enum.Font.Garamond
+                        return cm
+                    end
+                    function Section:AddButton(cn, co)
+                        cn = tostring(cn or "New Button")
+                        co = typeof(co) == "function" and co or function() end
+                        local b5 = c:FindFirstChild("Button"):Clone()
+                        b5.Parent = innerContainer
+                        b5.Text = cn
+                        b5.Size = UDim2.new(0, b1(b5), 0, 25)
+                        b5.ZIndex = b5.ZIndex + bc * 10
+                        b5.TextSize = 20
+                        b5.Font = Enum.Font.Garamond
+                        local cp = b5:GetChildren()[1]
+                        cp.ZIndex = cp.ZIndex + bc * 10
+                        cp.ImageTransparency = bj.title_bar_transparency or 0
+                        aH(cp, bj.title_bar, 0)
+                        b5.TextColor3 = Color3.new(1, 1, 1)
+                        b5.MouseButton1Click:Connect(function()
+                            b4(b5, aq.X, aq.Y)
+                            pcall(co)
+                        end)
+                        return b5
+                    end
+                    function Section:AddSwitch(cq, co)
+                        local cr = {}
+                        cq = tostring(cq or "New Switch")
+                        co = typeof(co) == "function" and co or function() end
+                        local cs = c:FindFirstChild("Switch"):Clone()
+                        cs.Parent = innerContainer
+                        cs:FindFirstChild("Title").Text = cq
+                        cs:FindFirstChild("Title").ZIndex = cs:FindFirstChild("Title").ZIndex + bc * 10
+                        cs:FindFirstChild("Title").TextSize = 20
+                        cs:FindFirstChild("Title").Font = Enum.Font.Garamond
+                        cs.ZIndex = cs.ZIndex + bc * 10
+                        cs.TextSize = 20
+                        cs.Font = Enum.Font.Garamond
+                        local ct = cs:GetChildren()[1]
+                        ct.ZIndex = ct.ZIndex + bc * 10
+                        ct.ImageTransparency = bj.title_bar_transparency or 0
+                        aH(ct, bj.title_bar, 0)
+                        local cu = false
+                        cs.MouseButton1Click:Connect(function()
+                            cu = not cu
+                            cs.Text = cu and utf8.char(10003) or ""
+                            pcall(co, cu)
+                        end)
+                        function cr:Set(cv)
+                            cu = typeof(cv) == "boolean" and cv or false
+                            cs.Text = cu and utf8.char(10003) or ""
+                            pcall(co, cu)
+                        end
+                        return cr, cs
+                    end
+                    function Section:AddDropdown(cV2, co2)
+                        return bU:AddDropdown(cV2, co2)
+                    end
+                    function Section:Toggle()
+                        SetOpen(not isOpen)
+                    end
+                    function Section:Open(bool)
+                        SetOpen(bool ~= nil and bool or true)
+                    end
+                    function Section:Destroy()
+                        sectionWrapper:Destroy()
+                    end
+                    return Section
                 end
                 function bU:AddFolder(dx)
                     local dy = {}
