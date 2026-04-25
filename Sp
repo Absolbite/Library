@@ -5,8 +5,207 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
 
+local Themes = {
+  {Name = "Crimson",       Accent = Color3.fromRGB(220, 20,  60),  Background = Color3.fromRGB(15, 15, 15),  Secondary = Color3.fromRGB(30, 10, 10)},
+  {Name = "Rose",          Accent = Color3.fromRGB(255, 80, 120),  Background = Color3.fromRGB(20, 12, 15),  Secondary = Color3.fromRGB(35, 15, 20)},
+  {Name = "Scarlet",       Accent = Color3.fromRGB(255, 36,  0),   Background = Color3.fromRGB(18, 10, 10),  Secondary = Color3.fromRGB(30, 12, 10)},
+  {Name = "Hot Pink",      Accent = Color3.fromRGB(255, 20, 147),  Background = Color3.fromRGB(20, 10, 18),  Secondary = Color3.fromRGB(35, 12, 28)},
+  {Name = "Magenta",       Accent = Color3.fromRGB(255, 0,  255),  Background = Color3.fromRGB(18, 10, 18),  Secondary = Color3.fromRGB(28, 10, 28)},
+  {Name = "Ruby",          Accent = Color3.fromRGB(155, 17,  30),  Background = Color3.fromRGB(12, 8,  10),  Secondary = Color3.fromRGB(22, 10, 12)},
+  {Name = "Coral",         Accent = Color3.fromRGB(255, 80,  80),  Background = Color3.fromRGB(20, 12, 12),  Secondary = Color3.fromRGB(32, 15, 15)},
+  {Name = "Flamingo",      Accent = Color3.fromRGB(252,142, 172),  Background = Color3.fromRGB(20, 14, 16),  Secondary = Color3.fromRGB(30, 18, 20)},
+  {Name = "Salmon",        Accent = Color3.fromRGB(250,128, 114),  Background = Color3.fromRGB(20, 14, 12),  Secondary = Color3.fromRGB(30, 18, 16)},
+  {Name = "Blood",         Accent = Color3.fromRGB(138, 3,   3),   Background = Color3.fromRGB(10, 5,   5),  Secondary = Color3.fromRGB(20, 8,   8)},
+  {Name = "Orange",        Accent = Color3.fromRGB(255,140,  0),   Background = Color3.fromRGB(18, 14, 8),   Secondary = Color3.fromRGB(28, 18, 10)},
+  {Name = "Gold",          Accent = Color3.fromRGB(255,215,  0),   Background = Color3.fromRGB(18, 16, 8),   Secondary = Color3.fromRGB(28, 22, 10)},
+  {Name = "Amber",         Accent = Color3.fromRGB(255,191,  0),   Background = Color3.fromRGB(18, 16, 8),   Secondary = Color3.fromRGB(28, 22, 8)},
+  {Name = "Yellow",        Accent = Color3.fromRGB(255,255,  0),   Background = Color3.fromRGB(18, 18, 8),   Secondary = Color3.fromRGB(28, 28, 8)},
+  {Name = "Lemon",         Accent = Color3.fromRGB(255,250, 80),   Background = Color3.fromRGB(18, 18, 10),  Secondary = Color3.fromRGB(28, 28, 12)},
+  {Name = "Peach",         Accent = Color3.fromRGB(255,218,185),   Background = Color3.fromRGB(20, 17, 14),  Secondary = Color3.fromRGB(30, 22, 18)},
+  {Name = "Tangerine",     Accent = Color3.fromRGB(255, 90,  0),   Background = Color3.fromRGB(18, 12, 8),   Secondary = Color3.fromRGB(28, 15, 10)},
+  {Name = "Pumpkin",       Accent = Color3.fromRGB(255,117, 24),   Background = Color3.fromRGB(18, 12, 8),   Secondary = Color3.fromRGB(28, 16, 10)},
+  {Name = "Sunflower",     Accent = Color3.fromRGB(255,200, 50),   Background = Color3.fromRGB(18, 16, 8),   Secondary = Color3.fromRGB(28, 24, 8)},
+  {Name = "Honey",         Accent = Color3.fromRGB(255,176, 60),   Background = Color3.fromRGB(18, 15, 8),   Secondary = Color3.fromRGB(28, 22, 10)},
+  {Name = "Lime",          Accent = Color3.fromRGB(50, 205, 50),   Background = Color3.fromRGB(10, 16, 10),  Secondary = Color3.fromRGB(12, 25, 12)},
+  {Name = "Emerald",       Accent = Color3.fromRGB(0,  201,  87),  Background = Color3.fromRGB(8,  16, 10),  Secondary = Color3.fromRGB(10, 24, 14)},
+  {Name = "Forest",        Accent = Color3.fromRGB(34, 139, 34),   Background = Color3.fromRGB(8,  14, 8),   Secondary = Color3.fromRGB(10, 20, 10)},
+  {Name = "Mint",          Accent = Color3.fromRGB(62, 255,162),   Background = Color3.fromRGB(10, 18, 14),  Secondary = Color3.fromRGB(12, 26, 18)},
+  {Name = "Jade",          Accent = Color3.fromRGB(0,  168,107),   Background = Color3.fromRGB(8,  15, 12),  Secondary = Color3.fromRGB(10, 22, 16)},
+  {Name = "Olive",         Accent = Color3.fromRGB(128,128,  0),   Background = Color3.fromRGB(14, 14, 8),   Secondary = Color3.fromRGB(20, 20, 8)},
+  {Name = "Sage",          Accent = Color3.fromRGB(110,150,100),   Background = Color3.fromRGB(12, 15, 11),  Secondary = Color3.fromRGB(16, 20, 14)},
+  {Name = "Teal",          Accent = Color3.fromRGB(0,  128,128),   Background = Color3.fromRGB(8,  14, 14),  Secondary = Color3.fromRGB(10, 20, 20)},
+  {Name = "Aqua",          Accent = Color3.fromRGB(0,  255,255),   Background = Color3.fromRGB(8,  18, 18),  Secondary = Color3.fromRGB(10, 26, 26)},
+  {Name = "Spring",        Accent = Color3.fromRGB(0,  255,127),   Background = Color3.fromRGB(8,  18, 12),  Secondary = Color3.fromRGB(10, 26, 16)},
+  {Name = "Sky",           Accent = Color3.fromRGB(30, 144,255),   Background = Color3.fromRGB(10, 12, 20),  Secondary = Color3.fromRGB(12, 15, 30)},
+  {Name = "Ocean",         Accent = Color3.fromRGB(0,  105,148),   Background = Color3.fromRGB(8,  12, 18),  Secondary = Color3.fromRGB(10, 15, 25)},
+  {Name = "Navy",          Accent = Color3.fromRGB(0,   0, 128),   Background = Color3.fromRGB(8,  8,  16),  Secondary = Color3.fromRGB(10, 10, 22)},
+  {Name = "Cobalt",        Accent = Color3.fromRGB(0,  71, 171),   Background = Color3.fromRGB(8,  10, 18),  Secondary = Color3.fromRGB(10, 12, 25)},
+  {Name = "Ice",           Accent = Color3.fromRGB(160,220,255),   Background = Color3.fromRGB(14, 16, 20),  Secondary = Color3.fromRGB(18, 22, 28)},
+  {Name = "Arctic",        Accent = Color3.fromRGB(200,240,255),   Background = Color3.fromRGB(15, 17, 20),  Secondary = Color3.fromRGB(20, 24, 28)},
+  {Name = "Sapphire",      Accent = Color3.fromRGB(15,  82,186),   Background = Color3.fromRGB(8,  10, 18),  Secondary = Color3.fromRGB(10, 13, 25)},
+  {Name = "Electric",      Accent = Color3.fromRGB(0,  100,255),   Background = Color3.fromRGB(8,  10, 20),  Secondary = Color3.fromRGB(10, 13, 28)},
+  {Name = "Denim",         Accent = Color3.fromRGB(21,  96,189),   Background = Color3.fromRGB(10, 12, 20),  Secondary = Color3.fromRGB(14, 16, 28)},
+  {Name = "Periwinkle",    Accent = Color3.fromRGB(140,140,255),   Background = Color3.fromRGB(12, 12, 20),  Secondary = Color3.fromRGB(16, 16, 28)},
+  {Name = "Steel",         Accent = Color3.fromRGB(70, 130,180),   Background = Color3.fromRGB(10, 12, 16),  Secondary = Color3.fromRGB(14, 16, 22)},
+  {Name = "Purple",        Accent = Color3.fromRGB(128,  0, 128),  Background = Color3.fromRGB(14, 8,  14),  Secondary = Color3.fromRGB(20, 10, 20)},
+  {Name = "Violet",        Accent = Color3.fromRGB(148,  0, 211),  Background = Color3.fromRGB(14, 8,  18),  Secondary = Color3.fromRGB(20, 10, 25)},
+  {Name = "Indigo",        Accent = Color3.fromRGB(75,   0, 130),  Background = Color3.fromRGB(12, 8,  16),  Secondary = Color3.fromRGB(16, 10, 22)},
+  {Name = "Lavender",      Accent = Color3.fromRGB(180,150,255),   Background = Color3.fromRGB(14, 12, 20),  Secondary = Color3.fromRGB(20, 16, 28)},
+  {Name = "Amethyst",      Accent = Color3.fromRGB(153,102,204),   Background = Color3.fromRGB(14, 10, 18),  Secondary = Color3.fromRGB(20, 14, 24)},
+  {Name = "Grape",         Accent = Color3.fromRGB(111, 45,168),   Background = Color3.fromRGB(13, 8,  17),  Secondary = Color3.fromRGB(18, 10, 23)},
+  {Name = "Plum",          Accent = Color3.fromRGB(142, 69,133),   Background = Color3.fromRGB(14, 8,  14),  Secondary = Color3.fromRGB(20, 10, 19)},
+  {Name = "Orchid",        Accent = Color3.fromRGB(218,112,214),   Background = Color3.fromRGB(18, 10, 18),  Secondary = Color3.fromRGB(25, 13, 24)},
+  {Name = "Lilac",         Accent = Color3.fromRGB(200,162,200),   Background = Color3.fromRGB(16, 12, 16),  Secondary = Color3.fromRGB(22, 16, 22)},
+  {Name = "Iris",          Accent = Color3.fromRGB(90,  79, 207),  Background = Color3.fromRGB(12, 10, 20),  Secondary = Color3.fromRGB(16, 13, 27)},
+  {Name = "Snow",          Accent = Color3.fromRGB(240,240,255),   Background = Color3.fromRGB(15, 15, 18),  Secondary = Color3.fromRGB(22, 22, 26)},
+  {Name = "Silver",        Accent = Color3.fromRGB(192,192,192),   Background = Color3.fromRGB(14, 14, 14),  Secondary = Color3.fromRGB(20, 20, 20)},
+  {Name = "Ash",           Accent = Color3.fromRGB(140,140,140),   Background = Color3.fromRGB(12, 12, 12),  Secondary = Color3.fromRGB(18, 18, 18)},
+  {Name = "Carbon",        Accent = Color3.fromRGB(100,100,100),   Background = Color3.fromRGB(10, 10, 10),  Secondary = Color3.fromRGB(16, 16, 16)},
+  {Name = "Onyx",          Accent = Color3.fromRGB(60,  60,  60),  Background = Color3.fromRGB(8,   8,  8),  Secondary = Color3.fromRGB(14, 14, 14)},
+  {Name = "Pearl",         Accent = Color3.fromRGB(220,220,220),   Background = Color3.fromRGB(16, 16, 16),  Secondary = Color3.fromRGB(24, 24, 24)},
+  {Name = "Titanium",      Accent = Color3.fromRGB(135,134,129),   Background = Color3.fromRGB(12, 12, 11),  Secondary = Color3.fromRGB(18, 18, 16)},
+  {Name = "Slate",         Accent = Color3.fromRGB(112,128,144),   Background = Color3.fromRGB(11, 12, 14),  Secondary = Color3.fromRGB(16, 17, 20)},
+  {Name = "Ghost",         Accent = Color3.fromRGB(200,200,220),   Background = Color3.fromRGB(15, 15, 17),  Secondary = Color3.fromRGB(22, 22, 24)},
+  {Name = "Midnight",      Accent = Color3.fromRGB(80,  80, 120),  Background = Color3.fromRGB(8,   8, 14),  Secondary = Color3.fromRGB(12, 12, 20)},
+  {Name = "Neon Red",      Accent = Color3.fromRGB(255, 10,  10),  Background = Color3.fromRGB(10, 5,   5),  Secondary = Color3.fromRGB(18, 8,   8)},
+  {Name = "Neon Green",    Accent = Color3.fromRGB(10, 255,  10),  Background = Color3.fromRGB(5,  10,  5),  Secondary = Color3.fromRGB(8,  18,  8)},
+  {Name = "Neon Blue",     Accent = Color3.fromRGB(10,  10, 255),  Background = Color3.fromRGB(5,   5, 10),  Secondary = Color3.fromRGB(8,   8, 18)},
+  {Name = "Neon Yellow",   Accent = Color3.fromRGB(255,255,   0),  Background = Color3.fromRGB(10, 10,  5),  Secondary = Color3.fromRGB(18, 18,  8)},
+  {Name = "Neon Pink",     Accent = Color3.fromRGB(255,  0, 200),  Background = Color3.fromRGB(10,  5, 10),  Secondary = Color3.fromRGB(18,  8, 16)},
+  {Name = "Neon Cyan",     Accent = Color3.fromRGB(0,  255, 220),  Background = Color3.fromRGB(5,  10, 10),  Secondary = Color3.fromRGB(8,  18, 16)},
+  {Name = "Neon Orange",   Accent = Color3.fromRGB(255,100,   0),  Background = Color3.fromRGB(10,  7,  5),  Secondary = Color3.fromRGB(18, 12,  8)},
+  {Name = "Neon Purple",   Accent = Color3.fromRGB(180,  0, 255),  Background = Color3.fromRGB(10,  5, 12),  Secondary = Color3.fromRGB(16,  8, 20)},
+  {Name = "Neon White",    Accent = Color3.fromRGB(255,255, 255),  Background = Color3.fromRGB(10, 10, 10),  Secondary = Color3.fromRGB(18, 18, 18)},
+  {Name = "Rainbow",       Accent = Color3.fromRGB(255, 80,  80),  Background = Color3.fromRGB(10, 10, 10),  Secondary = Color3.fromRGB(16, 16, 16)},
+  {Name = "Bronze",        Accent = Color3.fromRGB(205,127, 50),   Background = Color3.fromRGB(16, 12, 8),   Secondary = Color3.fromRGB(24, 16, 10)},
+  {Name = "Copper",        Accent = Color3.fromRGB(184,115, 51),   Background = Color3.fromRGB(16, 11, 8),   Secondary = Color3.fromRGB(22, 15, 10)},
+  {Name = "Rust",          Accent = Color3.fromRGB(183, 65,  14),  Background = Color3.fromRGB(16, 10, 8),   Secondary = Color3.fromRGB(22, 13, 8)},
+  {Name = "Chocolate",     Accent = Color3.fromRGB(123, 63,   0),  Background = Color3.fromRGB(14, 9,   5),  Secondary = Color3.fromRGB(20, 12, 6)},
+  {Name = "Caramel",       Accent = Color3.fromRGB(196,132, 63),   Background = Color3.fromRGB(16, 12, 8),   Secondary = Color3.fromRGB(22, 16, 10)},
+  {Name = "Tan",           Accent = Color3.fromRGB(210,180,140),   Background = Color3.fromRGB(17, 15, 12),  Secondary = Color3.fromRGB(24, 20, 16)},
+  {Name = "Mahogany",      Accent = Color3.fromRGB(192, 64,  0),   Background = Color3.fromRGB(16, 8,   5),  Secondary = Color3.fromRGB(22, 10, 6)},
+  {Name = "Sepia",         Accent = Color3.fromRGB(140, 90,  40),  Background = Color3.fromRGB(14, 10, 6),   Secondary = Color3.fromRGB(20, 14, 8)},
+  {Name = "Sand",          Accent = Color3.fromRGB(200,180,100),   Background = Color3.fromRGB(16, 15, 10),  Secondary = Color3.fromRGB(24, 20, 14)},
+  {Name = "Mocha",         Accent = Color3.fromRGB(150,100, 70),   Background = Color3.fromRGB(14, 10, 8),   Secondary = Color3.fromRGB(20, 14, 10)},
+  {Name = "Sunset",        Accent = Color3.fromRGB(255,100,  50),  Background = Color3.fromRGB(18, 10, 8),   Secondary = Color3.fromRGB(26, 14, 10)},
+  {Name = "Aurora",        Accent = Color3.fromRGB(0,  200,150),   Background = Color3.fromRGB(8,  15, 13),  Secondary = Color3.fromRGB(10, 22, 18)},
+  {Name = "Galaxy",        Accent = Color3.fromRGB(100, 50, 200),  Background = Color3.fromRGB(5,   5, 15),  Secondary = Color3.fromRGB(8,   8, 22)},
+  {Name = "Toxic",         Accent = Color3.fromRGB(150,255,  0),   Background = Color3.fromRGB(10, 16, 5),   Secondary = Color3.fromRGB(14, 22, 6)},
+  {Name = "Venom",         Accent = Color3.fromRGB(180,255, 50),   Background = Color3.fromRGB(10, 16, 5),   Secondary = Color3.fromRGB(14, 22, 7)},
+  {Name = "Cyber",         Accent = Color3.fromRGB(0,  220,200),   Background = Color3.fromRGB(5,  14, 13),  Secondary = Color3.fromRGB(8,  20, 18)},
+  {Name = "Matrix",        Accent = Color3.fromRGB(0,  255, 70),   Background = Color3.fromRGB(5,  14, 5),   Secondary = Color3.fromRGB(6,  20, 6)},
+  {Name = "Frost",         Accent = Color3.fromRGB(180,240,255),   Background = Color3.fromRGB(13, 16, 18),  Secondary = Color3.fromRGB(18, 22, 26)},
+  {Name = "Void",          Accent = Color3.fromRGB(80,  20, 120),  Background = Color3.fromRGB(6,   4, 10),  Secondary = Color3.fromRGB(10, 6,  15)},
+  {Name = "Fire",          Accent = Color3.fromRGB(255, 60,   0),  Background = Color3.fromRGB(16, 6,   4),  Secondary = Color3.fromRGB(24, 8,   6)},
+  {Name = "Ice Blue",      Accent = Color3.fromRGB(120,200,255),   Background = Color3.fromRGB(10, 14, 18),  Secondary = Color3.fromRGB(14, 19, 26)},
+  {Name = "Neon Lime",     Accent = Color3.fromRGB(100,255,  50),  Background = Color3.fromRGB(8,  14, 5),   Secondary = Color3.fromRGB(11, 20, 6)},
+  {Name = "Cherry",        Accent = Color3.fromRGB(220, 20,  60),  Background = Color3.fromRGB(14, 5,   8),  Secondary = Color3.fromRGB(20, 6,  10)},
+  {Name = "Storm",         Accent = Color3.fromRGB(100,130,180),   Background = Color3.fromRGB(10, 11, 14),  Secondary = Color3.fromRGB(14, 16, 20)},
+  {Name = "Sakura",        Accent = Color3.fromRGB(255,170,200),   Background = Color3.fromRGB(18, 13, 16),  Secondary = Color3.fromRGB(26, 18, 22)},
+  {Name = "Hacker",        Accent = Color3.fromRGB(0,  230,  60),  Background = Color3.fromRGB(0,   0,  0),  Secondary = Color3.fromRGB(5,  12, 5)},
+  {Name = "Classic Red",   Accent = Color3.fromRGB(250,  7,   7),  Background = Color3.fromRGB(15, 15, 15),  Secondary = Color3.fromRGB(25, 10, 10)},
+}
+
+local StrengthPresets = {
+  Minimal    = {MainTransparency = 0.5,  ItemTransparency = 0.97, StrokeTransparency = 0.95, StrokeThickness = 0.8},
+  Light      = {MainTransparency = 0.3,  ItemTransparency = 0.95, StrokeTransparency = 0.85, StrokeThickness = 1.0},
+  Normal     = {MainTransparency = 0.1,  ItemTransparency = 0.935,StrokeTransparency = 0.80, StrokeThickness = 1.6},
+  Strong     = {MainTransparency = 0.0,  ItemTransparency = 0.90, StrokeTransparency = 0.60, StrokeThickness = 2.0},
+  Solid      = {MainTransparency = 0.0,  ItemTransparency = 0.85, StrokeTransparency = 0.40, StrokeThickness = 2.5},
+}
+
 local Custom = {} do
-  Custom.ColorRGB = Color3.fromRGB(250, 7, 7)
+  Custom.ColorRGB   = Color3.fromRGB(250, 7, 7)
+  Custom.Background = Color3.fromRGB(15, 15, 15)
+  Custom.Secondary  = Color3.fromRGB(25, 10, 10)
+  Custom.ThemeName  = "Classic Red"
+  Custom.Strength   = StrengthPresets.Normal
+  Custom._ThemeListeners = {}
+  Custom._StrengthListeners = {}
+  
+  function Custom:_ApplyTheme()
+    for _, cb in ipairs(Custom._ThemeListeners) do
+      pcall(cb, Custom.ColorRGB, Custom.Background, Custom.Secondary)
+    end
+  end
+  
+  function Custom:_ApplyStrength()
+    for _, cb in ipairs(Custom._StrengthListeners) do
+      pcall(cb, Custom.Strength)
+    end
+  end
+  
+  function Custom:OnThemeChanged(Callback)
+    table.insert(Custom._ThemeListeners, Callback)
+  end
+  
+  function Custom:OnStrengthChanged(Callback)
+    table.insert(Custom._StrengthListeners, Callback)
+  end
+  
+  function Custom:SetTheme(ThemeNameOrIndex)
+    local Theme = nil
+
+    if type(ThemeNameOrIndex) == "number" then
+      Theme = Themes[ThemeNameOrIndex]
+    elseif type(ThemeNameOrIndex) == "string" then
+      for _, t in ipairs(Themes) do
+        if t.Name:lower() == ThemeNameOrIndex:lower() then
+          Theme = t
+          break
+        end
+      end
+    end
+
+    if not Theme then
+      warn("[SpLib] Theme not found: " .. tostring(ThemeNameOrIndex))
+      return
+    end
+
+    Custom.ColorRGB   = Theme.Accent
+    Custom.Background = Theme.Background
+    Custom.Secondary  = Theme.Secondary
+    Custom.ThemeName  = Theme.Name
+
+    Custom:_ApplyTheme()
+  end
+  
+  function Custom:SetStrength(StrengthNameOrValue)
+    if type(StrengthNameOrValue) == "string" then
+      local Preset = StrengthPresets[StrengthNameOrValue]
+      if not Preset then
+        warn("[SpLib] Strength preset not found: " .. StrengthNameOrValue)
+        return
+      end
+      Custom.Strength = Preset
+    elseif type(StrengthNameOrValue) == "number" then
+      local v = math.clamp(StrengthNameOrValue, 0, 1)
+      Custom.Strength = {
+        MainTransparency  = 0.5  * (1 - v),
+        ItemTransparency  = 0.97 - (0.12 * v),
+        StrokeTransparency= 0.95 - (0.55 * v),
+        StrokeThickness   = 0.8  + (1.7  * v),
+      }
+    end
+
+    Custom:_ApplyStrength()
+  end
+  
+  function Custom:GetThemeNames()
+    local Names = {}
+    for _, t in ipairs(Themes) do
+      table.insert(Names, t.Name)
+    end
+    return Names
+  end
+  
+  function Custom:GetStrengthNames()
+    local Names = {}
+    for k in pairs(StrengthPresets) do
+      table.insert(Names, k)
+    end
+    return Names
+  end
 
   function Custom:Create(Name, Properties, Parent)
     local _instance = Instance.new(Name)
@@ -45,7 +244,7 @@ local function OpenClose()
     Position = UDim2.new(0.1021, 0, 0.0743, 0),
     Size = UDim2.new(0, 59, 0, 49),
     Image = "rbxassetid://10734895698",
-    Visible = true,
+    Visible = false,
   }, ScreenGui)
 
   local UICorner = Custom:Create("UICorner", {
@@ -155,11 +354,139 @@ function CircleClick(Button, X, Y)
 	end)
 end
 
-local Speed_Library, Notification = {}, {}
+local SpLib, Notification = {}, {}
 
-Speed_Library.Unloaded = false
+SpLib.Unloaded = false
+SpLib.Flags    = {}
 
-function Speed_Library:SetNotification(Config)
+local HttpService = game:GetService("HttpService")
+
+local function _SafeFS(fn, ...)
+  local ok, res = pcall(fn, ...)
+  return ok and res or nil
+end
+
+local function _EnsureDir(path)
+  if not _SafeFS(isfolder, path) then
+    _SafeFS(makefolder, path)
+  end
+end
+
+local function _PlaceName()
+  local name = _SafeFS(function()
+    return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+  end)
+  return (name or tostring(game.PlaceId)):gsub('[\\/:*?"<>|]', "_")
+end
+
+local function _PlayerName()
+  return Player.Name:gsub('[\\/:*?"<>|]', "_")
+end
+
+local function _FlagPath()
+  local base  = "SpLib"
+  local place = _PlaceName()
+  _EnsureDir(base)
+  _EnsureDir(base .. "/" .. place)
+  return base .. "/" .. place .. "/" .. _PlayerName()
+end
+
+local function _LibSettingsPath()
+  local base = "SpLib"
+  _EnsureDir(base)
+  return base .. "/Library Settings"
+end
+
+local function _LoadFlags()
+  local path = _SafeFS(_FlagPath)
+  if not path then return {} end
+  local raw = _SafeFS(readfile, path)
+  if not raw or raw == "" then return {} end
+  return _SafeFS(HttpService.JSONDecode, HttpService, raw) or {}
+end
+
+local function _SaveFlags()
+  local path = _SafeFS(_FlagPath)
+  if not path then return end
+  local data = {}
+  for flag, funcs in pairs(SpLib.Flags) do
+    data[flag] = funcs.Value
+  end
+  _SafeFS(writefile, path, HttpService:JSONEncode(data))
+end
+
+local function _LoadLibSettings()
+  local path = _SafeFS(_LibSettingsPath)
+  if not path then return {} end
+  local raw = _SafeFS(readfile, path)
+  if not raw or raw == "" then return {} end
+  return _SafeFS(HttpService.JSONDecode, HttpService, raw) or {}
+end
+
+local function _SaveLibSettings()
+  local path = _SafeFS(_LibSettingsPath)
+  if not path then return end
+  local data = {
+    Theme    = Custom.ThemeName,
+    Strength = (function()
+      for name, preset in pairs(StrengthPresets) do
+        if preset == Custom.Strength then return name end
+      end
+      return "Normal"
+    end)()
+  }
+  _SafeFS(writefile, path, HttpService:JSONEncode(data))
+end
+
+SpLib._LoadFlags       = _LoadFlags
+SpLib._SaveFlags       = _SaveFlags
+SpLib._LoadLibSettings = _LoadLibSettings
+SpLib._SaveLibSettings = _SaveLibSettings
+
+function SpLib:SaveFlags() _SaveFlags() end
+function SpLib:LoadFlags()
+  local data = _LoadFlags()
+  for flag, value in pairs(data) do
+    local funcs = SpLib.Flags[flag]
+    if funcs and funcs.Set then
+      pcall(funcs.Set, funcs, value)
+    end
+  end
+end
+
+local function RegisterFlag(Flag, Funcs)
+  if Flag and Flag ~= "" then
+    SpLib.Flags[Flag] = Funcs
+    local origSet = Funcs.Set
+    if origSet then
+      Funcs.Set = function(self, Value, ...)
+        origSet(self, Value, ...)
+        _SaveFlags()
+      end
+    end
+  end
+end
+
+
+function SpLib:SetTheme(ThemeNameOrIndex)
+  Custom:SetTheme(ThemeNameOrIndex)
+  _SaveLibSettings()
+end
+
+function SpLib:SetStrength(StrengthNameOrValue)
+  Custom:SetStrength(StrengthNameOrValue)
+  _SaveLibSettings()
+end
+
+function SpLib:GetThemeNames()
+  return Custom:GetThemeNames()
+end
+
+function SpLib:GetStrengthNames()
+  return Custom:GetStrengthNames()
+end
+
+function SpLib:SetNotification(Config)
   local Title = Config[1] or Config.Title or ""
   local Description = Config[2] or Config.Description or ""
 	local Content = Config[3] or Config.Content or ""
@@ -375,11 +702,17 @@ function Speed_Library:SetNotification(Config)
   return Notification
 end
 
-function Speed_Library:CreateWindow(Config)
+function SpLib:CreateWindow(Config)
   local Title = Config[1] or Config.Title or ""
   local Description = Config[2] or Config.Description or ""
   local TabWidth = Config[3] or Config["Tab Width"] or 120
   local SizeUi = Config[4] or Config.SizeUi or UDim2.fromOffset(550, 315)
+  
+  task.defer(function()
+    local libSettings = _LoadLibSettings()
+    if libSettings.Theme    then Custom:SetTheme(libSettings.Theme)       end
+    if libSettings.Strength then Custom:SetStrength(libSettings.Strength) end
+  end)
 
   local Funcs = {}
 
@@ -629,14 +962,12 @@ function Speed_Library:CreateWindow(Config)
   Close.Activated:Connect(function()
 		CircleClick(Close, Player:GetMouse().X, Player:GetMouse().Y)
     if SpeedHubXGui then SpeedHubXGui:Destroy() end
-		if not Speed_Library.Unloaded then Speed_Library.Unloaded = true end
+		if not SpLib.Unloaded then SpLib.Unloaded = true end
 	end)
 
   DropShadowHolder.Size = UDim2.new(0, 115 + TextLabel.TextBounds.X + 1 + TextLabel1.TextBounds.X, 0, 350)
 	MakeDraggable(Top, DropShadowHolder)
-
-
-  -- /// Blur
+  
 
   local MoreBlur = Custom:Create("Frame", {
     AnchorPoint = Vector2.new(1, 1),
@@ -755,8 +1086,7 @@ function Speed_Library:CreateWindow(Config)
     Name = "DropPageLayout",
     Parent = DropdownFolder
   })
-
-  -- /// Create Tab
+  
 
   local Tabs = {}
   local CountTab = 0
@@ -901,14 +1231,20 @@ function Speed_Library:CreateWindow(Config)
         TweenService:Create(FrameChoose, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {Size = UDim2.new(0, 1, 0, 12)}):Play()
       end
     end)
-
-    --- /// Section
+    
    
     local Sections, CountSection = {}, 0
 
-    function Sections:AddSection(Title, OpenSection)
-      local Title = Title or ""
-      local OpenSection = OpenSection or false
+    function Sections:AddSection(TitleOrConfig, OpenSection)
+      local Title, _Open
+      if type(TitleOrConfig) == "table" then
+        Title  = TitleOrConfig.Name or TitleOrConfig[1] or ""
+        _Open  = TitleOrConfig.Open ~= nil and TitleOrConfig.Open or false
+      else
+        Title  = TitleOrConfig or ""
+        _Open  = OpenSection or false
+      end
+      local OpenSection = _Open
   
       local Section = Custom:Create("Frame", {
         BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -1358,6 +1694,7 @@ function Speed_Library:CreateWindow(Config)
         local Content = Config[2] or Config.Content or ""
         local Default = Config[3] or Config.Default or false
         local Callback = Config[4] or Config.Callback or function() end
+        local Flag = Config.Flag or ""
 
 				local Funcs_Toggle = {Value = Default}
 
@@ -1493,6 +1830,7 @@ function Speed_Library:CreateWindow(Config)
           ToggleAnimation(Value)
         end
         Funcs_Toggle:Set(Funcs_Toggle.Value)
+        RegisterFlag(Flag, Funcs_Toggle)
 
         ItemCount += 1
 				return Funcs_Toggle
@@ -1506,6 +1844,7 @@ function Speed_Library:CreateWindow(Config)
         local Max = Config[5] or Config.Max or 100
         local Default = Config[6] or Config.Default or 50
         local Callback = Config[7] or Config.Callback or function() end
+        local Flag = Config.Flag or ""
 
 				local Funcs_Slider = {Value = Default}
         
@@ -1705,6 +2044,7 @@ function Speed_Library:CreateWindow(Config)
         
         Funcs_Slider:Set(tonumber(Default))
         Callback(Funcs_Slider.Value)
+        RegisterFlag(Flag, Funcs_Slider)
 
         ItemCount += 1
 				return Funcs_Slider
@@ -1715,6 +2055,7 @@ function Speed_Library:CreateWindow(Config)
         local Content = Config[2] or Config.Content or ""
         local Default = Config[3] or Config.Default or ""
         local Callback = Config[4] or Config.Callback or function() end
+        local Flag = Config.Flag or ""
 				local Funcs_Input = {Value = Default}
 
         local Input = Custom:Create("Frame", {
@@ -1830,10 +2171,13 @@ function Speed_Library:CreateWindow(Config)
 				end)
 
 				Funcs_Input:Set(Default)
+        RegisterFlag(Flag, Funcs_Input)
 
         ItemCount += 1
 				return Funcs_Input
       end
+      
+      Item.AddTextBox = Item.AddInput
 
       function Item:AddDropdown(Config)
         local Title = Config[1] or Config.Title or ""
@@ -1842,6 +2186,7 @@ function Speed_Library:CreateWindow(Config)
         local Options = Config[4] or Config.Options or {}
         local Default = Config[5] or Config.Default or {}
         local Callback = Config[6] or Config.Callback or function() end
+        local Flag = Config.Flag or ""
 
         local Funcs_Dropdown = {Value = Default, Options = Options}
 
@@ -2192,13 +2537,19 @@ function Speed_Library:CreateWindow(Config)
         end
       
         Funcs_Dropdown:Refresh(Funcs_Dropdown.Options, Funcs_Dropdown.Value)
+        RegisterFlag(Flag, Funcs_Dropdown)
       
         ItemCount += 1
         CountDropdown += 1
         return Funcs_Dropdown
       end
+      
+      function Item:AddDivider(Text)
+        return Item:AddSeperator({Title = Text or ""})
+      end
 
-      ItemCount += 1
+      CountSection += 1
+      
       return Item
     end
 
@@ -2209,5 +2560,122 @@ function Speed_Library:CreateWindow(Config)
   return Tabs
 end
 
+local FuncsV3 = {}
+local SaveConfig = nil
 
-return Speed_Library
+local function Checker(Val, Val1, Val2)
+  return typeof(Val) == Val1 and Val or Val2
+end
+
+function FuncsV3:SetTable(path)
+  SaveConfig = path
+end
+
+function FuncsV3:Toggle(Tab, Name, Content, Default, Callback)
+  Name     = Checker(Name,     "string",   tostring(Name))
+  Content  = Checker(Content,  "string",   tostring(Content))
+  Callback = Checker(Callback, "function", function() end)
+
+  local _default = Default == "Save"
+    and Checker(SaveConfig and SaveConfig[Name], "boolean", false)
+    or  Checker(Default, "boolean", false)
+
+  return Tab:AddToggle({
+    Title    = Name,
+    Content  = Content,
+    Default  = _default,
+    Callback = Callback,
+  })
+end
+
+function FuncsV3:Button(Tab, Name, Content, Callback)
+  Name     = Checker(Name,     "string",   tostring(Name))
+  Content  = Checker(Content,  "string",   tostring(Content))
+  Callback = Checker(Callback, "function", function() end)
+
+  return Tab:AddButton({
+    Title    = Name,
+    Content  = Content,
+    Icon     = "rbxassetid://16932740082",
+    Callback = Callback,
+  })
+end
+
+function FuncsV3:Dropdown(Tab, Name, Content, multi, options, Default, Callback)
+  Name     = Checker(Name,     "string",   tostring(Name))
+  Content  = Checker(Content,  "string",   tostring(Content))
+  multi    = Checker(multi,    "boolean",  false)
+  options  = Checker(options,  "table",    {""})
+  Callback = Checker(Callback, "function", function() end)
+
+  local _default
+  local saved = SaveConfig and SaveConfig[Name]
+
+  if Default == "Save" then
+    if type(saved) == "table" then
+      _default = saved or {""}
+    else
+      _default = {saved or ""}
+    end
+  else
+    local resolved = saved or Default
+    if type(resolved) == "table" then
+      _default = resolved
+    else
+      _default = {resolved or ""}
+    end
+  end
+
+  return Tab:AddDropdown({
+    Title    = Name,
+    Content  = Content,
+    Multi    = multi,
+    Options  = options,
+    Default  = _default,
+    Callback = Callback,
+  })
+end
+
+function FuncsV3:Textbox(Tab, Name, Content, Default, Callback)
+  Name     = Checker(Name,     "string",   tostring(Name))
+  Content  = Checker(Content,  "string",   tostring(Content))
+  Callback = Checker(Callback, "function", function() end)
+
+  local _default = Default == "Save"
+    and Checker(SaveConfig and SaveConfig[Name], "string", "")
+    or  Checker(Default, "string", "")
+
+  return Tab:AddInput({
+    Title    = Name,
+    Content  = Content,
+    Default  = _default,
+    Callback = Callback,
+  })
+end
+
+function FuncsV3:Slider(Tab, Name, Content, Increment, Min, Max, Default, Callback)
+  Name      = Checker(Name,      "string",   tostring(Name))
+  Content   = Checker(Content,   "string",   tostring(Content))
+  Increment = Checker(Increment, "number",   1)
+  Min       = Checker(Min,       "number",   0)
+  Max       = Checker(Max,       "number",   100)
+  Callback  = Checker(Callback,  "function", function() end)
+
+  local _default = Default == "Save"
+    and Checker(SaveConfig and SaveConfig[Name], "number", Min)
+    or  Checker(Default, "number", Min)
+
+  return Tab:AddSlider({
+    Title     = Name,
+    Content   = Content,
+    Increment = Increment,
+    Min       = Min,
+    Max       = Max,
+    Default   = _default,
+    Callback  = Callback,
+  })
+end
+
+SpLib.FuncsV3 = FuncsV3
+
+return SpLib
