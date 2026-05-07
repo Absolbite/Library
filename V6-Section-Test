@@ -3852,40 +3852,34 @@ function redzlib:MakeWindow(Configs)
 
 			-- ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ³ÃÂÃÂÃÂÃÂ¸ÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ° ÃÂÃÂÃÂÃÂ²ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 			local isOpen = false
+			local innerLayout = InnerContainer:FindFirstChildWhichIsA("UIListLayout")
 
-			local function GetInnerHeight()
-				local layout = InnerContainer:FindFirstChildWhichIsA("UIListLayout")
-				if layout then
-					return layout.AbsoluteContentSize.Y + 10
-				end
-				local count = 0
-				local h = 0
-				for _, child in ipairs(InnerContainer:GetChildren()) do
-					if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Visible then
-						h = h + child.AbsoluteSize.Y
-						count = count + 1
-					end
-				end
-				if count > 0 then
-					h = h + (count - 1) * 5
-				end
-				h = h + 10
-				return h
-			end
-
-			local function RefreshWrapperSize()
-				task.defer(function()
-					RunService.Heartbeat:Wait()
-					if isOpen then
-						local innerH = GetInnerHeight()
+			local function ApplySize(animate)
+				if isOpen then
+					local innerH = innerLayout.AbsoluteContentSize.Y + 10
+					if animate then
 						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 24 + innerH), 0.18 })
 						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, innerH), 0.18 })
 					else
+						SectionWrapper.Size = UDim2.new(1, 0, 0, 24 + innerH)
+						InnerContainer.Size = UDim2.new(1, 0, 0, innerH)
+					end
+				else
+					if animate then
 						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 23), 0.18 })
 						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.18 })
+					else
+						SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
+						InnerContainer.Size = UDim2.new(1, 0, 0, 0)
 					end
-				end)
+				end
 			end
+
+			innerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+				if isOpen then
+					ApplySize(true)
+				end
+			end)
 
 			local function SetOpen(newState)
 				isOpen = newState
@@ -3894,7 +3888,7 @@ function redzlib:MakeWindow(Configs)
 				CreateTween({ ArrowLabel, "Rotation", isOpen and 90 or 0, 0.18 })
 				CreateTween({ BottomLine, "BackgroundTransparency", isOpen and 0 or 1, 0.15 })
 				CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.08 or 0, 0.15 })
-				RefreshWrapperSize()
+				ApplySize(true)
 			end
 
 			HeaderBtn.MouseEnter:Connect(function()
@@ -3910,24 +3904,12 @@ function redzlib:MakeWindow(Configs)
 				SetOpen(not isOpen)
 			end)
 
-			InnerContainer.ChildAdded:Connect(function(child)
-				if isOpen then
-					if child:IsA("GuiObject") then
-						child:GetPropertyChangedSignal("AbsoluteSize"):Wait()
-					end
-					RefreshWrapperSize()
-				end
-			end)
-			InnerContainer.ChildRemoved:Connect(function()
-				if isOpen then RefreshWrapperSize() end
-			end)
-
 			if StartOpen then
 				task.defer(function() SetOpen(true) end)
 			else
 				ArrowLabel.Rotation = 0
 				BottomLine.BackgroundTransparency = 1
-				SectionWrapper.Size = UDim2.new(1, 0, 0, 26)
+				SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
 				InnerContainer.Size = UDim2.new(1, 0, 0, 0)
 				InnerContainer.Visible = false
 				isOpen = false
