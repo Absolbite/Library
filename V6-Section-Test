@@ -3839,6 +3839,7 @@ function redzlib:MakeWindow(Configs)
 				Size             = UDim2.new(1, 0, 0, 0),
 				Position         = UDim2.new(0, 0, 0, 27),
 				BackgroundTransparency = 1,
+				AutomaticSize    = Enum.AutomaticSize.Y,
 				Name             = "SectionInner"
 			})
 			Create("UIListLayout", InnerContainer, {
@@ -3856,28 +3857,24 @@ function redzlib:MakeWindow(Configs)
 
 			local function ApplySize(animate)
 				if isOpen then
-					local innerH = innerLayout.AbsoluteContentSize.Y + 10
+					local totalH = 27 + InnerContainer.AbsoluteSize.Y
 					if animate then
-						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 24 + innerH), 0.18 })
-						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, innerH), 0.18 })
+						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, totalH), 0.18 })
 					else
-						SectionWrapper.Size = UDim2.new(1, 0, 0, 24 + innerH)
-						InnerContainer.Size = UDim2.new(1, 0, 0, innerH)
+						SectionWrapper.Size = UDim2.new(1, 0, 0, totalH)
 					end
 				else
 					if animate then
 						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 23), 0.18 })
-						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.18 })
 					else
 						SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
-						InnerContainer.Size = UDim2.new(1, 0, 0, 0)
 					end
 				end
 			end
 
-			innerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+			InnerContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 				if isOpen then
-					ApplySize(true)
+					ApplySize(false)
 				end
 			end)
 
@@ -3910,7 +3907,6 @@ function redzlib:MakeWindow(Configs)
 				ArrowLabel.Rotation = 0
 				BottomLine.BackgroundTransparency = 1
 				SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
-				InnerContainer.Size = UDim2.new(1, 0, 0, 0)
 				InnerContainer.Visible = false
 				isOpen = false
 			end
