@@ -3850,8 +3850,22 @@ function redzlib:MakeWindow(Configs)
 
 			local isOpen = false
 
-			local function GetInnerHeight()
-				return InnerLayout.AbsoluteContentSize.Y + 10
+			local function GetLastElementBottom()
+				local lastChild = nil
+				local lastPos = -math.huge
+				for _, child in ipairs(InnerContainer:GetChildren()) do
+					if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Visible then
+						local childBottom = child.AbsolutePosition.Y + child.AbsoluteSize.Y
+						if childBottom > lastPos then
+							lastPos = childBottom
+							lastChild = child
+						end
+					end
+				end
+				if not lastChild then return 10 end
+				local innerTop = InnerContainer.AbsolutePosition.Y
+				local lastBottom = lastChild.AbsolutePosition.Y + lastChild.AbsoluteSize.Y
+				return (lastBottom - innerTop) + 5
 			end
 
 			local refreshDebounce = false
@@ -3862,7 +3876,7 @@ function redzlib:MakeWindow(Configs)
 					task.wait()
 					refreshDebounce = false
 					if isOpen then
-						local innerH = GetInnerHeight()
+						local innerH = GetLastElementBottom()
 						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 24 + innerH), 0.18 })
 						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, innerH), 0.18 })
 					else
