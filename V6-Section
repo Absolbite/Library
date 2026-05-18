@@ -2986,12 +2986,12 @@ function redzlib:MakeWindow(Configs)
 
 		MkLabel("IMAGE (rbxassetid / url)", 1)
 		local _, ImageInput = MkInput("rbxassetid://...", 2)
-		MkLabel("SIZE  (20 Ã¢Â€Â” 120)", 3)
+		MkLabel("SIZE  (20 Ã¢ÂÂ 120)", 3)
 		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
-		local _, SizeInput = MkInput("20 Ã¢Â€Â” 120", 5)
-		MkLabel("TRANSPARENCY  (0.0 Ã¢Â€Â” 1.0)", 6)
+		local _, SizeInput = MkInput("20 Ã¢ÂÂ 120", 5)
+		MkLabel("TRANSPARENCY  (0.0 Ã¢ÂÂ 1.0)", 6)
 		local TransTrack, TransFill, TransKnob = MkSlider(7)
-		local _, TransInput = MkInput("0.0 Ã¢Â€Â” 1.0", 8)
+		local _, TransInput = MkInput("0.0 Ã¢ÂÂ 1.0", 8)
 
 		local ClosePanel = Create("TextButton", Panel, {
 			Size = UDim2.fromOffset(14, 14),
@@ -3777,6 +3777,21 @@ function redzlib:MakeWindow(Configs)
 			return Divider
 		end
 
+		function Tab:AddEndLine()
+			-- Invisible zero-height marker. When added inside InnerContainer via
+			-- Section:AddEndLine(), it triggers ChildAdded â RefreshWrapperSize,
+			-- which re-measures all children via AbsoluteSize after one Heartbeat,
+			-- fixing the clipping caused by AutomaticSize elements (Button, Paragraph).
+			local EndLine = Create("Frame", Container, {
+				Size             = UDim2.new(1, 0, 0, 0),
+				BackgroundTransparency = 1,
+				Name             = "EndLine"
+			})
+			local EL = {}
+			function EL:Destroy() EndLine:Destroy() end
+			return EL
+		end
+
 		function Tab:AddSection(Configs)
 			Configs = type(Configs) == "string" and { Name = Configs } or (Configs or {})
 			local SectionName = Configs[1] or Configs.Name or Configs.Title or Configs.Section or "Section"
@@ -3851,23 +3866,32 @@ function redzlib:MakeWindow(Configs)
 			local isOpen = false
 
 			local function GetInnerHeight()
-			    local count = 0
-			    local h = 0
-			    for _, child in ipairs(InnerContainer:GetChildren()) do
-			        if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Visible then
-				            h = h + child.Size.Y.Offset
-				            count = count + 1
-			        end
-			    end
-			    if count > 0 then
-			        h = h + (count - 1) * 5
+				-- Use AbsoluteSize.Y so AutomaticSize elements are measured correctly
+				local layout = nil
+				for _, child in ipairs(InnerContainer:GetChildren()) do
+					if child:IsA("UIListLayout") then layout = child break end
 				end
-				h = h + 10 -- top + bottom padding
+				if layout then
+					return layout.AbsoluteContentSize.Y + 10 -- +10 for top+bottom UIPadding
+				end
+				-- Fallback: manual sum
+				local count = 0
+				local h = 0
+				for _, child in ipairs(InnerContainer:GetChildren()) do
+					if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Visible then
+						h = h + child.AbsoluteSize.Y
+						count = count + 1
+					end
+				end
+				if count > 0 then h = h + (count - 1) * 5 end
+				h = h + 10
 				return h
 			end
 
 			local function RefreshWrapperSize()
 				task.defer(function()
+					-- Wait one heartbeat so AutomaticSize elements finish rendering
+					RunService.Heartbeat:Wait()
 					if isOpen then
 						local innerH = GetInnerHeight()
 						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 24 + innerH), 0.18 })
@@ -3950,6 +3974,7 @@ function redzlib:MakeWindow(Configs)
 			function Section:AddParagraph(cfg)     return WithInner(Tab.AddParagraph,     cfg) end
 			function Section:AddDivider(cfg)       return WithInner(Tab.AddDivider,       cfg) end
 			function Section:AddDiscordInvite(cfg) return WithInner(Tab.AddDiscordInvite, cfg) end
+			function Section:AddEndLine()          return WithInner(Tab.AddEndLine,       {})  end
 
 			return Section
 		end
