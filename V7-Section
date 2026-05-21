@@ -2437,7 +2437,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 	}), "DarkText")
 
 	local Frame = Make("Button", Instance, {
-		Size = UDim2.new(1, 0, 0, 25),
+		Size = UDim2.new(1, 0, 0, 0),
 		AutomaticSize = "Y",
 		Name = "Option"
 	})
@@ -2456,8 +2456,8 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 			Padding = UDim.new(0, 2)
 		}),
 		Create("UIPadding", {
-			PaddingBottom = UDim.new(0, 5),
-			PaddingTop = UDim.new(0, 5)
+			PaddingBottom = UDim.new(0, 7),
+			PaddingTop = UDim.new(0, 7)
 		}),
 		TitleL,
 		DescL,
@@ -3848,21 +3848,33 @@ function redzlib:MakeWindow(Configs)
 
 			local isOpen = false
 
-			local InnerLayout = InnerContainer:FindFirstChildOfClass("UIListLayout")
-
 			local function GetInnerHeight()
-				return InnerLayout.AbsoluteContentSize.Y + 10
+			    local count = 0
+			    local h = 0
+			    for _, child in ipairs(InnerContainer:GetChildren()) do
+			        if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Visible then
+				            h = h + child.Size.Y.Offset
+				            count = count + 1
+			        end
+			    end
+			    if count > 0 then
+			        h = h + (count - 1) * 5
+				end
+				h = h + 10
+				return h
 			end
 
 			local function RefreshWrapperSize()
-				if isOpen then
-					local innerH = GetInnerHeight()
-					CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 24 + innerH), 0.18 })
-					CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, innerH), 0.18 })
-				else
-					CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 23), 0.18 })
-					CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.18 })
-				end
+				task.defer(function()
+					if isOpen then
+						local innerH = GetInnerHeight()
+						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 24 + innerH), 0.18 })
+						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, innerH), 0.18 })
+					else
+						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 23), 0.18 })
+						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.18 })
+					end
+				end)
 			end
 
 			local function SetOpen(newState)
@@ -3887,10 +3899,9 @@ function redzlib:MakeWindow(Configs)
 				SetOpen(not isOpen)
 			end)
 
-			InnerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+			InnerContainer.ChildAdded:Connect(function()
 				if isOpen then RefreshWrapperSize() end
 			end)
-
 			InnerContainer.ChildRemoved:Connect(function()
 				if isOpen then RefreshWrapperSize() end
 			end)
@@ -3971,8 +3982,8 @@ function redzlib:MakeWindow(Configs)
 
 			local ButtonIcon = Create("ImageLabel", FButton, {
 				Size = UDim2.new(0, 14, 0, 14),
-				Position = UDim2.new(1, -10, 0.5),
-				AnchorPoint = Vector2.new(1, 0.5),
+				Position = UDim2.new(1, -10, 0, 7),
+				AnchorPoint = Vector2.new(1, 0),
 				BackgroundTransparency = 1,
 				Image = "rbxassetid://10709791437"
 			})
@@ -4009,8 +4020,8 @@ function redzlib:MakeWindow(Configs)
 
 			local ToggleHolder = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 35, 0, 18),
-				Position = UDim2.new(1, -10, 0.5),
-				AnchorPoint = Vector2.new(1, 0.5),
+				Position = UDim2.new(1, -10, 0, 7),
+				AnchorPoint = Vector2.new(1, 0),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
 			Make("Corner", ToggleHolder, UDim.new(0.5, 0))
@@ -4087,8 +4098,8 @@ function redzlib:MakeWindow(Configs)
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 150, 0, 18),
-				Position = UDim2.new(1, -10, 0.5),
-				AnchorPoint = Vector2.new(1, 0.5),
+				Position = UDim2.new(1, -10, 0, 7),
+				AnchorPoint = Vector2.new(1, 0),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
@@ -4620,8 +4631,8 @@ function redzlib:MakeWindow(Configs)
 
 			local InputHolder = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 38, 0, 18),
-				Position = UDim2.new(1, -125, 0.5),
-				AnchorPoint = Vector2.new(1, 0.5),
+				Position = UDim2.new(1, -125, 0, 7),
+				AnchorPoint = Vector2.new(1, 0),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
 			Make("Corner", InputHolder, UDim.new(0, 4))
@@ -4759,8 +4770,8 @@ function redzlib:MakeWindow(Configs)
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 150, 0, 18),
-				Position = UDim2.new(1, -10, 0.5),
-				AnchorPoint = Vector2.new(1, 0.5),
+				Position = UDim2.new(1, -10, 0, 7),
+				AnchorPoint = Vector2.new(1, 0),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
