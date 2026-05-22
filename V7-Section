@@ -2437,7 +2437,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 	}), "DarkText")
 
 	local Frame = Make("Button", Instance, {
-		Size = UDim2.new(1, 0, 0, 0),
+		Size = UDim2.new(1, 0, 0, 25),
 		AutomaticSize = "Y",
 		Name = "Option"
 	})
@@ -2456,8 +2456,8 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 			Padding = UDim.new(0, 2)
 		}),
 		Create("UIPadding", {
-			PaddingBottom = UDim.new(0, 7),
-			PaddingTop = UDim.new(0, 7)
+			PaddingBottom = UDim.new(0, 5),
+			PaddingTop = UDim.new(0, 5)
 		}),
 		TitleL,
 		DescL,
@@ -2786,6 +2786,7 @@ function redzlib:MakeWindow(Configs)
 
 	local ButtonsFolder = Create("Folder", TopBar, { Name = "Buttons" })
 
+
 	local CloseButton = Create("ImageButton", {
 		Size = UDim2.new(0, 14, 0, 14),
 		Position = UDim2.new(1, -10, 0.5),
@@ -2985,12 +2986,12 @@ function redzlib:MakeWindow(Configs)
 
 		MkLabel("IMAGE (rbxassetid / url)", 1)
 		local _, ImageInput = MkInput("rbxassetid://...", 2)
-		MkLabel("SIZE  (20 Ã¢ÂÂ 120)", 3)
+		MkLabel("SIZE  (20 Ã¢Â€Â” 120)", 3)
 		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
-		local _, SizeInput = MkInput("20 Ã¢ÂÂ 120", 5)
-		MkLabel("TRANSPARENCY  (0.0 Ã¢ÂÂ 1.0)", 6)
+		local _, SizeInput = MkInput("20 Ã¢Â€Â” 120", 5)
+		MkLabel("TRANSPARENCY  (0.0 Ã¢Â€Â” 1.0)", 6)
 		local TransTrack, TransFill, TransKnob = MkSlider(7)
-		local _, TransInput = MkInput("0.0 Ã¢ÂÂ 1.0", 8)
+		local _, TransInput = MkInput("0.0 Ã¢Â€Â” 1.0", 8)
 
 		local ClosePanel = Create("TextButton", Panel, {
 			Size = UDim2.fromOffset(14, 14),
@@ -3164,7 +3165,7 @@ function redzlib:MakeWindow(Configs)
 		local DText    = Configs[2] or Configs.Text or "This is a Dialog"
 		local DOptions = Configs[3] or Configs.Options or {}
 		local DIcon    = Configs.Icon or ""
-		local DType    = Configs.Type or "default"
+		local DType    = Configs.Type or "default" -- "default" | "theme" | "image"
 
 		local function NormalizeImageId(raw)
 			raw = tostring(raw or ""):gsub("^%s+",""):gsub("%s+$","")
@@ -3777,179 +3778,181 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		function Tab:AddSection(Configs)
-			Configs = type(Configs) == "string" and { Name = Configs } or (Configs or {})
-			local SectionName = Configs[1] or Configs.Name or Configs.Title or Configs.Section or "Section"
-			local StartOpen   = Configs[2] or Configs.Open or Configs.Default or false
+    Configs = type(Configs) == "string" and { Name = Configs } or (Configs or {})
+    local SectionName = Configs[1] or Configs.Name or Configs.Title or Configs.Section or "Section"
+    local StartOpen   = Configs[2] or Configs.Open or Configs.Default or false
 
-			local SectionWrapper = Create("Frame", Container, {
-				Size             = UDim2.new(1, 0, 0, 23),
-				BackgroundTransparency = 1,
-				ClipsDescendants = true,
-				Name             = "Option"
-			})
+    local SectionWrapper = Create("Frame", Container, {
+        Size             = UDim2.new(1, 0, 0, 23),
+        BackgroundTransparency = 1,
+        ClipsDescendants = true,
+        Name             = "Option"
+    })
 
-			local HeaderBtn = InsertTheme(Create("TextButton", SectionWrapper, {
-				Size             = UDim2.new(1, 0, 0, 23),
-				BackgroundColor3 = Theme["Color Hub 2"],
-				BackgroundTransparency = 0,
-				Text             = "",
-				AutoButtonColor  = false,
-				Name             = "SectionHeader"
-			}), "Frame")
-			Make("Corner", HeaderBtn, UDim.new(0, 7))
-			Make("Stroke", HeaderBtn)
+    local HeaderBtn = InsertTheme(Create("TextButton", SectionWrapper, {
+        Size             = UDim2.new(1, 0, 0, 23),
+        BackgroundColor3 = Theme["Color Hub 2"],
+        BackgroundTransparency = 0,
+        Text             = "",
+        AutoButtonColor  = false,
+        Name             = "SectionHeader"
+    }), "Frame")
+    Make("Corner", HeaderBtn, UDim.new(0, 7))
+    Make("Stroke", HeaderBtn)
 
-			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
-				Font             = Enum.Font.GothamBold,
-				Text             = SectionName,
-				TextColor3       = Theme["Color Text"],
-				TextSize         = 10,
-				TextXAlignment   = Enum.TextXAlignment.Left,
-				Size             = UDim2.new(1, -40, 1, 0),
-				Position         = UDim2.new(0, 12, 0, 0),
-				BackgroundTransparency = 1,
-				TextTruncate     = Enum.TextTruncate.AtEnd,
-				Name             = "SectionTitle"
-			}), "Text")
+    local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
+        Font             = Enum.Font.GothamBold,
+        Text             = SectionName,
+        TextColor3       = Theme["Color Text"],
+        TextSize         = 10,
+        TextXAlignment   = Enum.TextXAlignment.Left,
+        Size             = UDim2.new(1, -40, 1, 0),
+        Position         = UDim2.new(0, 12, 0, 0),
+        BackgroundTransparency = 1,
+        TextTruncate     = Enum.TextTruncate.AtEnd,
+        Name             = "SectionTitle"
+    }), "Text")
 
-			local ArrowLabel = InsertTheme(Create("ImageLabel", HeaderBtn, {
-				Image            = "rbxassetid://10709791437",
-				ImageColor3      = Theme["Color Dark Text"],
-				Size             = UDim2.new(0, 14, 0, 14),
-				Position         = UDim2.new(1, -16, 0.5, 0),
-				AnchorPoint      = Vector2.new(1, 0.5),
-				BackgroundTransparency = 1,
-				Rotation         = 0,
-				Name             = "ArrowLabel"
-			}), "DarkText")
+    local ArrowLabel = InsertTheme(Create("ImageLabel", HeaderBtn, {
+        Image            = "rbxassetid://10709791437",
+        ImageColor3      = Theme["Color Dark Text"],
+        Size             = UDim2.new(0, 14, 0, 14),
+        Position         = UDim2.new(1, -16, 0.5, 0),
+        AnchorPoint      = Vector2.new(1, 0.5),
+        BackgroundTransparency = 1,
+        Rotation         = 0,
+        Name             = "ArrowLabel"
+    }), "DarkText")
 
-			local BottomLine = InsertTheme(Create("Frame", SectionWrapper, {
-				Size             = UDim2.new(1, 0, 0, 1),
-				Position         = UDim2.new(0, 0, 0, 26),
-				BackgroundColor3 = Theme["Color Theme"],
-				BackgroundTransparency = 1,
-				Name             = "BottomLine"
-			}), "Theme")
+    local BottomLine = InsertTheme(Create("Frame", SectionWrapper, {
+        Size             = UDim2.new(1, 0, 0, 1),
+        Position         = UDim2.new(0, 0, 0, 26),
+        BackgroundColor3 = Theme["Color Theme"],
+        BackgroundTransparency = 1,
+        Name             = "BottomLine"
+    }), "Theme")
 
-			local InnerContainer = Create("Frame", SectionWrapper, {
-				Size             = UDim2.new(1, 0, 0, 0),
-				Position         = UDim2.new(0, 0, 0, 27),
-				BackgroundTransparency = 1,
-				Name             = "SectionInner"
-			})
-			Create("UIListLayout", InnerContainer, {
-				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding   = UDim.new(0, 5)
-			})
-			Create("UIPadding", InnerContainer, {
-				PaddingBottom = UDim.new(0, 5),
-				PaddingTop    = UDim.new(0, 5),
-			})
+    local InnerContainer = Create("Frame", SectionWrapper, {
+        Size             = UDim2.new(1, 0, 0, 0),
+        Position         = UDim2.new(0, 0, 0, 27),
+        BackgroundTransparency = 1,
+        Name             = "SectionInner",
+        ClipsDescendants = false,
+    })
+    local InnerLayout = Create("UIListLayout", InnerContainer, {
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding   = UDim.new(0, 5)
+    })
+    Create("UIPadding", InnerContainer, {
+        PaddingBottom = UDim.new(0, 5),
+        PaddingTop    = UDim.new(0, 5),
+    })
 
-			local isOpen = false
+    local isOpen = false
 
-			local function GetInnerHeight()
-			    local count = 0
-			    local h = 0
-			    for _, child in ipairs(InnerContainer:GetChildren()) do
-			        if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Visible then
-				            h = h + child.Size.Y.Offset
-				            count = count + 1
-			        end
-			    end
-			    if count > 0 then
-			        h = h + (count - 1) * 5
-				end
-				h = h + 10
-				return h
-			end
+    -- ГЛАВНОЕ ИЗМЕНЕНИЕ: используем AbsoluteContentSize от UIListLayout
+    -- как ObsidianLib — он уже включает все паддинги и реальные высоты
+    local function GetInnerHeight()
+        return InnerLayout.AbsoluteContentSize.Y + 10 -- +10 = top+bottom padding
+    end
 
-			local function RefreshWrapperSize()
-				task.defer(function()
-					if isOpen then
-						local innerH = GetInnerHeight()
-						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 24 + innerH), 0.18 })
-						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, innerH), 0.18 })
-					else
-						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 23), 0.18 })
-						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.18 })
-					end
-				end)
-			end
+    local function RefreshWrapperSize()
+        if isOpen then
+            local innerH = GetInnerHeight()
+            InnerContainer.Size = UDim2.new(1, 0, 0, innerH)
+            SectionWrapper.Size = UDim2.new(1, 0, 0, 27 + innerH)
+        else
+            InnerContainer.Size = UDim2.new(1, 0, 0, 0)
+            SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
+        end
+    end
 
-			local function SetOpen(newState)
-				isOpen = newState
-				InnerContainer.Visible = isOpen
-				CreateTween({ ArrowLabel, "Rotation", isOpen and 90 or 0, 0.18 })
-				CreateTween({ BottomLine, "BackgroundTransparency", isOpen and 0 or 1, 0.15 })
-				CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.08 or 0, 0.15 })
-				RefreshWrapperSize()
-			end
+    local function SetOpen(newState)
+        isOpen = newState
+        InnerContainer.Visible = isOpen
+        CreateTween({ ArrowLabel, "Rotation", isOpen and 90 or 0, 0.18 })
+        CreateTween({ BottomLine, "BackgroundTransparency", isOpen and 0 or 1, 0.15 })
+        CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.08 or 0, 0.15 })
+        if isOpen then
+            local innerH = GetInnerHeight()
+            InnerContainer.Size = UDim2.new(1, 0, 0, 0)
+            SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
+            -- анимируем открытие
+            CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, innerH), 0.18 })
+            CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 27 + innerH), 0.18 })
+        else
+            CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.18 })
+            CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 23), 0.18 })
+        end
+    end
 
-			HeaderBtn.MouseEnter:Connect(function()
-				if not isOpen then
-					CreateTween({ HeaderBtn, "BackgroundTransparency", 0.35, 0.1 })
-				end
-			end)
-			HeaderBtn.MouseLeave:Connect(function()
-				CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.08 or 0, 0.1 })
-			end)
+    HeaderBtn.MouseEnter:Connect(function()
+        if not isOpen then
+            CreateTween({ HeaderBtn, "BackgroundTransparency", 0.35, 0.1 })
+        end
+    end)
+    HeaderBtn.MouseLeave:Connect(function()
+        CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.08 or 0, 0.1 })
+    end)
 
-			HeaderBtn.Activated:Connect(function()
-				SetOpen(not isOpen)
-			end)
+    HeaderBtn.Activated:Connect(function()
+        SetOpen(not isOpen)
+    end)
 
-			InnerContainer.ChildAdded:Connect(function()
-				if isOpen then RefreshWrapperSize() end
-			end)
-			InnerContainer.ChildRemoved:Connect(function()
-				if isOpen then RefreshWrapperSize() end
-			end)
+    -- Ключевой сигнал: UIListLayout сам сообщает когда содержимое изменилось
+    InnerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        if isOpen then
+            task.defer(function()
+                RefreshWrapperSize()
+            end)
+        end
+    end)
 
-			if StartOpen then
-				task.defer(function() SetOpen(true) end)
-			else
-				ArrowLabel.Rotation = 0
-				BottomLine.BackgroundTransparency = 1
-				SectionWrapper.Size = UDim2.new(1, 0, 0, 26)
-				InnerContainer.Size = UDim2.new(1, 0, 0, 0)
-				InnerContainer.Visible = false
-				isOpen = false
-			end
+    if StartOpen then
+        task.defer(function() SetOpen(true) end)
+    else
+        ArrowLabel.Rotation = 0
+        BottomLine.BackgroundTransparency = 1
+        SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
+        InnerContainer.Size = UDim2.new(1, 0, 0, 0)
+        InnerContainer.Visible = false
+        isOpen = false
+    end
 
-			local Section = {}
-			table.insert(redzlib.Options, { type = "Section", Name = SectionName, func = Section })
+    local Section = {}
+    table.insert(redzlib.Options, { type = "Section", Name = SectionName, func = Section })
 
-			function Section:Set(New)
-				if New then HeaderLabel.Text = GetStr(New) end
-			end
-			function Section:Visible(Bool)
-				if Bool == nil then SectionWrapper.Visible = not SectionWrapper.Visible return end
-				SectionWrapper.Visible = Bool
-			end
-			function Section:Destroy() SectionWrapper:Destroy() end
-			function Section:Toggle() SetOpen(not isOpen) end
-			function Section:Open(Bool) SetOpen(Bool ~= nil and Bool or true) end
+    function Section:Set(New)
+        if New then HeaderLabel.Text = GetStr(New) end
+    end
+    function Section:Visible(Bool)
+        if Bool == nil then SectionWrapper.Visible = not SectionWrapper.Visible return end
+        SectionWrapper.Visible = Bool
+    end
+    function Section:Destroy() SectionWrapper:Destroy() end
+    function Section:Toggle() SetOpen(not isOpen) end
+    function Section:Open(Bool) SetOpen(Bool ~= nil and Bool or true) end
 
-			local function WithInner(method, cfg)
-				local prev = Container
-				Container = InnerContainer
-				local result = method(Tab, cfg)
-				Container = prev
-				return result
-			end
+    local function WithInner(method, cfg)
+        local prev = Container
+        Container = InnerContainer
+        local result = method(Tab, cfg)
+        Container = prev
+        return result
+    end
 
-			function Section:AddButton(cfg)        return WithInner(Tab.AddButton,        cfg) end
-			function Section:AddToggle(cfg)        return WithInner(Tab.AddToggle,        cfg) end
-			function Section:AddSlider(cfg)        return WithInner(Tab.AddSlider,        cfg) end
-			function Section:AddDropdown(cfg)      return WithInner(Tab.AddDropdown,      cfg) end
-			function Section:AddTextBox(cfg)       return WithInner(Tab.AddTextBox,       cfg) end
-			function Section:AddParagraph(cfg)     return WithInner(Tab.AddParagraph,     cfg) end
-			function Section:AddDivider(cfg)       return WithInner(Tab.AddDivider,       cfg) end
-			function Section:AddDiscordInvite(cfg) return WithInner(Tab.AddDiscordInvite, cfg) end
+    function Section:AddButton(cfg)        return WithInner(Tab.AddButton,        cfg) end
+    function Section:AddToggle(cfg)        return WithInner(Tab.AddToggle,        cfg) end
+    function Section:AddSlider(cfg)        return WithInner(Tab.AddSlider,        cfg) end
+    function Section:AddDropdown(cfg)      return WithInner(Tab.AddDropdown,      cfg) end
+    function Section:AddTextBox(cfg)       return WithInner(Tab.AddTextBox,       cfg) end
+    function Section:AddParagraph(cfg)     return WithInner(Tab.AddParagraph,     cfg) end
+    function Section:AddDivider(cfg)       return WithInner(Tab.AddDivider,       cfg) end
+    function Section:AddDiscordInvite(cfg) return WithInner(Tab.AddDiscordInvite, cfg) end
 
-			return Section
-		end
+    return Section
+end
+
 
 		function Tab:AddParagraph(Configs)
 			local PName = Configs[1] or Configs.Title or "Paragraph"
@@ -3982,8 +3985,8 @@ function redzlib:MakeWindow(Configs)
 
 			local ButtonIcon = Create("ImageLabel", FButton, {
 				Size = UDim2.new(0, 14, 0, 14),
-				Position = UDim2.new(1, -10, 0, 7),
-				AnchorPoint = Vector2.new(1, 0),
+				Position = UDim2.new(1, -10, 0.5),
+				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundTransparency = 1,
 				Image = "rbxassetid://10709791437"
 			})
@@ -4020,8 +4023,8 @@ function redzlib:MakeWindow(Configs)
 
 			local ToggleHolder = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 35, 0, 18),
-				Position = UDim2.new(1, -10, 0, 7),
-				AnchorPoint = Vector2.new(1, 0),
+				Position = UDim2.new(1, -10, 0.5),
+				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
 			Make("Corner", ToggleHolder, UDim.new(0.5, 0))
@@ -4098,8 +4101,8 @@ function redzlib:MakeWindow(Configs)
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 150, 0, 18),
-				Position = UDim2.new(1, -10, 0, 7),
-				AnchorPoint = Vector2.new(1, 0),
+				Position = UDim2.new(1, -10, 0.5),
+				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
@@ -4631,8 +4634,8 @@ function redzlib:MakeWindow(Configs)
 
 			local InputHolder = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 38, 0, 18),
-				Position = UDim2.new(1, -125, 0, 7),
-				AnchorPoint = Vector2.new(1, 0),
+				Position = UDim2.new(1, -125, 0.5),
+				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
 			Make("Corner", InputHolder, UDim.new(0, 4))
@@ -4770,8 +4773,8 @@ function redzlib:MakeWindow(Configs)
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 150, 0, 18),
-				Position = UDim2.new(1, -10, 0, 7),
-				AnchorPoint = Vector2.new(1, 0),
+				Position = UDim2.new(1, -10, 0.5),
+				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
@@ -4942,6 +4945,7 @@ function redzlib:MakeWindow(Configs)
 
 		return Tab
 	end
+
 
 	CloseButton.Activated:Connect(Window.CloseBtn)
 	MinimizeButton.Activated:Connect(Window.MinimizeBtn)
