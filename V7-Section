@@ -3849,17 +3849,14 @@ function redzlib:MakeWindow(Configs)
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding   = UDim.new(0, 5)
 			})
-			Create("UIPadding", InnerContainer, {
-				PaddingBottom = UDim.new(0, 5),
-				PaddingTop    = UDim.new(0, 5),
-			})
+			-- ÐÐµÐ· UIPadding: AbsoluteContentSize ÑÑÐ¸ÑÐ°ÐµÑ ÑÐ¾Ð»ÑÐºÐ¾ ÑÐ»ÐµÐ¼ÐµÐ½ÑÑ + gaps
+			-- ÐÐ¾Ð±Ð°Ð²Ð»ÑÐµÐ¼ ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½ÑÐ¹ Ð¾ÑÑÑÑÐ¿ Ð²ÑÑÑÐ½ÑÑ (4px ÑÐ²ÐµÑÑÑ + 4px ÑÐ½Ð¸Ð·Ñ)
+			local INNER_PAD = 8
 
 			local isOpen = false
 
-			-- AbsoluteContentSize ÑÐ¶Ðµ Ð²ÐºÐ»ÑÑÐ°ÐµÑ Ð²ÑÐµ ÑÐµÐ°Ð»ÑÐ½ÑÐµ Ð²ÑÑÐ¾ÑÑ (AutomaticSize ÑÐ¾Ð¶Ðµ)
-			-- +10 = top(5) + bottom(5) padding Ð¸Ð· UIPadding
 			local function GetInnerHeight()
-				return InnerLayout.AbsoluteContentSize.Y + 10
+				return InnerLayout.AbsoluteContentSize.Y + INNER_PAD
 			end
 
 			local function ApplyOpenSize()
