@@ -2412,8 +2412,6 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		TextColor3 = Theme["Color Text"],
 		Size = UDim2.new(1, -20),
 		AutomaticSize = "Y",
-		Position = UDim2.new(0, 0, 0.5),
-		AnchorPoint = Vector2.new(0, 0.5),
 		BackgroundTransparency = 1,
 		TextTruncate = "AtEnd",
 		TextSize = 10,
@@ -2427,18 +2425,20 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		TextColor3 = Theme["Color Dark Text"],
 		Size = UDim2.new(1, -20),
 		AutomaticSize = "Y",
-		Position = UDim2.new(0, 12, 0, 15),
 		BackgroundTransparency = 1,
 		TextWrapped = true,
 		TextSize = 8,
 		TextXAlignment = "Left",
 		Text = "",
-		RichText = true
+		RichText = true,
+		Visible = false
 	}), "DarkText")
 
+	-- ÐÐµÐ· AutomaticSize Ð¿Ð¾ ÑÐ¼Ð¾Ð»ÑÐ°Ð½Ð¸Ñ: ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½ÑÐµ 25px
+	-- AutomaticSize Ð²ÐºÐ»ÑÑÐ°ÐµÑÑÑ ÑÐ¾Ð»ÑÐºÐ¾ ÐºÐ¾Ð³Ð´Ð° ÐµÑÑÑ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ðµ
 	local Frame = Make("Button", Instance, {
 		Size = UDim2.new(1, 0, 0, 25),
-		AutomaticSize = "Y",
+		AutomaticSize = "None",
 		Name = "Option"
 	})
 	Make("Corner", Frame, UDim.new(0, 6))
@@ -2447,8 +2447,8 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		AutomaticSize = "Y",
 		BackgroundTransparency = 1,
 		Size = HolderSize,
-		Position = UDim2.new(0, 10, 0),
-		AnchorPoint = Vector2.new(0, 0)
+		Position = UDim2.new(0, 10, 0.5),
+		AnchorPoint = Vector2.new(0, 0.5)
 	}, {
 		Create("UIListLayout", {
 			SortOrder = "LayoutOrder",
@@ -2473,11 +2473,17 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		if type(NewDesc) == "string" and NewDesc:gsub(" ", ""):len() > 0 then
 			DescL.Visible = true
 			DescL.Text = NewDesc
+			-- ÐµÑÑÑ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ðµ: AutomaticSize Y, LabelHolder Ð¿ÑÐ¸Ð¶Ð°Ñ Ðº Ð²ÐµÑÑÑ
+			Frame.AutomaticSize = Enum.AutomaticSize.Y
+			Frame.Size = UDim2.new(1, 0, 0, 0)
 			LabelHolder.Position = UDim2.new(0, 10, 0)
 			LabelHolder.AnchorPoint = Vector2.new(0, 0)
 		else
 			DescL.Visible = false
 			DescL.Text = ""
+			-- Ð½ÐµÑ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ñ: ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½Ð°Ñ Ð²ÑÑÐ¾ÑÐ° 25px, Ð½Ð¸ÐºÐ°ÐºÐ¾Ð³Ð¾ AutomaticSize
+			Frame.AutomaticSize = Enum.AutomaticSize.None
+			Frame.Size = UDim2.new(1, 0, 0, 25)
 			LabelHolder.Position = UDim2.new(0, 10, 0.5)
 			LabelHolder.AnchorPoint = Vector2.new(0, 0.5)
 		end
@@ -3977,9 +3983,6 @@ function redzlib:MakeWindow(Configs)
 			local PDesc = Configs[2] or Configs.Text or ""
 
 			local Frame, LabelFunc = ButtonFrame(Container, PName, PDesc, UDim2.new(1, -20))
-			-- AutomaticSize Y: ÐºÐ¾Ð³Ð´Ð° Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ðµ Ð¿Ð¾ÑÐ²Ð»ÑÐµÑÑÑ/Ð¸ÑÑÐµÐ·Ð°ÐµÑ, Frame ÑÐ°Ð¼ Ð¼ÐµÐ½ÑÐµÑ Ð²ÑÑÐ¾ÑÑ,
-			-- UIListLayout ÑÐµÐºÑÐ¸Ð¸ Ð¿Ð¾Ð»ÑÑÐ°ÐµÑ AbsoluteContentSize Ð¸ ÑÐµÐºÑÐ¸Ñ Ð¾Ð±Ð½Ð¾Ð²Ð»ÑÐµÑÑÑ ÐºÐ¾ÑÑÐµÐºÑÐ½Ð¾
-			Frame.AutomaticSize = Enum.AutomaticSize.Y
 
 			local Paragraph = {}
 			function Paragraph:Visible(...) Funcs:ToggleVisible(Frame, ...) end
@@ -4003,7 +4006,6 @@ function redzlib:MakeWindow(Configs)
 			local Callback = Funcs:GetCallback(Configs, 2)
 
 			local FButton, LabelFunc = ButtonFrame(Container, BName, BDescription, UDim2.new(1, -20))
-			FButton.AutomaticSize = Enum.AutomaticSize.Y
 
 			local ButtonIcon = Create("ImageLabel", FButton, {
 				Size = UDim2.new(0, 14, 0, 14),
@@ -4042,7 +4044,6 @@ function redzlib:MakeWindow(Configs)
 			if CheckFlag(Flag) then Default = GetFlag(Flag) end
 
 			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -38))
-			Button.AutomaticSize = Enum.AutomaticSize.Y
 
 			local ToggleHolder = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 35, 0, 18),
@@ -4121,7 +4122,6 @@ function redzlib:MakeWindow(Configs)
 			local Callback = Funcs:GetCallback(Configs, 4)
 
 			local Button, LabelFunc = ButtonFrame(Container, DName, DDesc, UDim2.new(1, -180))
-			Button.AutomaticSize = Enum.AutomaticSize.Y
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 150, 0, 18),
@@ -4622,7 +4622,6 @@ function redzlib:MakeWindow(Configs)
 			Default = math.clamp(tonumber(Default) or Min, Min, Max)
 
 			local Button, LabelFunc = ButtonFrame(Container, SName, SDesc, UDim2.new(1, -180))
-			Button.AutomaticSize = Enum.AutomaticSize.Y
 
 			local SliderHolder = Create("TextButton", Button, {
 				Size = UDim2.new(0, 110, 1, 0),
@@ -4795,7 +4794,6 @@ function redzlib:MakeWindow(Configs)
 			if type(TDefault) ~= "string" then TDefault = "" end
 
 			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -38))
-			Button.AutomaticSize = Enum.AutomaticSize.Y
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 150, 0, 18),
