@@ -2407,15 +2407,19 @@ AddEle("Gradient", function(parent, props, ...)
 end)
 
 local function ButtonFrame(Instance, Title, Description, HolderSize)
+	local hasDesc = type(Description) == "string" and Description:gsub(" ", ""):len() > 0
+	local FRAME_H_SIMPLE = 25  -- Ð²ÑÑÐ¾ÑÐ° Ð±ÐµÐ· Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ñ
+	local FRAME_H_DESC   = 38  -- Ð²ÑÑÐ¾ÑÐ° Ñ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸ÐµÐ¼
+
 	local TitleL = InsertTheme(Create("TextLabel", {
 		Font = Enum.Font.GothamMedium,
 		TextColor3 = Theme["Color Text"],
-		Size = UDim2.new(1, -20),
-		AutomaticSize = "Y",
+		Size = UDim2.new(1, 0, 0, 12),
 		BackgroundTransparency = 1,
 		TextTruncate = "AtEnd",
 		TextSize = 10,
 		TextXAlignment = "Left",
+		TextYAlignment = "Center",
 		Text = "",
 		RichText = true
 	}), "Text")
@@ -2423,69 +2427,56 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 	local DescL = InsertTheme(Create("TextLabel", {
 		Font = Enum.Font.Gotham,
 		TextColor3 = Theme["Color Dark Text"],
-		Size = UDim2.new(1, -20),
-		AutomaticSize = "Y",
+		Size = UDim2.new(1, 0, 0, 10),
 		BackgroundTransparency = 1,
-		TextWrapped = true,
+		TextWrapped = false,
 		TextSize = 8,
 		TextXAlignment = "Left",
+		TextYAlignment = "Center",
 		Text = "",
 		RichText = true,
 		Visible = false
 	}), "DarkText")
 
-	-- ÐÐµÐ· AutomaticSize Ð¿Ð¾ ÑÐ¼Ð¾Ð»ÑÐ°Ð½Ð¸Ñ: ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½ÑÐµ 25px
-	-- AutomaticSize Ð²ÐºÐ»ÑÑÐ°ÐµÑÑÑ ÑÐ¾Ð»ÑÐºÐ¾ ÐºÐ¾Ð³Ð´Ð° ÐµÑÑÑ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ðµ
 	local Frame = Make("Button", Instance, {
-		Size = UDim2.new(1, 0, 0, 25),
+		Size = UDim2.new(1, 0, 0, hasDesc and FRAME_H_DESC or FRAME_H_SIMPLE),
 		AutomaticSize = "None",
 		Name = "Option"
 	})
 	Make("Corner", Frame, UDim.new(0, 6))
 
-	local LabelHolder = Create("Frame", Frame, {
-		AutomaticSize = "Y",
-		BackgroundTransparency = 1,
-		Size = HolderSize,
-		Position = UDim2.new(0, 10, 0.5),
-		AnchorPoint = Vector2.new(0, 0.5)
-	}, {
-		Create("UIListLayout", {
-			SortOrder = "LayoutOrder",
-			VerticalAlignment = "Center",
-			Padding = UDim.new(0, 2)
-		}),
-		Create("UIPadding", {
-			PaddingBottom = UDim.new(0, 5),
-			PaddingTop = UDim.new(0, 5)
-		}),
-		TitleL,
-		DescL,
-	})
+	-- Title Ð²ÑÐµÐ³Ð´Ð° Ð²ÐµÑÑÐ¸ÐºÐ°Ð»ÑÐ½Ð¾ ÑÐµÐ½ÑÑÐ¸ÑÐ¾Ð²Ð°Ð½
+	TitleL.Parent = Frame
+	TitleL.Size = HolderSize
+	TitleL.Position = UDim2.new(0, 10, 0.5, 0)
+	TitleL.AnchorPoint = Vector2.new(0, 0.5)
+
+	DescL.Parent = Frame
 
 	local Label = {}
+
 	function Label:SetTitle(NewTitle)
 		if type(NewTitle) == "string" and NewTitle:gsub(" ", ""):len() > 0 then
 			TitleL.Text = NewTitle
 		end
 	end
+
 	function Label:SetDesc(NewDesc)
 		if type(NewDesc) == "string" and NewDesc:gsub(" ", ""):len() > 0 then
 			DescL.Visible = true
 			DescL.Text = NewDesc
-			-- ÐµÑÑÑ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ðµ: AutomaticSize Y, LabelHolder Ð¿ÑÐ¸Ð¶Ð°Ñ Ðº Ð²ÐµÑÑÑ
-			Frame.AutomaticSize = Enum.AutomaticSize.Y
-			Frame.Size = UDim2.new(1, 0, 0, 0)
-			LabelHolder.Position = UDim2.new(0, 10, 0)
-			LabelHolder.AnchorPoint = Vector2.new(0, 0)
+			-- Title ÑÑÐ¾Ð´Ð¸Ñ Ð²Ð²ÐµÑÑ, Desc Ð¿Ð¾ÑÐ²Ð»ÑÐµÑÑÑ ÑÐ½Ð¸Ð·Ñ
+			TitleL.Position = UDim2.new(0, 10, 0, 7)
+			TitleL.AnchorPoint = Vector2.new(0, 0)
+			DescL.Position = UDim2.new(0, 10, 0, 20)
+			DescL.Size = HolderSize
+			Frame.Size = UDim2.new(1, 0, 0, FRAME_H_DESC)
 		else
 			DescL.Visible = false
 			DescL.Text = ""
-			-- Ð½ÐµÑ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ñ: ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½Ð°Ñ Ð²ÑÑÐ¾ÑÐ° 25px, Ð½Ð¸ÐºÐ°ÐºÐ¾Ð³Ð¾ AutomaticSize
-			Frame.AutomaticSize = Enum.AutomaticSize.None
-			Frame.Size = UDim2.new(1, 0, 0, 25)
-			LabelHolder.Position = UDim2.new(0, 10, 0.5)
-			LabelHolder.AnchorPoint = Vector2.new(0, 0.5)
+			TitleL.Position = UDim2.new(0, 10, 0.5, 0)
+			TitleL.AnchorPoint = Vector2.new(0, 0.5)
+			Frame.Size = UDim2.new(1, 0, 0, FRAME_H_SIMPLE)
 		end
 	end
 
@@ -2992,12 +2983,12 @@ function redzlib:MakeWindow(Configs)
 
 		MkLabel("IMAGE (rbxassetid / url)", 1)
 		local _, ImageInput = MkInput("rbxassetid://...", 2)
-		MkLabel("SIZE  (20 Ã¢ÂÂ 120)", 3)
+		MkLabel("SIZE  (20 ÃÂ¢ÃÂÃÂ 120)", 3)
 		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
-		local _, SizeInput = MkInput("20 Ã¢ÂÂ 120", 5)
-		MkLabel("TRANSPARENCY  (0.0 Ã¢ÂÂ 1.0)", 6)
+		local _, SizeInput = MkInput("20 ÃÂ¢ÃÂÃÂ 120", 5)
+		MkLabel("TRANSPARENCY  (0.0 ÃÂ¢ÃÂÃÂ 1.0)", 6)
 		local TransTrack, TransFill, TransKnob = MkSlider(7)
-		local _, TransInput = MkInput("0.0 Ã¢ÂÂ 1.0", 8)
+		local _, TransInput = MkInput("0.0 ÃÂ¢ÃÂÃÂ 1.0", 8)
 
 		local ClosePanel = Create("TextButton", Panel, {
 			Size = UDim2.fromOffset(14, 14),
@@ -3849,14 +3840,15 @@ function redzlib:MakeWindow(Configs)
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding   = UDim.new(0, 5)
 			})
-			-- ÐÐµÐ· UIPadding: AbsoluteContentSize ÑÑÐ¸ÑÐ°ÐµÑ ÑÐ¾Ð»ÑÐºÐ¾ ÑÐ»ÐµÐ¼ÐµÐ½ÑÑ + gaps
-			-- ÐÐ¾Ð±Ð°Ð²Ð»ÑÐµÐ¼ ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½ÑÐ¹ Ð¾ÑÑÑÑÐ¿ Ð²ÑÑÑÐ½ÑÑ (4px ÑÐ²ÐµÑÑÑ + 4px ÑÐ½Ð¸Ð·Ñ)
-			local INNER_PAD = 8
-
+			-- ÃÂÃÂµÃÂ· UIPadding: AbsoluteContentSize ÃÂÃÂÃÂ¸ÃÂÃÂ°ÃÂµÃÂ ÃÂÃÂ¾ÃÂ»ÃÂÃÂºÃÂ¾ ÃÂÃÂ»ÃÂµÃÂ¼ÃÂµÃÂ½ÃÂÃÂ + gaps
+			-- ÃÂÃÂ¾ÃÂ±ÃÂ°ÃÂ²ÃÂ»ÃÂÃÂµÃÂ¼ ÃÂÃÂ¸ÃÂºÃÂÃÂ¸ÃÂÃÂ¾ÃÂ²ÃÂ°ÃÂ½ÃÂ½ÃÂÃÂ¹ ÃÂ¾ÃÂÃÂÃÂÃÂÃÂ¿ ÃÂ²ÃÂÃÂÃÂÃÂ½ÃÂÃÂ (4px ÃÂÃÂ²ÃÂµÃÂÃÂÃÂ + 4px ÃÂÃÂ½ÃÂ¸ÃÂ·ÃÂ)
 			local isOpen = false
 
 			local function GetInnerHeight()
-				return InnerLayout.AbsoluteContentSize.Y + INNER_PAD
+				-- AbsoluteContentSize = ÑÑÐ¼Ð¼Ð° Ð²ÑÑÐ¾Ñ Ð²ÑÐµÑ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð² + gaps (Padding * (n-1))
+				-- Ð­Ð»ÐµÐ¼ÐµÐ½ÑÑ ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½ÑÐµ 25px, gaps Ð¿Ð¾ 5px â ÑÐ¾ÑÐ½Ð¾Ðµ ÑÐ¸ÑÐ»Ð¾ Ð±ÐµÐ· AutomaticSize
+				-- +12 = 6px Ð¾ÑÑÑÑÐ¿ ÑÐ²ÐµÑÑÑ + 6px ÑÐ½Ð¸Ð·Ñ Ð²Ð½ÑÑÑÐ¸ ÑÐµÐºÑÐ¸Ð¸
+				return InnerLayout.AbsoluteContentSize.Y + 12
 			end
 
 			local function ApplyOpenSize()
@@ -3870,13 +3862,13 @@ function redzlib:MakeWindow(Configs)
 				SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
 			end
 
-			-- ÐÐ»Ð°Ð²Ð½ÑÐ¹ refresh: Ð²ÑÐ·ÑÐ²Ð°ÐµÑÑÑ Ð¿ÑÐ¸ Ð»ÑÐ±Ð¾Ð¼ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ð¸ ÑÐ¾Ð´ÐµÑÐ¶Ð¸Ð¼Ð¾Ð³Ð¾
+			-- ÃÂÃÂ»ÃÂ°ÃÂ²ÃÂ½ÃÂÃÂ¹ refresh: ÃÂ²ÃÂÃÂ·ÃÂÃÂ²ÃÂ°ÃÂµÃÂÃÂÃÂ ÃÂ¿ÃÂÃÂ¸ ÃÂ»ÃÂÃÂ±ÃÂ¾ÃÂ¼ ÃÂ¸ÃÂ·ÃÂ¼ÃÂµÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂ¸ ÃÂÃÂ¾ÃÂ´ÃÂµÃÂÃÂ¶ÃÂ¸ÃÂ¼ÃÂ¾ÃÂ³ÃÂ¾
 			local function RefreshWrapperSize()
 				if not isOpen then return end
 				task.defer(function()
 					if not isOpen then return end
 					local innerH = GetInnerHeight()
-					-- Ð±ÐµÐ· tween ÑÑÐ¾Ð±Ñ Ð½Ðµ Ð±ÑÐ»Ð¾ Ð´ÑÑÐ³Ð°Ð½ÑÑ Ð¿ÑÐ¸ Ð´Ð¸Ð½Ð°Ð¼Ð¸ÑÐµÑÐºÐ¸Ñ Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸ÑÑ
+					-- ÃÂ±ÃÂµÃÂ· tween ÃÂÃÂÃÂ¾ÃÂ±ÃÂ ÃÂ½ÃÂµ ÃÂ±ÃÂÃÂ»ÃÂ¾ ÃÂ´ÃÂÃÂÃÂ³ÃÂ°ÃÂ½ÃÂÃÂ ÃÂ¿ÃÂÃÂ¸ ÃÂ´ÃÂ¸ÃÂ½ÃÂ°ÃÂ¼ÃÂ¸ÃÂÃÂµÃÂÃÂºÃÂ¸ÃÂ ÃÂ¾ÃÂ±ÃÂ½ÃÂ¾ÃÂ²ÃÂ»ÃÂµÃÂ½ÃÂ¸ÃÂÃÂ
 					InnerContainer.Size = UDim2.new(1, 0, 0, innerH)
 					SectionWrapper.Size = UDim2.new(1, 0, 0, 27 + innerH)
 				end)
@@ -3889,7 +3881,7 @@ function redzlib:MakeWindow(Configs)
 				CreateTween({ BottomLine, "BackgroundTransparency", isOpen and 0 or 1, 0.15 })
 				CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.08 or 0, 0.15 })
 				if isOpen then
-					-- ÑÐ½Ð°ÑÐ°Ð»Ð° ÑÑÐ°Ð²Ð¸Ð¼ 0 ÑÑÐ¾Ð±Ñ tween Ð½Ð°ÑÐ¸Ð½Ð°Ð»ÑÑ Ñ Ð½ÑÐ»Ñ, ÐºÑÐ°ÑÐ¸Ð²Ð¾
+					-- ÃÂÃÂ½ÃÂ°ÃÂÃÂ°ÃÂ»ÃÂ° ÃÂÃÂÃÂ°ÃÂ²ÃÂ¸ÃÂ¼ 0 ÃÂÃÂÃÂ¾ÃÂ±ÃÂ tween ÃÂ½ÃÂ°ÃÂÃÂ¸ÃÂ½ÃÂ°ÃÂ»ÃÂÃÂ ÃÂ ÃÂ½ÃÂÃÂ»ÃÂ, ÃÂºÃÂÃÂ°ÃÂÃÂ¸ÃÂ²ÃÂ¾
 					InnerContainer.Size = UDim2.new(1, 0, 0, 0)
 					SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
 					task.defer(function()
@@ -3916,9 +3908,9 @@ function redzlib:MakeWindow(Configs)
 				SetOpen(not isOpen)
 			end)
 
-			-- UIListLayout ÑÐ¾Ð¾Ð±ÑÐ°ÐµÑ Ð¾Ð± Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ð¸ ÑÑÐ¼Ð¼Ð°ÑÐ½Ð¾Ð¹ Ð²ÑÑÐ¾ÑÑ ÑÐ¾Ð´ÐµÑÐ¶Ð¸Ð¼Ð¾Ð³Ð¾
-			-- ÑÑÐ¾ ÑÑÐ°Ð±Ð°ÑÑÐ²Ð°ÐµÑ Ð¿ÑÐ¸: Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð¸Ð¸/ÑÐ´Ð°Ð»ÐµÐ½Ð¸Ð¸ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð², Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ð¸ Ð¸Ñ Size,
-			-- Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ð¸ Visible â ÑÐ¾ ÐµÑÑÑ Ð¿Ð¾ÐºÑÑÐ²Ð°ÐµÑ Ð²ÑÐµ Ð´Ð¸Ð½Ð°Ð¼Ð¸ÑÐµÑÐºÐ¸Ðµ ÑÐ»ÑÑÐ°Ð¸
+			-- UIListLayout ÃÂÃÂ¾ÃÂ¾ÃÂ±ÃÂÃÂ°ÃÂµÃÂ ÃÂ¾ÃÂ± ÃÂ¸ÃÂ·ÃÂ¼ÃÂµÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂ¸ ÃÂÃÂÃÂ¼ÃÂ¼ÃÂ°ÃÂÃÂ½ÃÂ¾ÃÂ¹ ÃÂ²ÃÂÃÂÃÂ¾ÃÂÃÂ ÃÂÃÂ¾ÃÂ´ÃÂµÃÂÃÂ¶ÃÂ¸ÃÂ¼ÃÂ¾ÃÂ³ÃÂ¾
+			-- ÃÂÃÂÃÂ¾ ÃÂÃÂÃÂ°ÃÂ±ÃÂ°ÃÂÃÂÃÂ²ÃÂ°ÃÂµÃÂ ÃÂ¿ÃÂÃÂ¸: ÃÂ´ÃÂ¾ÃÂ±ÃÂ°ÃÂ²ÃÂ»ÃÂµÃÂ½ÃÂ¸ÃÂ¸/ÃÂÃÂ´ÃÂ°ÃÂ»ÃÂµÃÂ½ÃÂ¸ÃÂ¸ ÃÂÃÂ»ÃÂµÃÂ¼ÃÂµÃÂ½ÃÂÃÂ¾ÃÂ², ÃÂ¸ÃÂ·ÃÂ¼ÃÂµÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂ¸ ÃÂ¸ÃÂ Size,
+			-- ÃÂ¸ÃÂ·ÃÂ¼ÃÂµÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂ¸ Visible Ã¢ÂÂ ÃÂÃÂ¾ ÃÂµÃÂÃÂÃÂ ÃÂ¿ÃÂ¾ÃÂºÃÂÃÂÃÂ²ÃÂ°ÃÂµÃÂ ÃÂ²ÃÂÃÂµ ÃÂ´ÃÂ¸ÃÂ½ÃÂ°ÃÂ¼ÃÂ¸ÃÂÃÂµÃÂÃÂºÃÂ¸ÃÂµ ÃÂÃÂ»ÃÂÃÂÃÂ°ÃÂ¸
 			InnerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 				RefreshWrapperSize()
 			end)
@@ -3947,18 +3939,18 @@ function redzlib:MakeWindow(Configs)
 			function Section:Toggle() SetOpen(not isOpen) end
 			function Section:Open(Bool) SetOpen(Bool ~= nil and Bool or true) end
 
-			-- WithInner: Ð¿ÐµÑÐµÐ½Ð°Ð¿ÑÐ°Ð²Ð»ÑÐµÑ Container Ð² InnerContainer Ð½Ð° Ð²ÑÐµÐ¼Ñ ÑÐ¾Ð·Ð´Ð°Ð½Ð¸Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ°.
-			-- ÐÐ¾ÑÐ»Ðµ ÑÐ¾Ð·Ð´Ð°Ð½Ð¸Ñ Ð¿Ð¾Ð´Ð¿Ð¸ÑÑÐ²Ð°ÐµÐ¼ÑÑ Ð½Ð° AbsoluteSize ÐºÐ¾ÑÐ½ÐµÐ²Ð¾Ð³Ð¾ ÑÑÐµÐ¹Ð¼Ð° ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ° â
-			-- ÑÐ°Ðº ÑÐµÐºÑÐ¸Ñ ÑÐµÐ°Ð³Ð¸ÑÑÐµÑ Ð½Ð° Ð»ÑÐ±ÑÐµ Ð´Ð¸Ð½Ð°Ð¼Ð¸ÑÐµÑÐºÐ¸Ðµ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ Ð²ÑÑÐ¾ÑÑ (Paragraph SetDesc,
-			-- Dropdown Ñ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸ÐµÐ¼, Slider, Toggle Ð¸ Ñ.Ð´.)
+			-- WithInner: ÃÂ¿ÃÂµÃÂÃÂµÃÂ½ÃÂ°ÃÂ¿ÃÂÃÂ°ÃÂ²ÃÂ»ÃÂÃÂµÃÂ Container ÃÂ² InnerContainer ÃÂ½ÃÂ° ÃÂ²ÃÂÃÂµÃÂ¼ÃÂ ÃÂÃÂ¾ÃÂ·ÃÂ´ÃÂ°ÃÂ½ÃÂ¸ÃÂ ÃÂÃÂ»ÃÂµÃÂ¼ÃÂµÃÂ½ÃÂÃÂ°.
+			-- ÃÂÃÂ¾ÃÂÃÂ»ÃÂµ ÃÂÃÂ¾ÃÂ·ÃÂ´ÃÂ°ÃÂ½ÃÂ¸ÃÂ ÃÂ¿ÃÂ¾ÃÂ´ÃÂ¿ÃÂ¸ÃÂÃÂÃÂ²ÃÂ°ÃÂµÃÂ¼ÃÂÃÂ ÃÂ½ÃÂ° AbsoluteSize ÃÂºÃÂ¾ÃÂÃÂ½ÃÂµÃÂ²ÃÂ¾ÃÂ³ÃÂ¾ ÃÂÃÂÃÂµÃÂ¹ÃÂ¼ÃÂ° ÃÂÃÂ»ÃÂµÃÂ¼ÃÂµÃÂ½ÃÂÃÂ° Ã¢ÂÂ
+			-- ÃÂÃÂ°ÃÂº ÃÂÃÂµÃÂºÃÂÃÂ¸ÃÂ ÃÂÃÂµÃÂ°ÃÂ³ÃÂ¸ÃÂÃÂÃÂµÃÂ ÃÂ½ÃÂ° ÃÂ»ÃÂÃÂ±ÃÂÃÂµ ÃÂ´ÃÂ¸ÃÂ½ÃÂ°ÃÂ¼ÃÂ¸ÃÂÃÂµÃÂÃÂºÃÂ¸ÃÂµ ÃÂ¸ÃÂ·ÃÂ¼ÃÂµÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂ ÃÂ²ÃÂÃÂÃÂ¾ÃÂÃÂ (Paragraph SetDesc,
+			-- Dropdown ÃÂ ÃÂ¾ÃÂ¿ÃÂ¸ÃÂÃÂ°ÃÂ½ÃÂ¸ÃÂµÃÂ¼, Slider, Toggle ÃÂ¸ ÃÂ.ÃÂ´.)
 			local function WithInner(method, cfg)
 				local prev = Container
 				Container = InnerContainer
 				local result = method(Tab, cfg)
 				Container = prev
-				-- result â ÑÑÐ¾ Ð¾Ð±ÑÐµÐºÑ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ°. ÐÐ³Ð¾ ÐºÐ¾ÑÐ½ÐµÐ²Ð¾Ð¹ ÑÑÐµÐ¹Ð¼ â Ð¿Ð¾ÑÐ»ÐµÐ´Ð½Ð¸Ð¹ Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð½ÑÐ¹
-				-- child Ð² InnerContainer. ÐÐ¾Ð´Ð¿Ð¸ÑÑÐ²Ð°ÑÑÑÑ Ð½Ðµ Ð½ÑÐ¶Ð½Ð¾ â InnerLayout.AbsoluteContentSize
-				-- ÑÐ¶Ðµ Ð»Ð¾Ð²Ð¸Ñ Ð²ÑÐµ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ Ð²ÑÑÐ¾Ñ Ð´Ð¾ÑÐµÑÐ½Ð¸Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð² Ð°Ð²ÑÐ¾Ð¼Ð°ÑÐ¸ÑÐµÑÐºÐ¸.
+				-- result Ã¢ÂÂ ÃÂÃÂÃÂ¾ ÃÂ¾ÃÂ±ÃÂÃÂµÃÂºÃÂ ÃÂÃÂ»ÃÂµÃÂ¼ÃÂµÃÂ½ÃÂÃÂ°. ÃÂÃÂ³ÃÂ¾ ÃÂºÃÂ¾ÃÂÃÂ½ÃÂµÃÂ²ÃÂ¾ÃÂ¹ ÃÂÃÂÃÂµÃÂ¹ÃÂ¼ Ã¢ÂÂ ÃÂ¿ÃÂ¾ÃÂÃÂ»ÃÂµÃÂ´ÃÂ½ÃÂ¸ÃÂ¹ ÃÂ´ÃÂ¾ÃÂ±ÃÂ°ÃÂ²ÃÂ»ÃÂµÃÂ½ÃÂ½ÃÂÃÂ¹
+				-- child ÃÂ² InnerContainer. ÃÂÃÂ¾ÃÂ´ÃÂ¿ÃÂ¸ÃÂÃÂÃÂ²ÃÂ°ÃÂÃÂÃÂÃÂ ÃÂ½ÃÂµ ÃÂ½ÃÂÃÂ¶ÃÂ½ÃÂ¾ Ã¢ÂÂ InnerLayout.AbsoluteContentSize
+				-- ÃÂÃÂ¶ÃÂµ ÃÂ»ÃÂ¾ÃÂ²ÃÂ¸ÃÂ ÃÂ²ÃÂÃÂµ ÃÂ¸ÃÂ·ÃÂ¼ÃÂµÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂ ÃÂ²ÃÂÃÂÃÂ¾ÃÂ ÃÂ´ÃÂ¾ÃÂÃÂµÃÂÃÂ½ÃÂ¸ÃÂ ÃÂÃÂ»ÃÂµÃÂ¼ÃÂµÃÂ½ÃÂÃÂ¾ÃÂ² ÃÂ°ÃÂ²ÃÂÃÂ¾ÃÂ¼ÃÂ°ÃÂÃÂ¸ÃÂÃÂµÃÂÃÂºÃÂ¸.
 				return result
 			end
 
