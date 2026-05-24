@@ -1,4 +1,5 @@
 local MarketplaceService = game:GetService("MarketplaceService")
+local TextService = game:GetService("TextService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
@@ -2470,9 +2471,19 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		if type(v) == "string" and v:gsub(" ",""):len() > 0 then
 			DescL.Visible = true
 			DescL.Text = v
-			TitleL.Position = UDim2.new(0, 10, 0, 7)
+			TitleL.Position = UDim2.new(0, 10, 0, 9)
 			TitleL.AnchorPoint = Vector2.new(0, 0)
-			Frame.Size = UDim2.new(1, 0, 0, H_DESC)
+
+			-- Ð¡ÑÐ¸ÑÐ°ÐµÐ¼ ÑÐ¾ÑÐ½ÑÑ Ð²ÑÑÐ¾ÑÑ ÑÐµÐºÑÑÐ° ÑÐµÑÐµÐ· TextService
+			-- DescL.Size.X.Offset = 0 (Scale), Ð±ÐµÑÑÐ¼ ÑÐ¸ÑÐ¸Ð½Ñ ÑÑÐµÐ¹Ð¼Ð° Ð¼Ð¸Ð½ÑÑ Ð¾ÑÑÑÑÐ¿Ñ
+			local frameWidth = Frame.Size.X.Offset > 0 and Frame.Size.X.Offset or 620
+			local textWidth = frameWidth - 20  -- 10px Ð¾ÑÑÑÑÐ¿ Ñ ÐºÐ°Ð¶Ð´Ð¾Ð¹ ÑÑÐ¾ÑÐ¾Ð½Ñ
+			local textSize = TextService:GetTextSize(v, 8, Enum.Font.Gotham, Vector2.new(textWidth, 9999))
+			local descH = math.max(10, textSize.Y)
+			local totalH = 9 + 12 + 4 + descH + 5  -- top_pad + title + gap + desc + bottom_pad
+			DescL.Size = UDim2.new(1, -20, 0, descH)
+			DescL.Position = UDim2.new(0, 10, 0, 21)
+			Frame.Size = UDim2.new(1, 0, 0, totalH)
 		else
 			DescL.Visible = false
 			DescL.Text = ""
