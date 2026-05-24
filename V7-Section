@@ -3990,7 +3990,7 @@ function redzlib:MakeWindow(Configs)
 			function Section:AddTextBox(cfg)       return WithInner(Tab.AddTextBox,       25, cfg) end
 			function Section:AddParagraph(cfg)     return WithInner(Tab.AddParagraph,     38, cfg) end
 			function Section:AddDivider(cfg)       return WithInner(Tab.AddDivider,       10, cfg) end
-			function Section:AddDiscordInvite(cfg) return WithInner(Tab.AddDiscordInvite, 38, cfg) end
+			function Section:AddDiscordInvite(cfg) return WithInner(Tab.AddDiscordInvite, 80, cfg) end
 
 			return Section
 		end
@@ -4343,7 +4343,27 @@ function redzlib:MakeWindow(Configs)
 
 				local function UpdateLabel()
 					if MultiSelect then
-						ActiveLabel.Text = #SelectedValues > 0 and table.concat(SelectedValues, ", ") or "..."
+						if #SelectedValues == 0 then
+							ActiveLabel.Text = "..."
+						else
+							-- Ð¡Ð¾Ð±Ð¸ÑÐ°ÐµÐ¼ ÑÐµÐºÑÑ Ð¿Ð¾ÐºÐ° Ð²Ð»ÐµÐ·Ð°ÐµÑ, Ð¾ÑÑÐ°ÑÐ¾Ðº Ð·Ð°Ð¼ÐµÐ½ÑÐµÐ¼ Ð½Ð° "..."
+							local maxW = SelectedFrame.AbsoluteSize.X - 30  -- 30px Ð½Ð° ÑÑÑÐµÐ»ÐºÑ
+							local full = table.concat(SelectedValues, ", ")
+							local fitted = full
+							if TextService:GetTextSize(full, 8, Enum.Font.GothamBold, Vector2.new(9999, 20)).X > maxW then
+								fitted = ""
+								for i, v in ipairs(SelectedValues) do
+									local candidate = fitted == "" and v or (fitted .. ", " .. v)
+									local withDots = candidate .. (i < #SelectedValues and "..." or "")
+									if TextService:GetTextSize(withDots, 8, Enum.Font.GothamBold, Vector2.new(9999, 20)).X > maxW then
+										fitted = fitted .. "..."
+										break
+									end
+									fitted = candidate
+								end
+							end
+							ActiveLabel.Text = fitted
+						end
 					else
 						ActiveLabel.Text = tostring(Selected or "...")
 					end
@@ -4502,16 +4522,17 @@ function redzlib:MakeWindow(Configs)
 			Button.Activated:Connect(Minimize)
 			NoClickFrame.MouseButton1Down:Connect(function()
 				local mouse = PlayerMouse
-				local sh = SearchHolder.AbsolutePosition
-				local ss = SearchHolder.AbsoluteSize
-				if mouse.X >= sh.X and mouse.X <= sh.X + ss.X and mouse.Y >= sh.Y and mouse.Y <= sh.Y + ss.Y then return end
+				-- ÐÐ°ÐºÑÑÐ²Ð°ÐµÐ¼ ÑÐ¾Ð»ÑÐºÐ¾ ÐµÑÐ»Ð¸ ÐºÐ»Ð¸Ðº ÐÐÐ DropFrame (Ð²Ð½Ðµ Ð²ÑÐµÐ³Ð¾ Ð´ÑÐ¾Ð¿Ð´Ð°ÑÐ½Ð°)
+				local df = DropFrame.AbsolutePosition
+				local ds = DropFrame.AbsoluteSize
+				if mouse.X >= df.X and mouse.X <= df.X + ds.X and mouse.Y >= df.Y and mouse.Y <= df.Y + ds.Y then return end
 				Disable()
 			end)
 			NoClickFrame.MouseButton1Click:Connect(function()
 				local mouse = PlayerMouse
-				local sh = SearchHolder.AbsolutePosition
-				local ss = SearchHolder.AbsoluteSize
-				if mouse.X >= sh.X and mouse.X <= sh.X + ss.X and mouse.Y >= sh.Y and mouse.Y <= sh.Y + ss.Y then return end
+				local df = DropFrame.AbsolutePosition
+				local ds = DropFrame.AbsoluteSize
+				if mouse.X >= df.X and mouse.X <= df.X + ds.X and mouse.Y >= df.Y and mouse.Y <= df.Y + ds.Y then return end
 				Disable()
 			end)
 			MainFrame:GetPropertyChangedSignal("Visible"):Connect(Disable)
