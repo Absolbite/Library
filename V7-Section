@@ -2407,85 +2407,78 @@ AddEle("Gradient", function(parent, props, ...)
 end)
 
 local function ButtonFrame(Instance, Title, Description, HolderSize)
-	local TitleL = InsertTheme(Create("TextLabel", {
-		Font = Enum.Font.GothamMedium,
-		TextColor3 = Theme["Color Text"],
-		Size = UDim2.new(1, -20),
-		AutomaticSize = "Y",
-		BackgroundTransparency = 1,
-		TextTruncate = "AtEnd",
-		TextSize = 10,
-		TextXAlignment = "Left",
-		Text = "",
-		RichText = true
-	}), "Text")
+	local H_SIMPLE = 25
+	local H_DESC   = 38
 
-	local DescL = InsertTheme(Create("TextLabel", {
-		Font = Enum.Font.Gotham,
-		TextColor3 = Theme["Color Dark Text"],
-		Size = UDim2.new(1, -20),
-		AutomaticSize = "Y",
-		BackgroundTransparency = 1,
-		TextWrapped = true,
-		TextSize = 8,
-		TextXAlignment = "Left",
-		Text = "",
-		RichText = true,
-		Visible = false
-	}), "DarkText")
+	local hasDesc = type(Description) == "string" and Description:gsub(" ",""):len() > 0
+	local frameH = hasDesc and H_DESC or H_SIMPLE
 
-	-- ÃÂÃÂµÃÂ· AutomaticSize ÃÂ¿ÃÂ¾ ÃÂÃÂ¼ÃÂ¾ÃÂ»ÃÂÃÂ°ÃÂ½ÃÂ¸ÃÂ: ÃÂÃÂ¸ÃÂºÃÂÃÂ¸ÃÂÃÂ¾ÃÂ²ÃÂ°ÃÂ½ÃÂ½ÃÂÃÂµ 25px
-	-- AutomaticSize ÃÂ²ÃÂºÃÂ»ÃÂÃÂÃÂ°ÃÂµÃÂÃÂÃÂ ÃÂÃÂ¾ÃÂ»ÃÂÃÂºÃÂ¾ ÃÂºÃÂ¾ÃÂ³ÃÂ´ÃÂ° ÃÂµÃÂÃÂÃÂ ÃÂ¾ÃÂ¿ÃÂ¸ÃÂÃÂ°ÃÂ½ÃÂ¸ÃÂµ
 	local Frame = Make("Button", Instance, {
-		Size = UDim2.new(1, 0, 0, 25),
+		Size = UDim2.new(1, 0, 0, frameH),
 		AutomaticSize = "None",
 		Name = "Option"
 	})
 	Make("Corner", Frame, UDim.new(0, 6))
 
-	local LabelHolder = Create("Frame", Frame, {
-		AutomaticSize = "Y",
-		BackgroundTransparency = 1,
+	local TitleL = InsertTheme(Create("TextLabel", Frame, {
+		Font = Enum.Font.GothamMedium,
+		TextColor3 = Theme["Color Text"],
 		Size = HolderSize,
-		Position = UDim2.new(0, 10, 0.5),
-		AnchorPoint = Vector2.new(0, 0.5)
-	}, {
-		Create("UIListLayout", {
-			SortOrder = "LayoutOrder",
-			VerticalAlignment = "Center",
-			Padding = UDim.new(0, 2)
-		}),
-		Create("UIPadding", {
-			PaddingBottom = UDim.new(0, 5),
-			PaddingTop = UDim.new(0, 5)
-		}),
-		TitleL,
-		DescL,
-	})
+		Position = UDim2.new(0, 10, 0, 7),
+		AnchorPoint = Vector2.new(0, 0),
+		BackgroundTransparency = 1,
+		TextTruncate = "AtEnd",
+		TextSize = 10,
+		TextXAlignment = "Left",
+		TextYAlignment = "Center",
+		Text = "",
+		RichText = true
+	}), "Text")
+
+	local DescL = InsertTheme(Create("TextLabel", Frame, {
+		Font = Enum.Font.Gotham,
+		TextColor3 = Theme["Color Dark Text"],
+		Size = HolderSize,
+		Position = UDim2.new(0, 10, 0, 20),
+		AnchorPoint = Vector2.new(0, 0),
+		BackgroundTransparency = 1,
+		TextWrapped = true,
+		TextSize = 8,
+		TextXAlignment = "Left",
+		TextYAlignment = "Top",
+		Text = "",
+		RichText = true,
+		Visible = false
+	}), "DarkText")
+
+	-- ÐÐµÐ· Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ñ: Title Ð¿Ð¾ ÑÐµÐ½ÑÑÑ
+	if not hasDesc then
+		TitleL.Position = UDim2.new(0, 10, 0.5, 0)
+		TitleL.AnchorPoint = Vector2.new(0, 0.5)
+		TitleL.TextYAlignment = Enum.TextYAlignment.Center
+	end
 
 	local Label = {}
-	function Label:SetTitle(NewTitle)
-		if type(NewTitle) == "string" and NewTitle:gsub(" ", ""):len() > 0 then
-			TitleL.Text = NewTitle
+
+	function Label:SetTitle(v)
+		if type(v) == "string" and v:gsub(" ",""):len() > 0 then
+			TitleL.Text = v
 		end
 	end
-	function Label:SetDesc(NewDesc)
-		if type(NewDesc) == "string" and NewDesc:gsub(" ", ""):len() > 0 then
+
+	function Label:SetDesc(v)
+		if type(v) == "string" and v:gsub(" ",""):len() > 0 then
 			DescL.Visible = true
-			DescL.Text = NewDesc
-			-- ÃÂµÃÂÃÂÃÂ ÃÂ¾ÃÂ¿ÃÂ¸ÃÂÃÂ°ÃÂ½ÃÂ¸ÃÂµ: AutomaticSize Y, LabelHolder ÃÂ¿ÃÂÃÂ¸ÃÂ¶ÃÂ°ÃÂ ÃÂº ÃÂ²ÃÂµÃÂÃÂÃÂ
-			Frame.AutomaticSize = Enum.AutomaticSize.Y
-			Frame.Size = UDim2.new(1, 0, 0, 0)
-			LabelHolder.Position = UDim2.new(0, 10, 0)
-			LabelHolder.AnchorPoint = Vector2.new(0, 0)
+			DescL.Text = v
+			TitleL.Position = UDim2.new(0, 10, 0, 7)
+			TitleL.AnchorPoint = Vector2.new(0, 0)
+			Frame.Size = UDim2.new(1, 0, 0, H_DESC)
 		else
 			DescL.Visible = false
 			DescL.Text = ""
-			-- ÃÂ½ÃÂµÃÂ ÃÂ¾ÃÂ¿ÃÂ¸ÃÂÃÂ°ÃÂ½ÃÂ¸ÃÂ: ÃÂÃÂ¸ÃÂºÃÂÃÂ¸ÃÂÃÂ¾ÃÂ²ÃÂ°ÃÂ½ÃÂ½ÃÂ°ÃÂ ÃÂ²ÃÂÃÂÃÂ¾ÃÂÃÂ° 25px, ÃÂ½ÃÂ¸ÃÂºÃÂ°ÃÂºÃÂ¾ÃÂ³ÃÂ¾ AutomaticSize
-			Frame.AutomaticSize = Enum.AutomaticSize.None
-			Frame.Size = UDim2.new(1, 0, 0, 25)
-			LabelHolder.Position = UDim2.new(0, 10, 0.5)
-			LabelHolder.AnchorPoint = Vector2.new(0, 0.5)
+			TitleL.Position = UDim2.new(0, 10, 0.5, 0)
+			TitleL.AnchorPoint = Vector2.new(0, 0.5)
+			Frame.Size = UDim2.new(1, 0, 0, H_SIMPLE)
 		end
 	end
 
@@ -3943,41 +3936,34 @@ function redzlib:MakeWindow(Configs)
 			function Section:Open(Bool) SetOpen(Bool ~= nil and Bool or true) end
 
 			-- WithInner: ÑÐ¾Ð·Ð´Ð°ÑÑ ÑÐ»ÐµÐ¼ÐµÐ½Ñ Ð² InnerContainer
-			-- Ð ÐµÐ³Ð¸ÑÑÑÐ¸ÑÑÐµÑ ÐµÐ³Ð¾ Ð²ÑÑÐ¾ÑÑ Ð¸ Ð¼Ð¾Ð½Ð¸ÑÐ¾ÑÐ¸Ñ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ ÑÐµÑÐµÐ· AbsoluteSize
+			-- defaultHeight â ÑÐ¾ÑÐ½Ð°Ñ ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½Ð°Ñ Ð²ÑÑÐ¾ÑÐ° ÑÑÐ¾Ð³Ð¾ ÑÐ¸Ð¿Ð° ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ°
+			-- ÐÐµ ÑÐ¸ÑÐ°ÐµÐ¼ AbsoluteSize â Ð²ÑÑ ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð¾, Ð½Ð¸ÐºÐ°ÐºÐ¾Ð³Ð¾ Roblox API
 			local function WithInner(method, defaultHeight, cfg)
 				local prev = Container
 				Container = InnerContainer
 				local result = method(Tab, cfg)
 				Container = prev
 
-				-- Ð ÐµÐ³Ð¸ÑÑÑÐ¸ÑÑÐµÐ¼ ÑÐ»ÐµÐ¼ÐµÐ½Ñ
 				local id = #elementOrder + 1
 				elementOrder[id] = id
 				elementHeights[id] = defaultHeight
 
-				-- ÐÐ°ÑÐ¾Ð´Ð¸Ð¼ ÑÐµÐ°Ð»ÑÐ½ÑÐ¹ Frame ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ° (Ð¿Ð¾ÑÐ»ÐµÐ´Ð½Ð¸Ð¹ child Ð² InnerContainer)
+				-- ÐÐ»Ñ Paragraph: Ð¼Ð¾Ð½Ð¸ÑÐ¾ÑÐ¸Ð¼ Size.Y.Offset ÑÑÐµÐ¹Ð¼Ð° (Ð¾Ð½ Ð¼ÐµÐ½ÑÐµÑÑÑ Ð² SetDesc)
+				-- ÐÑÐµÐ¼ Ð¿Ð¾ÑÐ»ÐµÐ´Ð½Ð¸Ð¹ Frame/TextButton Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð½ÑÐ¹ Ð² InnerContainer
+				local children = InnerContainer:GetChildren()
 				local frame = nil
-				for i = #InnerContainer:GetChildren(), 1, -1 do
-					local c = InnerContainer:GetChildren()[i]
-					if c:IsA("Frame") or c:IsA("TextButton") then
-						frame = c
+				for i = #children, 1, -1 do
+					if children[i]:IsA("Frame") or children[i]:IsA("TextButton") then
+						frame = children[i]
 						break
 					end
 				end
-
-				-- ÐÐ¾Ð½Ð¸ÑÐ¾ÑÐ¸Ð¼ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ Ð²ÑÑÐ¾ÑÑ (Ð´Ð»Ñ Paragraph Ñ Ð¼ÐµÐ½ÑÑÑÐ¸Ð¼ÑÑ ÑÐµÐºÑÑÐ¾Ð¼ Ð¸ Ñ.Ð´.)
 				if frame then
-					frame:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-						local newH = frame.AbsoluteSize.Y
+					frame:GetPropertyChangedSignal("Size"):Connect(function()
+						local newH = frame.Size.Y.Offset
 						if newH > 0 and newH ~= elementHeights[id] then
-							updateElementHeight(id, newH)
-						end
-					end)
-					-- ÐÐ±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ Ð²ÑÑÐ¾ÑÑ ÑÑÐ°Ð·Ñ ÐµÑÐ»Ð¸ AbsoluteSize ÑÐ¶Ðµ Ð¸Ð·Ð²ÐµÑÑÐµÐ½
-					task.defer(function()
-						local h = frame.AbsoluteSize.Y
-						if h > 0 then
-							updateElementHeight(id, h)
+							elementHeights[id] = newH
+							ApplySizes()
 						end
 					end)
 				end
