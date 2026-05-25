@@ -3947,29 +3947,43 @@ function redzlib:MakeWindow(Configs)
 			function Section:Open(Bool) SetOpen(Bool ~= nil and Bool or true) end
 
 			-- WithInner: ÑÐ¾Ð·Ð´Ð°ÑÑ ÑÐ»ÐµÐ¼ÐµÐ½Ñ Ð² InnerContainer
-			-- defaultHeight â ÑÐ¾ÑÐ½Ð°Ñ ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½Ð°Ñ Ð²ÑÑÐ¾ÑÐ° ÑÑÐ¾Ð³Ð¾ ÑÐ¸Ð¿Ð° ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ°
-			-- ÐÐµ ÑÐ¸ÑÐ°ÐµÐ¼ AbsoluteSize â Ð²ÑÑ ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð¾, Ð½Ð¸ÐºÐ°ÐºÐ¾Ð³Ð¾ Roblox API
+			-- Ð¢Ð¾ÑÐ½Ð¾ Ð¾Ð¿ÑÐµÐ´ÐµÐ»ÑÐµÑ Frame ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ° ÑÑÐ°Ð²Ð½Ð¸Ð²Ð°Ñ Ð´ÐµÑÐµÐ¹ ÐÐ Ð¸ ÐÐÐ¡ÐÐ ÑÐ¾Ð·Ð´Ð°Ð½Ð¸Ñ
+			-- ÐÐ°Ð¶Ð´ÑÐ¹ ÑÐ»ÐµÐ¼ÐµÐ½Ñ Ð¼Ð¾Ð½Ð¸ÑÐ¾ÑÐ¸ÑÑÑ Ð¾ÑÐ´ÐµÐ»ÑÐ½Ð¾ ÑÐµÑÐµÐ· ÑÐ²Ð¾Ð¹ id Ð¸ ÑÐ²Ð¾Ð¹ frame
 			local function WithInner(method, defaultHeight, cfg)
+				-- ÐÐ°Ð¿Ð¾Ð¼Ð¸Ð½Ð°ÐµÐ¼ Ð²ÑÐµÑ Ð´ÐµÑÐµÐ¹ ÐÐ ÑÐ¾Ð·Ð´Ð°Ð½Ð¸Ñ
+				local before = {}
+				for _, c in ipairs(InnerContainer:GetChildren()) do
+					before[c] = true
+				end
+
 				local prev = Container
 				Container = InnerContainer
 				local result = method(Tab, cfg)
 				Container = prev
 
+				-- Ð ÐµÐ³Ð¸ÑÑÑÐ¸ÑÑÐµÐ¼ ÑÑÐ¾Ñ ÑÐ»ÐµÐ¼ÐµÐ½Ñ Ñ ÑÐ½Ð¸ÐºÐ°Ð»ÑÐ½ÑÐ¼ id
 				local id = #elementOrder + 1
 				elementOrder[id] = id
 				elementHeights[id] = defaultHeight
 
-				-- ÐÐ»Ñ Paragraph: Ð¼Ð¾Ð½Ð¸ÑÐ¾ÑÐ¸Ð¼ Size.Y.Offset ÑÑÐµÐ¹Ð¼Ð° (Ð¾Ð½ Ð¼ÐµÐ½ÑÐµÑÑÑ Ð² SetDesc)
-				-- ÐÑÐµÐ¼ Ð¿Ð¾ÑÐ»ÐµÐ´Ð½Ð¸Ð¹ Frame/TextButton Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð½ÑÐ¹ Ð² InnerContainer
-				local children = InnerContainer:GetChildren()
+				-- ÐÐ°ÑÐ¾Ð´Ð¸Ð¼ ÑÐ¾ÑÐ½Ð¾ Ð½Ð¾Ð²ÑÐ¹ Frame â ÑÐ¾Ñ ÐºÐ¾ÑÐ¾ÑÐ¾Ð³Ð¾ Ð½Ðµ Ð±ÑÐ»Ð¾ ÐÐ
 				local frame = nil
-				for i = #children, 1, -1 do
-					if children[i]:IsA("Frame") or children[i]:IsA("TextButton") then
-						frame = children[i]
+				for _, c in ipairs(InnerContainer:GetChildren()) do
+					if not before[c] and (c:IsA("Frame") or c:IsA("TextButton")) then
+						frame = c
 						break
 					end
 				end
+
 				if frame then
+					-- Ð¡ÑÐ°Ð·Ñ ÑÐ¸ÑÐ°ÐµÐ¼ ÑÐµÐ°Ð»ÑÐ½ÑÑ Ð²ÑÑÐ¾ÑÑ Ð¸Ð· Size.Y.Offset
+					local h = frame.Size.Y.Offset
+					if h > 0 then
+						elementHeights[id] = h
+					end
+
+					-- ÐÐ¾Ð½Ð¸ÑÐ¾ÑÐ¸Ð¼ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ Size ÑÑÐ¾Ð³Ð¾ ÐºÐ¾Ð½ÐºÑÐµÑÐ½Ð¾Ð³Ð¾ frame
+					-- (ÑÑÐ°Ð±Ð°ÑÑÐ²Ð°ÐµÑ ÐºÐ¾Ð³Ð´Ð° Paragraph Ð¼ÐµÐ½ÑÐµÑ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ðµ, etc.)
 					frame:GetPropertyChangedSignal("Size"):Connect(function()
 						local newH = frame.Size.Y.Offset
 						if newH > 0 and newH ~= elementHeights[id] then
