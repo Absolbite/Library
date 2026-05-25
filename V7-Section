@@ -3859,7 +3859,7 @@ function redzlib:MakeWindow(Configs)
 			local elementHeights = {}  -- { [id] = height }
 			local elementOrder   = {}  -- Ð¿Ð¾ÑÑÐ´Ð¾Ðº ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð²
 			local GAP = 5   -- Padding Ð¼ÐµÐ¶Ð´Ñ ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ°Ð¼Ð¸
-			local PAD = 18  -- 9px ÑÐ²ÐµÑÑÑ + 9px ÑÐ½Ð¸Ð·Ñ
+			local PAD = 10  -- 5px ÑÐ²ÐµÑÑÑ + 5px ÑÐ½Ð¸Ð·Ñ
 
 			local function CalcInnerHeight()
 				local total = 0
@@ -4724,9 +4724,34 @@ function redzlib:MakeWindow(Configs)
 				return (v - Min) / (Max - Min)
 			end
 
+			-- ÐÐ¾Ð»-Ð²Ð¾ Ð·Ð½Ð°ÐºÐ¾Ð² Ð¿Ð¾ÑÐ»Ðµ Ð·Ð°Ð¿ÑÑÐ¾Ð¹ Ð² Increase (0.1 -> 1, 0.01 -> 2, 1 -> 0)
+			local function GetDecimals(n)
+				local s = tostring(n)
+				local dot = s:find("%.")
+				if not dot then return 0 end
+				return #s - dot
+			end
+			local Decimals = GetDecimals(Increase)
+
+			local function RoundTo(val, inc)
+				local factor = 10 ^ Decimals
+				return math.floor(val / inc + 0.5) * inc
+				-- ÑÐ±Ð¸ÑÐ°ÐµÐ¼ float Ð¼ÑÑÐ¾Ñ ÑÐµÑÐµÐ· factor
+			end
+
+			local function FormatValue(v)
+				if Decimals == 0 then
+					return tostring(math.floor(v))
+				end
+				return string.format("%." .. Decimals .. "f", v)
+			end
+
 			local function ScaleToValue(s)
 				local raw = s * (Max - Min) + Min
+				local factor = 10 ^ Decimals
 				local stepped = math.floor(raw / Increase + 0.5) * Increase
+				-- Ð£Ð±Ð¸ÑÐ°ÐµÐ¼ float Ð¼ÑÑÐ¾Ñ: 0.30000000001 -> 0.3
+				stepped = math.floor(stepped * factor + 0.5) / factor
 				return math.clamp(stepped, Min, Max)
 			end
 
@@ -4743,7 +4768,7 @@ function redzlib:MakeWindow(Configs)
 				currentValue = newVal
 				ApplyVisual(ValueToScale(newVal))
 				if not isFocused then
-					ValueInput.Text = tostring(newVal)
+					ValueInput.Text = FormatValue(newVal)
 				end
 				if not skipCallback then
 					SetFlag(Flag, newVal)
@@ -4788,13 +4813,12 @@ function redzlib:MakeWindow(Configs)
 				if num then
 					SetSlider(num)
 				else
-					ValueInput.Text = tostring(currentValue)
+					ValueInput.Text = FormatValue(currentValue)
 				end
 			end)
 
 			local loadedFromFlag = CheckFlag(Flag)
 			SetSlider(Default, not loadedFromFlag)
-			ValueInput.Text = tostring(Default)
 			SetFlag(Flag, Default)
 
 			local Slider = {}
