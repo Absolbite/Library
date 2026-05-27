@@ -2996,12 +2996,12 @@ function redzlib:MakeWindow(Configs)
 
 		MkLabel("IMAGE (rbxassetid / url)", 1)
 		local _, ImageInput = MkInput("rbxassetid://...", 2)
-		MkLabel("SIZE  (20 ÃÂ¢ÃÂÃÂ 120)", 3)
+		MkLabel("SIZE  (20 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ 120)", 3)
 		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
-		local _, SizeInput = MkInput("20 ÃÂ¢ÃÂÃÂ 120", 5)
-		MkLabel("TRANSPARENCY  (0.0 ÃÂ¢ÃÂÃÂ 1.0)", 6)
+		local _, SizeInput = MkInput("20 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ 120", 5)
+		MkLabel("TRANSPARENCY  (0.0 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ 1.0)", 6)
 		local TransTrack, TransFill, TransKnob = MkSlider(7)
-		local _, TransInput = MkInput("0.0 ÃÂ¢ÃÂÃÂ 1.0", 8)
+		local _, TransInput = MkInput("0.0 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ 1.0", 8)
 
 		local ClosePanel = Create("TextButton", Panel, {
 			Size = UDim2.fromOffset(14, 14),
@@ -3706,23 +3706,25 @@ function redzlib:MakeWindow(Configs)
 
 		local function Tabs()
 			if Container.Parent then return end
-			for _,Frame in pairs(ContainerList) do
+			-- ÐÑÐºÐ»ÑÑÐ°ÐµÐ¼ Ð²ÑÐµ Ð´ÑÑÐ³Ð¸Ðµ ÑÐ°Ð±Ñ
+			for _, Tab in ipairs(redzlib.Tabs) do
+				if Tab.Cont ~= Container then
+					Tab.func:Disable()
+				end
+			end
+			-- Ð£Ð±Ð¸ÑÐ°ÐµÐ¼ Ð²ÑÐµ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑÑ
+			for _, Frame in ipairs(ContainerList) do
 				if Frame:IsA("ScrollingFrame") and Frame ~= Container then
 					Frame.Parent = nil
 				end
 			end
+			-- Ð Ð°Ð·Ð¼ÐµÑ ÑÑÐ°Ð·Ñ Ð¿ÑÐ°Ð²Ð¸Ð»ÑÐ½ÑÐ¹ â Ð±ÐµÐ· Size tween (Ð¾Ð½ Ð»Ð¾Ð¼Ð°Ð» ÑÐºÑÐ¾Ð»Ð»)
+			Container.Size = UDim2.new(1, 0, 1, 0)
 			Container.Parent = Containers
-			Container.Size = UDim2.new(1, 0, 1, 150)
-			table.foreach(redzlib.Tabs, function(_,Tab)
-				if Tab.Cont ~= Container then
-					Tab.func:Disable()
-				end
-			end)
-			CreateTween({Container, "Size", UDim2.new(1, 0, 1, 0), 0.3})
-			CreateTween({LabelTitle, "TextTransparency", 0, 0.35})
-			CreateTween({LabelIcon, "ImageTransparency", 0, 0.35})
-			CreateTween({Selected, "Size", UDim2.new(0, 4, 0, 13), 0.35})
-			CreateTween({Selected, "BackgroundTransparency", 0, 0.35})
+			CreateTween({LabelTitle, "TextTransparency", 0, 0.25})
+			CreateTween({LabelIcon, "ImageTransparency", 0, 0.25})
+			CreateTween({Selected, "Size", UDim2.new(0, 4, 0, 13), 0.25})
+			CreateTween({Selected, "BackgroundTransparency", 0, 0.25})
 		end
 		TabSelect.Activated:Connect(Tabs)
 
@@ -4536,7 +4538,7 @@ function redzlib:MakeWindow(Configs)
 			Button.Activated:Connect(Minimize)
 			NoClickFrame.MouseButton1Down:Connect(function()
 				local mouse = PlayerMouse
-				-- ÐÐ°ÐºÑÑÐ²Ð°ÐµÐ¼ ÑÐ¾Ð»ÑÐºÐ¾ ÐµÑÐ»Ð¸ ÐºÐ»Ð¸Ðº ÐÐÐ DropFrame (Ð²Ð½Ðµ Ð²ÑÐµÐ³Ð¾ Ð´ÑÐ¾Ð¿Ð´Ð°ÑÐ½Ð°)
+				-- ÃÂÃÂ°ÃÂºÃÂÃÂÃÂ²ÃÂ°ÃÂµÃÂ¼ ÃÂÃÂ¾ÃÂ»ÃÂÃÂºÃÂ¾ ÃÂµÃÂÃÂ»ÃÂ¸ ÃÂºÃÂ»ÃÂ¸ÃÂº ÃÂÃÂÃÂ DropFrame (ÃÂ²ÃÂ½ÃÂµ ÃÂ²ÃÂÃÂµÃÂ³ÃÂ¾ ÃÂ´ÃÂÃÂ¾ÃÂ¿ÃÂ´ÃÂ°ÃÂÃÂ½ÃÂ°)
 				local df = DropFrame.AbsolutePosition
 				local ds = DropFrame.AbsoluteSize
 				if mouse.X >= df.X and mouse.X <= df.X + ds.X and mouse.Y >= df.Y and mouse.Y <= df.Y + ds.Y then return end
@@ -4738,7 +4740,7 @@ function redzlib:MakeWindow(Configs)
 				return (v - Min) / (Max - Min)
 			end
 
-			-- ÐÐ¾Ð»-Ð²Ð¾ Ð·Ð½Ð°ÐºÐ¾Ð² Ð¿Ð¾ÑÐ»Ðµ Ð·Ð°Ð¿ÑÑÐ¾Ð¹ Ð² Increase (0.1 -> 1, 0.01 -> 2, 1 -> 0)
+			-- ÃÂÃÂ¾ÃÂ»-ÃÂ²ÃÂ¾ ÃÂ·ÃÂ½ÃÂ°ÃÂºÃÂ¾ÃÂ² ÃÂ¿ÃÂ¾ÃÂÃÂ»ÃÂµ ÃÂ·ÃÂ°ÃÂ¿ÃÂÃÂÃÂ¾ÃÂ¹ ÃÂ² Increase (0.1 -> 1, 0.01 -> 2, 1 -> 0)
 			local function GetDecimals(n)
 				local s = tostring(n)
 				local dot = s:find("%.")
@@ -4750,7 +4752,7 @@ function redzlib:MakeWindow(Configs)
 			local function RoundTo(val, inc)
 				local factor = 10 ^ Decimals
 				return math.floor(val / inc + 0.5) * inc
-				-- ÑÐ±Ð¸ÑÐ°ÐµÐ¼ float Ð¼ÑÑÐ¾Ñ ÑÐµÑÐµÐ· factor
+				-- ÃÂÃÂ±ÃÂ¸ÃÂÃÂ°ÃÂµÃÂ¼ float ÃÂ¼ÃÂÃÂÃÂ¾ÃÂ ÃÂÃÂµÃÂÃÂµÃÂ· factor
 			end
 
 			local function FormatValue(v)
@@ -4764,7 +4766,7 @@ function redzlib:MakeWindow(Configs)
 				local raw = s * (Max - Min) + Min
 				local factor = 10 ^ Decimals
 				local stepped = math.floor(raw / Increase + 0.5) * Increase
-				-- Ð£Ð±Ð¸ÑÐ°ÐµÐ¼ float Ð¼ÑÑÐ¾Ñ: 0.30000000001 -> 0.3
+				-- ÃÂ£ÃÂ±ÃÂ¸ÃÂÃÂ°ÃÂµÃÂ¼ float ÃÂ¼ÃÂÃÂÃÂ¾ÃÂ: 0.30000000001 -> 0.3
 				stepped = math.floor(stepped * factor + 0.5) / factor
 				return math.clamp(stepped, Min, Max)
 			end
