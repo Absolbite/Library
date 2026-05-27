@@ -2702,16 +2702,18 @@ function redzlib:MakeWindow(Configs)
 		Name = "SubTitle"
 	}), "DarkText")
 
-	local TagHolder = Create("Frame", SubTitle, {
-		AnchorPoint = Vector2.new(0, 0.5),
-		Position = UDim2.new(1, 8, 0.5, 0),
-		Size = UDim2.new(0, 0, 1, 0),
+	-- TagHolder ÐºÑÐµÐ¿Ð¸ÑÑÑ ÑÐ¿ÑÐ°Ð²Ð° TopBar, Ð¿ÑÑÐ¼Ð¾ Ð»ÐµÐ²ÐµÐµ ÐºÐ½Ð¾Ð¿ÐºÐ¸ Minimize (-35px Ð¾Ñ Ð¿ÑÐ°Ð²Ð¾Ð³Ð¾ ÐºÑÐ°Ñ)
+	local TagHolder = Create("Frame", TopBar, {
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -50, 0.5, 0),
+		Size = UDim2.new(0, 0, 0, 16),
 		AutomaticSize = "X",
 		BackgroundTransparency = 1,
 		Name = "TagHolder"
 	}, {
 		Create("UIListLayout", {
 			FillDirection = Enum.FillDirection.Horizontal,
+			HorizontalAlignment = Enum.HorizontalAlignment.Right,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 			Padding = UDim.new(0, 4),
 			SortOrder = Enum.SortOrder.LayoutOrder
@@ -2993,12 +2995,12 @@ function redzlib:MakeWindow(Configs)
 
 		MkLabel("IMAGE (rbxassetid / url)", 1)
 		local _, ImageInput = MkInput("rbxassetid://...", 2)
-		MkLabel("SIZE  (20 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ 120)", 3)
+		MkLabel("SIZE  (20 ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120)", 3)
 		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
-		local _, SizeInput = MkInput("20 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ 120", 5)
-		MkLabel("TRANSPARENCY  (0.0 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ 1.0)", 6)
+		local _, SizeInput = MkInput("20 ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120", 5)
+		MkLabel("TRANSPARENCY  (0.0 ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0)", 6)
 		local TransTrack, TransFill, TransKnob = MkSlider(7)
-		local _, TransInput = MkInput("0.0 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ 1.0", 8)
+		local _, TransInput = MkInput("0.0 ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0", 8)
 
 		local ClosePanel = Create("TextButton", Panel, {
 			Size = UDim2.fromOffset(14, 14),
@@ -3593,39 +3595,109 @@ function redzlib:MakeWindow(Configs)
 	local ContainerList = {}
 	function Window:AddTag(Configs)
 		Configs = Configs or {}
-		local TTitle   = Configs[1] or Configs.Title or Configs.Name or "Tag"
-		local TColor   = Configs.Color or Theme["Color Dark Text"]
+		local TTitle     = Configs[1] or Configs.Title or Configs.Name or "Tag"
+		local TColor     = Configs.Color or Theme["Color Dark Text"]
+		local TImage     = Configs.Image or Configs[2] or nil
+		local TClickable = Configs.Clickable or false
 
-		local TagLabel = InsertTheme(Create("TextLabel", TagHolder, {
-			Size = UDim2.new(0, 0, 1, 0),
-			AutomaticSize = "X",
-			BackgroundTransparency = 1,
-			Font = Enum.Font.GothamMedium,
-			TextSize = 12,
-			TextYAlignment = Enum.TextYAlignment.Center,
-			TextColor3 = TColor,
-			Text = TTitle,
-			Name = "Tag_" .. TTitle,
-		}), Configs.Color and "" or "DarkText")
+		-- ÐÐ¾ÑÐ¼Ð°Ð»Ð¸Ð·ÑÐµÐ¼ image: Ð¿ÑÐ¸Ð½Ð¸Ð¼Ð°ÐµÐ¼ rbxassetid://... Ð¸Ð»Ð¸ Ð¿ÑÐ¾ÑÑÐ¾ ÑÐ¸ÑÐ»Ð¾/ÑÑÑÐ¾ÐºÑ
+		local function NormalizeAsset(img)
+			if not img then return nil end
+			img = tostring(img)
+			if img:match("^%d+$") then
+				return "rbxassetid://" .. img
+			end
+			return img
+		end
+		TImage = NormalizeAsset(TImage)
+
+		local isImageTag = TImage ~= nil
+		local TagRoot
+
+		if isImageTag then
+			-- Ð¢ÐµÐ³ Ñ ÐºÐ°ÑÑÐ¸Ð½ÐºÐ¾Ð¹: ImageLabel (+ ÐºÐ»Ð¸ÐºÐ°Ð±ÐµÐ»ÑÐ½Ð¾ÑÑÑ)
+			local imgSize = UDim2.new(0, 16, 0, 16)
+			if TClickable then
+				TagRoot = Create("ImageButton", TagHolder, {
+					Size = imgSize,
+					AnchorPoint = Vector2.new(0, 0.5),
+					Position = UDim2.new(0, 0, 0.5, 0),
+					Image = TImage,
+					BackgroundTransparency = 1,
+					Name = "Tag_" .. TTitle,
+				})
+				local ClickDelay = false
+				TagRoot.Activated:Connect(function()
+					if ClickDelay then return end
+					ClickDelay = true
+					pcall(function() setclipboard(TImage) end)
+					-- ÐÑÐ³ÐºÐ¾Ðµ Ð¼Ð¸Ð³Ð°Ð½Ð¸Ðµ Ð´Ð»Ñ Ð¾Ð±ÑÐ°ÑÐ½Ð¾Ð¹ ÑÐ²ÑÐ·Ð¸
+					CreateTween({TagRoot, "ImageTransparency", 0.5, 0.1})
+					task.wait(0.15)
+					CreateTween({TagRoot, "ImageTransparency", 0, 0.1})
+					task.wait(2)
+					ClickDelay = false
+				end)
+			else
+				TagRoot = Create("ImageLabel", TagHolder, {
+					Size = imgSize,
+					AnchorPoint = Vector2.new(0, 0.5),
+					Position = UDim2.new(0, 0, 0.5, 0),
+					Image = TImage,
+					BackgroundTransparency = 1,
+					Name = "Tag_" .. TTitle,
+				})
+			end
+		else
+			-- ÐÐ±ÑÑÐ½ÑÐ¹ ÑÐµÐºÑÑÐ¾Ð²ÑÐ¹ ÑÐµÐ³
+			TagRoot = InsertTheme(Create("TextLabel", TagHolder, {
+				Size = UDim2.new(0, 0, 1, 0),
+				AutomaticSize = "X",
+				BackgroundTransparency = 1,
+				Font = Enum.Font.GothamMedium,
+				TextSize = 12,
+				TextYAlignment = Enum.TextYAlignment.Center,
+				TextColor3 = TColor,
+				Text = TTitle,
+				Name = "Tag_" .. TTitle,
+			}), Configs.Color and "" or "DarkText")
+		end
 
 		local Tag = {}
 
 		function Tag:SetTitle(New)
-			if type(New) == "string" then TagLabel.Text = New end
+			if type(New) == "string" then
+				if isImageTag then
+					TagRoot.Name = "Tag_" .. New
+				else
+					TagRoot.Text = New
+				end
+			end
+		end
+
+		function Tag:SetImage(New)
+			if isImageTag then
+				local url = NormalizeAsset(New)
+				if url then TagRoot.Image = url end
+			end
 		end
 
 		function Tag:SetColor(New)
 			if typeof(New) == "Color3" then
-				CreateTween({TagLabel, "TextColor3", New, 0.15})
+				if isImageTag then
+					CreateTween({TagRoot, "ImageColor3", New, 0.15})
+				else
+					CreateTween({TagRoot, "TextColor3", New, 0.15})
+				end
 			end
 		end
 
 		function Tag:Visible(Bool)
-			TagLabel.Visible = Bool ~= nil and Bool or not TagLabel.Visible
+			TagRoot.Visible = Bool ~= nil and Bool or not TagRoot.Visible
 		end
 
 		function Tag:Destroy()
-			TagLabel:Destroy()
+			TagRoot:Destroy()
 		end
 
 		return Tag
@@ -3703,19 +3775,16 @@ function redzlib:MakeWindow(Configs)
 
 		local function Tabs()
 			if Container.Parent then return end
-			-- ÐÑÐºÐ»ÑÑÐ°ÐµÐ¼ Ð²ÑÐµ Ð´ÑÑÐ³Ð¸Ðµ ÑÐ°Ð±Ñ
 			for _, Tab in ipairs(redzlib.Tabs) do
 				if Tab.Cont ~= Container then
 					Tab.func:Disable()
 				end
 			end
-			-- Ð£Ð±Ð¸ÑÐ°ÐµÐ¼ Ð²ÑÐµ ÐºÐ¾Ð½ÑÐµÐ¹Ð½ÐµÑÑ
 			for _, Frame in ipairs(ContainerList) do
 				if Frame:IsA("ScrollingFrame") and Frame ~= Container then
 					Frame.Parent = nil
 				end
 			end
-			-- Ð Ð°Ð·Ð¼ÐµÑ ÑÑÐ°Ð·Ñ Ð¿ÑÐ°Ð²Ð¸Ð»ÑÐ½ÑÐ¹ â Ð±ÐµÐ· Size tween (Ð¾Ð½ Ð»Ð¾Ð¼Ð°Ð» ÑÐºÑÐ¾Ð»Ð»)
 			Container.Size = UDim2.new(1, 0, 1, 0)
 			Container.Parent = Containers
 			CreateTween({LabelTitle, "TextTransparency", 0, 0.25})
@@ -3884,7 +3953,6 @@ function redzlib:MakeWindow(Configs)
 				end
 			end
 
-			-- ÐÑÐ±Ð»Ð¸ÑÐ½ÑÐ¹ callback: ÑÐ»ÐµÐ¼ÐµÐ½Ñ Ð²ÑÐ·ÑÐ²Ð°ÐµÑ ÐºÐ¾Ð³Ð´Ð° ÐµÐ³Ð¾ Ð²ÑÑÐ¾ÑÐ° Ð¸Ð·Ð¼ÐµÐ½Ð¸Ð»Ð°ÑÑ
 			local function updateElementHeight(id, newHeight)
 				elementHeights[id] = newHeight
 				ApplySizes()
@@ -3943,11 +4011,7 @@ function redzlib:MakeWindow(Configs)
 			function Section:Toggle() SetOpen(not isOpen) end
 			function Section:Open(Bool) SetOpen(Bool ~= nil and Bool or true) end
 
-			-- WithInner: ÑÐ¾Ð·Ð´Ð°ÑÑ ÑÐ»ÐµÐ¼ÐµÐ½Ñ Ð² InnerContainer
-			-- Ð¢Ð¾ÑÐ½Ð¾ Ð¾Ð¿ÑÐµÐ´ÐµÐ»ÑÐµÑ Frame ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ° ÑÑÐ°Ð²Ð½Ð¸Ð²Ð°Ñ Ð´ÐµÑÐµÐ¹ ÐÐ Ð¸ ÐÐÐ¡ÐÐ ÑÐ¾Ð·Ð´Ð°Ð½Ð¸Ñ
-			-- ÐÐ°Ð¶Ð´ÑÐ¹ ÑÐ»ÐµÐ¼ÐµÐ½Ñ Ð¼Ð¾Ð½Ð¸ÑÐ¾ÑÐ¸ÑÑÑ Ð¾ÑÐ´ÐµÐ»ÑÐ½Ð¾ ÑÐµÑÐµÐ· ÑÐ²Ð¾Ð¹ id Ð¸ ÑÐ²Ð¾Ð¹ frame
 			local function WithInner(method, defaultHeight, cfg)
-				-- ÐÐ°Ð¿Ð¾Ð¼Ð¸Ð½Ð°ÐµÐ¼ Ð²ÑÐµÑ Ð´ÐµÑÐµÐ¹ ÐÐ ÑÐ¾Ð·Ð´Ð°Ð½Ð¸Ñ
 				local before = {}
 				for _, c in ipairs(InnerContainer:GetChildren()) do
 					before[c] = true
@@ -3958,12 +4022,10 @@ function redzlib:MakeWindow(Configs)
 				local result = method(Tab, cfg)
 				Container = prev
 
-				-- Ð ÐµÐ³Ð¸ÑÑÑÐ¸ÑÑÐµÐ¼ ÑÑÐ¾Ñ ÑÐ»ÐµÐ¼ÐµÐ½Ñ Ñ ÑÐ½Ð¸ÐºÐ°Ð»ÑÐ½ÑÐ¼ id
 				local id = #elementOrder + 1
 				elementOrder[id] = id
 				elementHeights[id] = defaultHeight
 
-				-- ÐÐ°ÑÐ¾Ð´Ð¸Ð¼ ÑÐ¾ÑÐ½Ð¾ Ð½Ð¾Ð²ÑÐ¹ Frame â ÑÐ¾Ñ ÐºÐ¾ÑÐ¾ÑÐ¾Ð³Ð¾ Ð½Ðµ Ð±ÑÐ»Ð¾ ÐÐ
 				local frame = nil
 				for _, c in ipairs(InnerContainer:GetChildren()) do
 					if not before[c] and (c:IsA("Frame") or c:IsA("TextButton")) then
@@ -3973,14 +4035,11 @@ function redzlib:MakeWindow(Configs)
 				end
 
 				if frame then
-					-- Ð¡ÑÐ°Ð·Ñ ÑÐ¸ÑÐ°ÐµÐ¼ ÑÐµÐ°Ð»ÑÐ½ÑÑ Ð²ÑÑÐ¾ÑÑ Ð¸Ð· Size.Y.Offset
 					local h = frame.Size.Y.Offset
 					if h > 0 then
 						elementHeights[id] = h
 					end
 
-					-- ÐÐ¾Ð½Ð¸ÑÐ¾ÑÐ¸Ð¼ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ Size ÑÑÐ¾Ð³Ð¾ ÐºÐ¾Ð½ÐºÑÐµÑÐ½Ð¾Ð³Ð¾ frame
-					-- (ÑÑÐ°Ð±Ð°ÑÑÐ²Ð°ÐµÑ ÐºÐ¾Ð³Ð´Ð° Paragraph Ð¼ÐµÐ½ÑÐµÑ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ðµ, etc.)
 					frame:GetPropertyChangedSignal("Size"):Connect(function()
 						local newH = frame.Size.Y.Offset
 						if newH > 0 and newH ~= elementHeights[id] then
@@ -4357,8 +4416,7 @@ function redzlib:MakeWindow(Configs)
 						if #SelectedValues == 0 then
 							ActiveLabel.Text = "..."
 						else
-							-- Ð¡Ð¾Ð±Ð¸ÑÐ°ÐµÐ¼ ÑÐµÐºÑÑ Ð¿Ð¾ÐºÐ° Ð²Ð»ÐµÐ·Ð°ÐµÑ, Ð¾ÑÑÐ°ÑÐ¾Ðº Ð·Ð°Ð¼ÐµÐ½ÑÐµÐ¼ Ð½Ð° "..."
-							local maxW = SelectedFrame.AbsoluteSize.X - 30  -- 30px Ð½Ð° ÑÑÑÐµÐ»ÐºÑ
+							local maxW = SelectedFrame.AbsoluteSize.X - 30
 							local full = table.concat(SelectedValues, ", ")
 							local fitted = full
 							if TextService:GetTextSize(full, 8, Enum.Font.GothamBold, Vector2.new(9999, 20)).X > maxW then
@@ -4533,7 +4591,6 @@ function redzlib:MakeWindow(Configs)
 			Button.Activated:Connect(Minimize)
 			NoClickFrame.MouseButton1Down:Connect(function()
 				local mouse = PlayerMouse
-				-- ÃÂÃÂ°ÃÂºÃÂÃÂÃÂ²ÃÂ°ÃÂµÃÂ¼ ÃÂÃÂ¾ÃÂ»ÃÂÃÂºÃÂ¾ ÃÂµÃÂÃÂ»ÃÂ¸ ÃÂºÃÂ»ÃÂ¸ÃÂº ÃÂÃÂÃÂ DropFrame (ÃÂ²ÃÂ½ÃÂµ ÃÂ²ÃÂÃÂµÃÂ³ÃÂ¾ ÃÂ´ÃÂÃÂ¾ÃÂ¿ÃÂ´ÃÂ°ÃÂÃÂ½ÃÂ°)
 				local df = DropFrame.AbsolutePosition
 				local ds = DropFrame.AbsoluteSize
 				if mouse.X >= df.X and mouse.X <= df.X + ds.X and mouse.Y >= df.Y and mouse.Y <= df.Y + ds.Y then return end
@@ -4735,7 +4792,6 @@ function redzlib:MakeWindow(Configs)
 				return (v - Min) / (Max - Min)
 			end
 
-			-- ÃÂÃÂ¾ÃÂ»-ÃÂ²ÃÂ¾ ÃÂ·ÃÂ½ÃÂ°ÃÂºÃÂ¾ÃÂ² ÃÂ¿ÃÂ¾ÃÂÃÂ»ÃÂµ ÃÂ·ÃÂ°ÃÂ¿ÃÂÃÂÃÂ¾ÃÂ¹ ÃÂ² Increase (0.1 -> 1, 0.01 -> 2, 1 -> 0)
 			local function GetDecimals(n)
 				local s = tostring(n)
 				local dot = s:find("%.")
@@ -4747,7 +4803,6 @@ function redzlib:MakeWindow(Configs)
 			local function RoundTo(val, inc)
 				local factor = 10 ^ Decimals
 				return math.floor(val / inc + 0.5) * inc
-				-- ÃÂÃÂ±ÃÂ¸ÃÂÃÂ°ÃÂµÃÂ¼ float ÃÂ¼ÃÂÃÂÃÂ¾ÃÂ ÃÂÃÂµÃÂÃÂµÃÂ· factor
 			end
 
 			local function FormatValue(v)
@@ -4761,7 +4816,6 @@ function redzlib:MakeWindow(Configs)
 				local raw = s * (Max - Min) + Min
 				local factor = 10 ^ Decimals
 				local stepped = math.floor(raw / Increase + 0.5) * Increase
-				-- ÃÂ£ÃÂ±ÃÂ¸ÃÂÃÂ°ÃÂµÃÂ¼ float ÃÂ¼ÃÂÃÂÃÂ¾ÃÂ: 0.30000000001 -> 0.3
 				stepped = math.floor(stepped * factor + 0.5) / factor
 				return math.clamp(stepped, Min, Max)
 			end
