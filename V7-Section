@@ -2452,7 +2452,6 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		Visible = false
 	}), "DarkText")
 
-	-- ÐÐµÐ· Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ñ: Title Ð¿Ð¾ ÑÐµÐ½ÑÑÑ
 	if not hasDesc then
 		TitleL.Position = UDim2.new(0, 10, 0.5, 0)
 		TitleL.AnchorPoint = Vector2.new(0, 0.5)
@@ -2474,13 +2473,11 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 			TitleL.Position = UDim2.new(0, 10, 0, 9)
 			TitleL.AnchorPoint = Vector2.new(0, 0)
 
-			-- Ð¡ÑÐ¸ÑÐ°ÐµÐ¼ ÑÐ¾ÑÐ½ÑÑ Ð²ÑÑÐ¾ÑÑ ÑÐµÐºÑÑÐ° ÑÐµÑÐµÐ· TextService
-			-- DescL.Size.X.Offset = 0 (Scale), Ð±ÐµÑÑÐ¼ ÑÐ¸ÑÐ¸Ð½Ñ ÑÑÐµÐ¹Ð¼Ð° Ð¼Ð¸Ð½ÑÑ Ð¾ÑÑÑÑÐ¿Ñ
 			local frameWidth = Frame.Size.X.Offset > 0 and Frame.Size.X.Offset or 620
-			local textWidth = frameWidth - 20  -- 10px Ð¾ÑÑÑÑÐ¿ Ñ ÐºÐ°Ð¶Ð´Ð¾Ð¹ ÑÑÐ¾ÑÐ¾Ð½Ñ
+			local textWidth = frameWidth - 20
 			local textSize = TextService:GetTextSize(v, 8, Enum.Font.Gotham, Vector2.new(textWidth, 9999))
 			local descH = math.max(10, textSize.Y)
-			local totalH = 9 + 12 + 4 + descH + 5  -- top_pad + title + gap + desc + bottom_pad
+			local totalH = 9 + 12 + 4 + descH + 5
 			DescL.Size = UDim2.new(1, -20, 0, descH)
 			DescL.Position = UDim2.new(0, 10, 0, 21)
 			Frame.Size = UDim2.new(1, 0, 0, totalH)
@@ -3829,9 +3826,9 @@ function redzlib:MakeWindow(Configs)
 				Image            = "rbxassetid://10709791437",
 				ImageColor3      = Theme["Color Dark Text"],
 				Size             = UDim2.new(0, 14, 0, 14),
-				Position         = UDim2.new(1, -7, 0.5, 0),
+				Position         = UDim2.new(1, -5, 0.5, 0),
 				AnchorPoint      = Vector2.new(1, 0.5),
-				BackgroundTransparency = 2,
+				BackgroundTransparency = 5,
 				Rotation         = 0,
 				Name             = "ArrowLabel"
 			}), "DarkText")
