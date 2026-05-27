@@ -3599,6 +3599,7 @@ function redzlib:MakeWindow(Configs)
 		local TColor     = Configs.Color or Theme["Color Dark Text"]
 		local TImage     = Configs.Image or Configs[2] or nil
 		local TClickable = Configs.Clickable or false
+		local TLink      = Configs.Link or nil  -- ÑÑÑÐ»ÐºÐ° Ð´Ð»Ñ ÐºÐ¾Ð¿Ð¸ÑÐ¾Ð²Ð°Ð½Ð¸Ñ (Ð¿ÑÐ¸Ð¾ÑÐ¸ÑÐµÑ Ð½Ð°Ð´ TImage)
 
 		-- ÐÐ¾ÑÐ¼Ð°Ð»Ð¸Ð·ÑÐµÐ¼ image: Ð¿ÑÐ¸Ð½Ð¸Ð¼Ð°ÐµÐ¼ rbxassetid://... Ð¸Ð»Ð¸ Ð¿ÑÐ¾ÑÑÐ¾ ÑÐ¸ÑÐ»Ð¾/ÑÑÑÐ¾ÐºÑ
 		local function NormalizeAsset(img)
@@ -3630,7 +3631,7 @@ function redzlib:MakeWindow(Configs)
 				TagRoot.Activated:Connect(function()
 					if ClickDelay then return end
 					ClickDelay = true
-					pcall(function() setclipboard(TImage) end)
+					pcall(function() setclipboard(TLink or TImage) end)
 					-- ÐÑÐ³ÐºÐ¾Ðµ Ð¼Ð¸Ð³Ð°Ð½Ð¸Ðµ Ð´Ð»Ñ Ð¾Ð±ÑÐ°ÑÐ½Ð¾Ð¹ ÑÐ²ÑÐ·Ð¸
 					CreateTween({TagRoot, "ImageTransparency", 0.5, 0.1})
 					task.wait(0.15)
