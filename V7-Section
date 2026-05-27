@@ -3853,10 +3853,10 @@ function redzlib:MakeWindow(Configs)
 				Padding   = UDim.new(0, 5)
 			})
 
-			local elementHeights = {}  -- { [id] = height }
-			local elementOrder   = {}  -- Ð¿Ð¾ÑÑÐ´Ð¾Ðº ÑÐ»ÐµÐ¼ÐµÐ½ÑÐ¾Ð²
+			local elementHeights = {}
+			local elementOrder   = {}
 			local GAP = 5
-			local PAD = 3
+			local PAD = 2
 
 			local function CalcInnerHeight()
 				local total = 0
