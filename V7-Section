@@ -2608,6 +2608,8 @@ function redzlib:SetBackground(raw, transparency)
 		_MainFrame.Image = id
 		_MainFrame.ImageTransparency = trans
 		_MainFrame.ScaleType = Enum.ScaleType.Stretch
+		local grad = _MainFrame:FindFirstChildOfClass("UIGradient")
+		if grad then grad.Enabled = false end
 	end
 end
 
@@ -2628,6 +2630,8 @@ function redzlib:ClearBackground()
 	if _MainFrame then
 		_MainFrame.Image = ""
 		_MainFrame.ImageTransparency = 0
+		local grad = _MainFrame:FindFirstChildOfClass("UIGradient")
+		if grad then grad.Enabled = true end
 	end
 end
 
@@ -3623,9 +3627,8 @@ function redzlib:MakeWindow(Configs)
 		local TColor     = Configs.Color or Theme["Color Dark Text"]
 		local TImage     = Configs.Image or Configs[2] or nil
 		local TClickable = Configs.Clickable or false
-		local TLink      = Configs.Link or nil  -- ÑÑÑÐ»ÐºÐ° Ð´Ð»Ñ ÐºÐ¾Ð¿Ð¸ÑÐ¾Ð²Ð°Ð½Ð¸Ñ (Ð¿ÑÐ¸Ð¾ÑÐ¸ÑÐµÑ Ð½Ð°Ð´ TImage)
+		local TLink      = Configs.Link or nil
 
-		-- ÐÐ¾ÑÐ¼Ð°Ð»Ð¸Ð·ÑÐµÐ¼ image: Ð¿ÑÐ¸Ð½Ð¸Ð¼Ð°ÐµÐ¼ rbxassetid://... Ð¸Ð»Ð¸ Ð¿ÑÐ¾ÑÑÐ¾ ÑÐ¸ÑÐ»Ð¾/ÑÑÑÐ¾ÐºÑ
 		local function NormalizeAsset(img)
 			if not img then return nil end
 			img = tostring(img)
@@ -3640,7 +3643,6 @@ function redzlib:MakeWindow(Configs)
 		local TagRoot
 
 		if isImageTag then
-			-- Ð¢ÐµÐ³ Ñ ÐºÐ°ÑÑÐ¸Ð½ÐºÐ¾Ð¹: ImageLabel (+ ÐºÐ»Ð¸ÐºÐ°Ð±ÐµÐ»ÑÐ½Ð¾ÑÑÑ)
 			local imgSize = UDim2.new(0, 16, 0, 16)
 			if TClickable then
 				TagRoot = Create("ImageButton", TagHolder, {
@@ -3656,7 +3658,6 @@ function redzlib:MakeWindow(Configs)
 					if ClickDelay then return end
 					ClickDelay = true
 					pcall(function() setclipboard(TLink or TImage) end)
-					-- ÐÑÐ³ÐºÐ¾Ðµ Ð¼Ð¸Ð³Ð°Ð½Ð¸Ðµ Ð´Ð»Ñ Ð¾Ð±ÑÐ°ÑÐ½Ð¾Ð¹ ÑÐ²ÑÐ·Ð¸
 					CreateTween({TagRoot, "ImageTransparency", 0.5, 0.1})
 					task.wait(0.15)
 					CreateTween({TagRoot, "ImageTransparency", 0, 0.1})
@@ -3674,7 +3675,6 @@ function redzlib:MakeWindow(Configs)
 				})
 			end
 		else
-			-- ÐÐ±ÑÑÐ½ÑÐ¹ ÑÐµÐºÑÑÐ¾Ð²ÑÐ¹ ÑÐµÐ³
 			TagRoot = InsertTheme(Create("TextLabel", TagHolder, {
 				Size = UDim2.new(0, 0, 1, 0),
 				AutomaticSize = "X",
