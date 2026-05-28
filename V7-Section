@@ -3426,10 +3426,7 @@ function redzlib:MakeWindow(Configs)
 				if id ~= "" then
 					ThemePreview.Image = id
 					ThemePreview.Visible = true
-					if MainFrame then
-						MainFrame.Image = id
-						MainFrame.ImageTransparency = 0.1
-					end
+					redzlib:SetBackground(id, 0.1)
 				end
 			end)
 
