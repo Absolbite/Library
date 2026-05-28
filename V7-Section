@@ -2356,7 +2356,7 @@ local Theme = redzlib.Themes[redzlib.Save.Theme]
 
 local CurrentTransparency = redzlib.Save.Transparency or 0.03
 local _MainFrame = nil
-local _CurrentBgId = ""  -- ÑÑÐ°Ð½Ð¸Ñ Ð¿Ð¾ÑÐ»ÐµÐ´Ð½Ð¸Ð¹ ÑÑÑÐ°Ð½Ð¾Ð²Ð»ÐµÐ½Ð½ÑÐ¹ asset id
+local _CurrentBgId = ""
 
 local function AddEle(Name, Func)
 	redzlib.Elements[Name] = Func
@@ -2589,11 +2589,8 @@ end
 local function NormalizeImageUrl(raw)
 	raw = tostring(raw or ""):gsub("^%s+",""):gsub("%s+$","")
 	if raw == "" then return "" end
-	-- ÑÐ¶Ðµ Ð¿Ð¾Ð»Ð½ÑÐ¹ url
 	if raw:match("^rbxassetid://(%d+)$") then return raw end
-	-- ÑÐ¸ÑÑÑÐµ ÑÐ¸ÑÑÑ
 	if raw:match("^%d+$") then return "rbxassetid://" .. raw end
-	-- Ð²ÑÑÐ°ÑÐ¸Ð¼ ÑÐ¸ÑÑÑ Ð¸Ð· Ð»ÑÐ±Ð¾Ð¹ ÑÑÑÐ¾ÐºÐ¸ (Ð½Ð°Ð¿Ñ. "rbxassetid://12345abc" Ð¸Ð»Ð¸ "id: 12345")
 	local digits = raw:match("%d+")
 	if digits then return "rbxassetid://" .. digits end
 	return ""
@@ -2617,7 +2614,6 @@ function redzlib:SetImageTransparency(value, normalize)
 	if normalize then value = value / 100 end
 	value = math.clamp(tonumber(value) or 0, 0, 1)
 	if _MainFrame then
-		-- ÐµÑÐ»Ð¸ ÐºÐ°ÑÑÐ¸Ð½ÐºÐ° ÐµÑÑ Ð½Ðµ ÑÑÑÐ°Ð½Ð¾Ð²Ð»ÐµÐ½Ð° â Ð½Ð¸ÑÐµÐ³Ð¾ Ð½Ðµ Ð´ÐµÐ»Ð°ÐµÐ¼
 		if _CurrentBgId == "" then return end
 		_MainFrame.Image = _CurrentBgId
 		_MainFrame.ImageTransparency = value
@@ -2726,7 +2722,6 @@ function redzlib:MakeWindow(Configs)
 		Name = "SubTitle"
 	}), "DarkText")
 
-	-- TagHolder ÐºÑÐµÐ¿Ð¸ÑÑÑ ÑÐ¿ÑÐ°Ð²Ð° TopBar, Ð»ÐµÐ²ÐµÐµ Minimize (-35px) Ñ Ð·Ð°Ð·Ð¾ÑÐ¾Ð¼ 16px â Ð¸ÑÐ¾Ð³Ð¾ -65px
 	local TagHolder = Create("Frame", TopBar, {
 		AnchorPoint = Vector2.new(1, 0.5),
 		Position = UDim2.new(1, -60, 0.5, 0),
