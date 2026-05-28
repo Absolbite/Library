@@ -2356,6 +2356,7 @@ local Theme = redzlib.Themes[redzlib.Save.Theme]
 
 local CurrentTransparency = redzlib.Save.Transparency or 0.03
 local _MainFrame = nil
+local _CurrentBgId = ""  -- ÑÑÐ°Ð½Ð¸Ñ Ð¿Ð¾ÑÐ»ÐµÐ´Ð½Ð¸Ð¹ ÑÑÑÐ°Ð½Ð¾Ð²Ð»ÐµÐ½Ð½ÑÐ¹ asset id
 
 local function AddEle(Name, Func)
 	redzlib.Elements[Name] = Func
@@ -2588,14 +2589,20 @@ end
 local function NormalizeImageUrl(raw)
 	raw = tostring(raw or ""):gsub("^%s+",""):gsub("%s+$","")
 	if raw == "" then return "" end
-	if raw:match("^rbxassetid://") then return raw end
+	-- ÑÐ¶Ðµ Ð¿Ð¾Ð»Ð½ÑÐ¹ url
+	if raw:match("^rbxassetid://(%d+)$") then return raw end
+	-- ÑÐ¸ÑÑÑÐµ ÑÐ¸ÑÑÑ
 	if raw:match("^%d+$") then return "rbxassetid://" .. raw end
+	-- Ð²ÑÑÐ°ÑÐ¸Ð¼ ÑÐ¸ÑÑÑ Ð¸Ð· Ð»ÑÐ±Ð¾Ð¹ ÑÑÑÐ¾ÐºÐ¸ (Ð½Ð°Ð¿Ñ. "rbxassetid://12345abc" Ð¸Ð»Ð¸ "id: 12345")
+	local digits = raw:match("%d+")
+	if digits then return "rbxassetid://" .. digits end
 	return ""
 end
 
 function redzlib:SetBackground(raw, transparency)
 	local id = NormalizeImageUrl(raw)
 	if id == "" then return end
+	_CurrentBgId = id
 	if _MainFrame then
 		local trans = transparency ~= nil and math.clamp(tonumber(transparency) or 0, 0, 1) or 0
 		_MainFrame.Image = id
@@ -2605,13 +2612,19 @@ function redzlib:SetBackground(raw, transparency)
 end
 
 function redzlib:SetImageTransparency(value, normalize)
+	if normalize then value = value / 100 end
+	value = math.clamp(tonumber(value) or 0, 0, 1)
 	if _MainFrame then
-		if normalize then value = value / 100 end
-		_MainFrame.ImageTransparency = math.clamp(tonumber(value) or 0, 0, 1)
+		-- ÐµÑÐ»Ð¸ ÐºÐ°ÑÑÐ¸Ð½ÐºÐ° ÐµÑÑ Ð½Ðµ ÑÑÑÐ°Ð½Ð¾Ð²Ð»ÐµÐ½Ð° â Ð½Ð¸ÑÐµÐ³Ð¾ Ð½Ðµ Ð´ÐµÐ»Ð°ÐµÐ¼
+		if _CurrentBgId == "" then return end
+		_MainFrame.Image = _CurrentBgId
+		_MainFrame.ImageTransparency = value
+		_MainFrame.ScaleType = Enum.ScaleType.Stretch
 	end
 end
 
 function redzlib:ClearBackground()
+	_CurrentBgId = ""
 	if _MainFrame then
 		_MainFrame.Image = ""
 		_MainFrame.ImageTransparency = 0
@@ -2712,7 +2725,7 @@ function redzlib:MakeWindow(Configs)
 	-- TagHolder ÐºÑÐµÐ¿Ð¸ÑÑÑ ÑÐ¿ÑÐ°Ð²Ð° TopBar, Ð»ÐµÐ²ÐµÐµ Minimize (-35px) Ñ Ð·Ð°Ð·Ð¾ÑÐ¾Ð¼ 16px â Ð¸ÑÐ¾Ð³Ð¾ -65px
 	local TagHolder = Create("Frame", TopBar, {
 		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -65, 0.5, 0),
+		Position = UDim2.new(1, -55, 0.5, 0),
 		Size = UDim2.new(0, 0, 0, 16),
 		AutomaticSize = "X",
 		BackgroundTransparency = 1,
@@ -2722,7 +2735,7 @@ function redzlib:MakeWindow(Configs)
 			FillDirection = Enum.FillDirection.Horizontal,
 			HorizontalAlignment = Enum.HorizontalAlignment.Right,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
-			Padding = UDim.new(0, 4),
+			Padding = UDim.new(0, 10),
 			SortOrder = Enum.SortOrder.LayoutOrder
 		})
 	})
