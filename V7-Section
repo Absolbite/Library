@@ -2604,6 +2604,13 @@ function redzlib:SetBackground(raw, transparency)
 	end
 end
 
+function redzlib:SetImageTransparency(value, normalize)
+	if _MainFrame then
+		if normalize then value = value / 100 end
+		_MainFrame.ImageTransparency = math.clamp(tonumber(value) or 0, 0, 1)
+	end
+end
+
 function redzlib:ClearBackground()
 	if _MainFrame then
 		_MainFrame.Image = ""
@@ -2702,10 +2709,10 @@ function redzlib:MakeWindow(Configs)
 		Name = "SubTitle"
 	}), "DarkText")
 
-	-- TagHolder ÐºÑÐµÐ¿Ð¸ÑÑÑ ÑÐ¿ÑÐ°Ð²Ð° TopBar, Ð¿ÑÑÐ¼Ð¾ Ð»ÐµÐ²ÐµÐµ ÐºÐ½Ð¾Ð¿ÐºÐ¸ Minimize (-35px Ð¾Ñ Ð¿ÑÐ°Ð²Ð¾Ð³Ð¾ ÐºÑÐ°Ñ)
+	-- TagHolder ÐºÑÐµÐ¿Ð¸ÑÑÑ ÑÐ¿ÑÐ°Ð²Ð° TopBar, Ð»ÐµÐ²ÐµÐµ Minimize (-35px) Ñ Ð·Ð°Ð·Ð¾ÑÐ¾Ð¼ 16px â Ð¸ÑÐ¾Ð³Ð¾ -65px
 	local TagHolder = Create("Frame", TopBar, {
 		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -50, 0.5, 0),
+		Position = UDim2.new(1, -65, 0.5, 0),
 		Size = UDim2.new(0, 0, 0, 16),
 		AutomaticSize = "X",
 		BackgroundTransparency = 1,
@@ -3583,6 +3590,9 @@ function redzlib:MakeWindow(Configs)
 	end
 	function Window:SetBackground(raw, transparency)
 		redzlib:SetBackground(raw, transparency)
+	end
+	function Window:SetImageTransparency(value, normalize)
+		redzlib:SetImageTransparency(value, normalize)
 	end
 	function Window:ClearBackground()
 		redzlib:ClearBackground()
