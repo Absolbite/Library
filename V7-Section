@@ -2519,26 +2519,34 @@ local function GetColor(Instance)
 end
 
 function redzlib:GetIcon(index)
-	if type(index) ~= "string" or index:find("rbxassetid://") or #index == 0 then
+	if type(index) ~= "string" or #index == 0 then
+		return ""
+	end
+
+	-- Ð£Ð¶Ðµ ÑÐ²Ð»ÑÐµÑÑÑ rbxassetid Ð¸Ð»Ð¸ ÑÐ¸ÑÐ»Ð¾Ð²ÑÐ¼ id
+	if index:match("^rbxassetid://%d+$") then
 		return index
+	end
+	if index:match("^%d+$") then
+		return "rbxassetid://" .. index
 	end
 
 	local firstMatch = nil
-	index = string.lower(index):gsub("lucide", ""):gsub("-", "")
+	local normalized = string.lower(index):gsub("lucide", ""):gsub("-", ""):gsub("%s+", "")
 
-	if self.Icons[index] then
-		return self.Icons[index]
+	if self.Icons[normalized] then
+		return self.Icons[normalized]
 	end
 
-	for Name, Icon in self.Icons do
-		if Name == index then
+	for Name, Icon in pairs(self.Icons) do
+		if Name == normalized then
 			return Icon
-		elseif not firstMatch and Name:find(index, 1, true) then
+		elseif not firstMatch and Name:find(normalized, 1, true) then
 			firstMatch = Icon
 		end
 	end
 
-	return firstMatch or index
+	return firstMatch or ""
 end
 
 function redzlib:SetTheme(NewTheme)
@@ -2844,15 +2852,19 @@ function redzlib:MakeWindow(Configs)
 		Name = "Close"
 	})
 
-	local MinimizeButton = SetProps(CloseButton:Clone(), {
+	local MinimizeButton = Create("ImageButton", {
+		Size = UDim2.new(0, 14, 0, 14),
 		Position = UDim2.new(1, -35, 0.5),
+		AnchorPoint = Vector2.new(1, 0.5),
+		BackgroundTransparency = 1,
 		Image = "rbxassetid://10734896206",
+		AutoButtonColor = false,
 		Name = "Minimize"
 	})
 
 	SetChildren(ButtonsFolder, { CloseButton, MinimizeButton })
 
-	local Minimized, SaveSize, WaitClick, MinimizeBtnCustomImage
+	local Minimized, SaveSize, WaitClick
 	local Window, FirstTab = {}, false
 
 	function Window:CloseBtn()
@@ -2869,13 +2881,13 @@ function redzlib:MakeWindow(Configs)
 		if WaitClick then return end
 		WaitClick = true
 		if Minimized then
-			MinimizeButton.Image = MinimizeBtnCustomImage or "rbxassetid://10734896206"
+			MinimizeButton.Image = "rbxassetid://10734896206"
 			CreateTween({MainFrame, "Size", SaveSize, 0.25, true})
 			ControlSize1.Visible = true
 			ControlSize2.Visible = true
 			Minimized = false
 		else
-			MinimizeButton.Image = MinimizeBtnCustomImage or "rbxassetid://10734924532"
+			MinimizeButton.Image = "rbxassetid://10734924532"
 			SaveSize = MainFrame.Size
 			ControlSize1.Visible = false
 			ControlSize2.Visible = false
@@ -2898,7 +2910,7 @@ function redzlib:MakeWindow(Configs)
 
 		local BtnSize  = Saved.size  or Cfg.Size  or 40
 		local BtnTrans = Saved.trans ~= nil and Saved.trans or (Cfg.Transparency ~= nil and Cfg.Transparency or 0)
-		local BtnImage = NormalizeImageUrl(Saved.image or Cfg.Image or "rbxassetid://10734895698")
+		local BtnImage = NormalizeImageUrl(Cfg.Image or "rbxassetid://10734895698")
 		if Saved.posX and Saved.posY then
 			BtnPos = UDim2.fromOffset(Saved.posX, Saved.posY)
 		end
@@ -2907,7 +2919,6 @@ function redzlib:MakeWindow(Configs)
 			redzlib.Save.MinimizeButtons[BtnId] = {
 				size  = BtnSize,
 				trans = BtnTrans,
-				image = BtnImage,
 				posX  = Button and Button.Position.X.Offset or nil,
 				posY  = Button and Button.Position.Y.Offset or nil,
 			}
@@ -3033,12 +3044,12 @@ function redzlib:MakeWindow(Configs)
 
 		MkLabel("IMAGE (rbxassetid / url)", 1)
 		local _, ImageInput = MkInput("rbxassetid://...", 2)
-		MkLabel("SIZE  (20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120)", 3)
+		MkLabel("SIZE  (20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120)", 3)
 		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
-		local _, SizeInput = MkInput("20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120", 5)
-		MkLabel("TRANSPARENCY  (0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0)", 6)
+		local _, SizeInput = MkInput("20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120", 5)
+		MkLabel("TRANSPARENCY  (0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0)", 6)
 		local TransTrack, TransFill, TransKnob = MkSlider(7)
-		local _, TransInput = MkInput("0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0", 8)
+		local _, TransInput = MkInput("0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0", 8)
 
 		local ClosePanel = Create("TextButton", Panel, {
 			Size = UDim2.fromOffset(14, 14),
@@ -3173,7 +3184,6 @@ function redzlib:MakeWindow(Configs)
 			redzlib.Save.MinimizeButtons[BtnId] = {
 				size  = BtnSize,
 				trans = BtnTrans,
-				image = BtnImage,
 				posX  = p.X.Offset ~= 0 and p.X.Offset or nil,
 				posY  = p.Y.Offset ~= 0 and p.Y.Offset or nil,
 			}
@@ -3514,15 +3524,8 @@ function redzlib:MakeWindow(Configs)
 				if id == "" then return end
 				Preview.Image = id
 				Preview.Visible = true
-				MinimizeBtnCustomImage = id
-				if MinimizeButton then
+				if MinimizeButton and not Minimized then
 					MinimizeButton.Image = id
-				end
-				if redzlib.Save.MinimizeButtons then
-					for _, btn in pairs(redzlib.Save.MinimizeButtons) do
-						btn.image = id
-					end
-					SaveJson("smooth library.json", redzlib.Save)
 				end
 			end
 
@@ -3745,7 +3748,8 @@ function redzlib:MakeWindow(Configs)
 		local TIcon = Configs[2] or Configs.Icon or ""
 
 		TIcon = redzlib:GetIcon(TIcon)
-		if not TIcon:find("rbxassetid://") or TIcon:gsub("rbxassetid://", ""):len() < 6 then
+		-- ÐÐ°Ð»Ð¸Ð´Ð½ÑÐ¹ rbxassetid: Ð½ÐµÐ¿ÑÑÑÐ°Ñ ÑÑÑÐ¾ÐºÐ° Ñ ÑÐ¾ÑÐ¼Ð°ÑÐ¾Ð¼ rbxassetid://DIGITS
+		if not (type(TIcon) == "string" and TIcon:match("^rbxassetid://%d+$")) then
 			TIcon = false
 		end
 
