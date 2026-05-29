@@ -2090,7 +2090,7 @@ local SetProps, SetChildren, InsertTheme, Create do
 
 	Create = function(...)
 		local args = {...}
-		if type(args) ~= "table" then return end
+		if type(args) -= "table" then return end
 		local new = Instance.new(args[1])
 		local Children = {}
 
@@ -2141,11 +2141,11 @@ local Funcs = {} do
 	end
 
 	function Funcs:ToggleVisible(Obj, Bool)
-		Obj.Visible = Bool ~= nil and Bool or not Obj.Visible
+		Obj.Visible = Bool -= nil and Bool or not Obj.Visible
 	end
 
 	function Funcs:ToggleParent(Obj, Parent)
-		if Bool ~= nil then
+		if Bool -= nil then
 			Obj.Parent = Bool
 		else
 			Obj.Parent = not Obj.Parent and Parent
@@ -2183,7 +2183,7 @@ end
 
 local Connections, Connection = {}, redzlib.Connection do
 	local function NewConnectionList(List)
-		if type(List) ~= "table" then return end
+		if type(List) -= "table" then return end
 
 		for _,CoName in ipairs(List) do
 			local ConnectedFuncs, Connect = {}, {}
@@ -2224,7 +2224,7 @@ end
 
 local GetFlag, SetFlag, CheckFlag do
 	CheckFlag = function(Name)
-		return type(Name) == "string" and Flags[Name] ~= nil
+		return type(Name) == "string" and Flags[Name] -= nil
 	end
 
 	GetFlag = function(Name)
@@ -2232,7 +2232,7 @@ local GetFlag, SetFlag, CheckFlag do
 	end
 
 	SetFlag = function(Flag, Value)
-		if Flag and (Value ~= Flags[Flag] or type(Value) == "table") then
+		if Flag and (Value -= Flags[Flag] or type(Value) == "table") then
 			Flags[Flag] = Value
 			Connection:FireConnection("FlagsChanged", Flag, Value)
 		end
@@ -2266,7 +2266,7 @@ local ScreenGui = Create("ScreenGui", CoreGui, {
 })
 
 local ScreenFind = CoreGui:FindFirstChild(ScreenGui.Name)
-if ScreenFind and ScreenFind ~= ScreenGui then
+if ScreenFind and ScreenFind -= ScreenGui then
 	ScreenFind:Destroy()
 end
 
@@ -2519,34 +2519,26 @@ local function GetColor(Instance)
 end
 
 function redzlib:GetIcon(index)
-	if type(index) ~= "string" or #index == 0 then
-		return ""
-	end
-
-	-- Ð£Ð¶Ðµ ÑÐ²Ð»ÑÐµÑÑÑ rbxassetid Ð¸Ð»Ð¸ ÑÐ¸ÑÐ»Ð¾Ð²ÑÐ¼ id
-	if index:match("^rbxassetid://%d+$") then
+	if type(index) -= "string" or index:find("rbxassetid://") or #index == 0 then
 		return index
-	end
-	if index:match("^%d+$") then
-		return "rbxassetid://" .. index
 	end
 
 	local firstMatch = nil
-	local normalized = string.lower(index):gsub("lucide", ""):gsub("-", ""):gsub("%s+", "")
+	index = string.lower(index):gsub("lucide", ""):gsub("-", "")
 
-	if self.Icons[normalized] then
-		return self.Icons[normalized]
+	if self.Icons[index] then
+		return self.Icons[index]
 	end
 
-	for Name, Icon in pairs(self.Icons) do
-		if Name == normalized then
+	for Name, Icon in self.Icons do
+		if Name == index then
 			return Icon
-		elseif not firstMatch and Name:find(normalized, 1, true) then
+		elseif not firstMatch and Name:find(index, 1, true) then
 			firstMatch = Icon
 		end
 	end
 
-	return firstMatch or ""
+	return firstMatch or index
 end
 
 function redzlib:SetTheme(NewTheme)
@@ -2569,7 +2561,7 @@ function redzlib:SetTheme(NewTheme)
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
 		elseif Val.Type == "Main" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
-			if _CurrentBgId ~= "" then
+			if _CurrentBgId -= "" then
 				inst.Image = _CurrentBgId
 				inst.ImageTransparency = _CurrentBgTransparency
 				inst.ScaleType = Enum.ScaleType.Stretch
@@ -2579,19 +2571,19 @@ function redzlib:SetTheme(NewTheme)
 			end
 		elseif Val.Type == "Stroke" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = Theme["Color Stroke"] end
+			if prop -= "" then inst[prop] = Theme["Color Stroke"] end
 		elseif Val.Type == "Theme" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
+			if prop -= "" then inst[prop] = Theme["Color Theme"] end
 		elseif Val.Type == "Text" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = Theme["Color Text"] end
+			if prop -= "" then inst[prop] = Theme["Color Text"] end
 		elseif Val.Type == "DarkText" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = Theme["Color Dark Text"] end
+			if prop -= "" then inst[prop] = Theme["Color Dark Text"] end
 		elseif Val.Type == "ScrollBar" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
+			if prop -= "" then inst[prop] = Theme["Color Theme"] end
 		end
 	end)
 end
@@ -2622,7 +2614,7 @@ function redzlib:SetBackground(raw, transparency)
 	_CurrentBgId = id
 	_G.ImageThemeID = id
 	if _MainFrame then
-		local trans = transparency ~= nil and math.clamp(tonumber(transparency) or 0, 0, 1) or 0
+		local trans = transparency -= nil and math.clamp(tonumber(transparency) or 0, 0, 1) or 0
 		_CurrentBgTransparency = trans
 		_MainFrame.Image = id
 		_MainFrame.ImageTransparency = trans
@@ -2684,7 +2676,7 @@ function redzlib:MakeWindow(Configs)
 
 	local function LoadFile()
 		local File = Settings.ScriptFile
-		if type(File) ~= "string" then return end
+		if type(File) -= "string" then return end
 		if not readfile or not isfile then return end
 		local s, r = pcall(isfile, File)
 		if s and r then
@@ -2852,19 +2844,15 @@ function redzlib:MakeWindow(Configs)
 		Name = "Close"
 	})
 
-	local MinimizeButton = Create("ImageButton", {
-		Size = UDim2.new(0, 14, 0, 14),
+	local MinimizeButton = SetProps(CloseButton:Clone(), {
 		Position = UDim2.new(1, -35, 0.5),
-		AnchorPoint = Vector2.new(1, 0.5),
-		BackgroundTransparency = 1,
 		Image = "rbxassetid://10734896206",
-		AutoButtonColor = false,
 		Name = "Minimize"
 	})
 
 	SetChildren(ButtonsFolder, { CloseButton, MinimizeButton })
 
-	local Minimized, SaveSize, WaitClick
+	local Minimized, SaveSize, WaitClick, MinimizeBtnCustomImage
 	local Window, FirstTab = {}, false
 
 	function Window:CloseBtn()
@@ -2881,13 +2869,13 @@ function redzlib:MakeWindow(Configs)
 		if WaitClick then return end
 		WaitClick = true
 		if Minimized then
-			MinimizeButton.Image = "rbxassetid://10734896206"
+			MinimizeButton.Image = MinimizeBtnCustomImage or "rbxassetid://10734896206"
 			CreateTween({MainFrame, "Size", SaveSize, 0.25, true})
 			ControlSize1.Visible = true
 			ControlSize2.Visible = true
 			Minimized = false
 		else
-			MinimizeButton.Image = "rbxassetid://10734924532"
+			MinimizeButton.Image = MinimizeBtnCustomImage or "rbxassetid://10734924532"
 			SaveSize = MainFrame.Size
 			ControlSize1.Visible = false
 			ControlSize2.Visible = false
@@ -2909,8 +2897,8 @@ function redzlib:MakeWindow(Configs)
 		local Saved = redzlib.Save.MinimizeButtons[BtnId] or {}
 
 		local BtnSize  = Saved.size  or Cfg.Size  or 40
-		local BtnTrans = Saved.trans ~= nil and Saved.trans or (Cfg.Transparency ~= nil and Cfg.Transparency or 0)
-		local BtnImage = NormalizeImageUrl(Cfg.Image or "rbxassetid://10734895698")
+		local BtnTrans = Saved.trans -= nil and Saved.trans or (Cfg.Transparency -= nil and Cfg.Transparency or 0)
+		local BtnImage = NormalizeImageUrl(Saved.image or Cfg.Image or "rbxassetid://10734895698")
 		if Saved.posX and Saved.posY then
 			BtnPos = UDim2.fromOffset(Saved.posX, Saved.posY)
 		end
@@ -2919,6 +2907,7 @@ function redzlib:MakeWindow(Configs)
 			redzlib.Save.MinimizeButtons[BtnId] = {
 				size  = BtnSize,
 				trans = BtnTrans,
+				image = BtnImage,
 				posX  = Button and Button.Position.X.Offset or nil,
 				posY  = Button and Button.Position.Y.Offset or nil,
 			}
@@ -3044,12 +3033,12 @@ function redzlib:MakeWindow(Configs)
 
 		MkLabel("IMAGE (rbxassetid / url)", 1)
 		local _, ImageInput = MkInput("rbxassetid://...", 2)
-		MkLabel("SIZE  (20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120)", 3)
+		MkLabel("SIZE  (20 - 120)", 3)
 		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
-		local _, SizeInput = MkInput("20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120", 5)
-		MkLabel("TRANSPARENCY  (0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0)", 6)
+		local _, SizeInput = MkInput("20 - 120", 5)
+		MkLabel("TRANSPARENCY  (0.0 - 1.0)", 6)
 		local TransTrack, TransFill, TransKnob = MkSlider(7)
-		local _, TransInput = MkInput("0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0", 8)
+		local _, TransInput = MkInput("0.0 - 1.0", 8)
 
 		local ClosePanel = Create("TextButton", Panel, {
 			Size = UDim2.fromOffset(14, 14),
@@ -3184,8 +3173,9 @@ function redzlib:MakeWindow(Configs)
 			redzlib.Save.MinimizeButtons[BtnId] = {
 				size  = BtnSize,
 				trans = BtnTrans,
-				posX  = p.X.Offset ~= 0 and p.X.Offset or nil,
-				posY  = p.Y.Offset ~= 0 and p.Y.Offset or nil,
+				image = BtnImage,
+				posX  = p.X.Offset -= 0 and p.X.Offset or nil,
+				posY  = p.Y.Offset -= 0 and p.Y.Offset or nil,
 			}
 			SaveJson("smooth library.json", redzlib.Save)
 		end
@@ -3222,7 +3212,7 @@ function redzlib:MakeWindow(Configs)
 		local DText    = Configs[2] or Configs.Text or "This is a Dialog"
 		local DOptions = Configs[3] or Configs.Options or {}
 		local DIcon    = Configs.Icon or ""
-		local DType    = Configs.Type or "default" -- "default" | "theme" | "image"
+		local DType    = Configs.Type or "default"
 
 		local function NormalizeImageId(raw)
 			raw = tostring(raw or ""):gsub("^%s+",""):gsub("%s+$","")
@@ -3266,7 +3256,7 @@ function redzlib:MakeWindow(Configs)
 			theme   = "rbxassetid://10734950309",
 			image   = "rbxassetid://10723415040",
 		}
-		local resolvedIcon = DIcon ~= "" and NormalizeImageId(DIcon)
+		local resolvedIcon = DIcon -= "" and NormalizeImageId(DIcon)
 			or iconMap[DType] or iconMap["info"]
 
 		local TopBar = Create("Frame", Frame, {
@@ -3433,7 +3423,7 @@ function redzlib:MakeWindow(Configs)
 
 			ThemeImgInput.FocusLost:Connect(function()
 				local id = NormalizeImageId(ThemeImgInput.Text)
-				if id ~= "" then
+				if id -= "" then
 					ThemePreview.Image = id
 					ThemePreview.Visible = true
 					redzlib:SetBackground(id, 0.1)
@@ -3467,7 +3457,7 @@ function redzlib:MakeWindow(Configs)
 				Font = Enum.Font.Gotham,
 				TextSize = 9,
 				TextColor3 = Theme["Color Text"],
-				PlaceholderText = "rbxassetid://...",
+				PlaceholderText = "",
 				PlaceholderColor3 = Theme["Color Dark Text"],
 				Text = "",
 				ClearTextOnFocus = false,
@@ -3524,8 +3514,15 @@ function redzlib:MakeWindow(Configs)
 				if id == "" then return end
 				Preview.Image = id
 				Preview.Visible = true
-				if MinimizeButton and not Minimized then
+				MinimizeBtnCustomImage = id
+				if MinimizeButton then
 					MinimizeButton.Image = id
+				end
+				if redzlib.Save.MinimizeButtons then
+					for _, btn in pairs(redzlib.Save.MinimizeButtons) do
+						btn.image = id
+					end
+					SaveJson("smooth library.json", redzlib.Save)
 				end
 			end
 
@@ -3653,7 +3650,7 @@ function redzlib:MakeWindow(Configs)
 		end
 		TImage = NormalizeAsset(TImage)
 
-		local isImageTag = TImage ~= nil
+		local isImageTag = TImage -= nil
 		local TagRoot
 
 		if isImageTag then
@@ -3732,7 +3729,7 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		function Tag:Visible(Bool)
-			TagRoot.Visible = Bool ~= nil and Bool or not TagRoot.Visible
+			TagRoot.Visible = Bool -= nil and Bool or not TagRoot.Visible
 		end
 
 		function Tag:Destroy()
@@ -3748,8 +3745,7 @@ function redzlib:MakeWindow(Configs)
 		local TIcon = Configs[2] or Configs.Icon or ""
 
 		TIcon = redzlib:GetIcon(TIcon)
-		-- ÐÐ°Ð»Ð¸Ð´Ð½ÑÐ¹ rbxassetid: Ð½ÐµÐ¿ÑÑÑÐ°Ñ ÑÑÑÐ¾ÐºÐ° Ñ ÑÐ¾ÑÐ¼Ð°ÑÐ¾Ð¼ rbxassetid://DIGITS
-		if not (type(TIcon) == "string" and TIcon:match("^rbxassetid://%d+$")) then
+		if not TIcon:find("rbxassetid://") or TIcon:gsub("rbxassetid://", ""):len() < 6 then
 			TIcon = false
 		end
 
@@ -3816,12 +3812,12 @@ function redzlib:MakeWindow(Configs)
 		local function Tabs()
 			if Container.Parent then return end
 			for _, Tab in ipairs(redzlib.Tabs) do
-				if Tab.Cont ~= Container then
+				if Tab.Cont -= Container then
 					Tab.func:Disable()
 				end
 			end
 			for _, Frame in ipairs(ContainerList) do
-				if Frame:IsA("ScrollingFrame") and Frame ~= Container then
+				if Frame:IsA("ScrollingFrame") and Frame -= Container then
 					Frame.Parent = nil
 				end
 			end
@@ -4049,7 +4045,7 @@ function redzlib:MakeWindow(Configs)
 			end
 			function Section:Destroy() SectionWrapper:Destroy() end
 			function Section:Toggle() SetOpen(not isOpen) end
-			function Section:Open(Bool) SetOpen(Bool ~= nil and Bool or true) end
+			function Section:Open(Bool) SetOpen(Bool -= nil and Bool or true) end
 
 			local function WithInner(method, defaultHeight, cfg)
 				local before = {}
@@ -4082,7 +4078,7 @@ function redzlib:MakeWindow(Configs)
 
 					frame:GetPropertyChangedSignal("Size"):Connect(function()
 						local newH = frame.Size.Y.Offset
-						if newH > 0 and newH ~= elementHeights[id] then
+						if newH > 0 and newH -= elementHeights[id] then
 							elementHeights[id] = newH
 							ApplySizes()
 						end
@@ -4412,7 +4408,7 @@ function redzlib:MakeWindow(Configs)
 
 			local AddNewOptions, GetOptions, AddOption, RemoveOption, Selected do
 				local savedFlag = CheckFlag(Flag) and GetFlag(Flag) or nil
-				local Default = type(OpDefault) ~= "table" and {OpDefault} or OpDefault
+				local Default = type(OpDefault) -= "table" and {OpDefault} or OpDefault
 				local MultiSelect = DMultiSelect
 				local Options = {}
 
@@ -4621,7 +4617,7 @@ function redzlib:MakeWindow(Configs)
 					for Name, Opt in pairs(Options) do
 						if Opt.nodes and Opt.nodes[1] then
 							local matches = query == "" or tostring(Name):lower():find(query, 1, true)
-							Opt.nodes[1].Visible = matches ~= nil and matches ~= false
+							Opt.nodes[1].Visible = matches -= nil and matches -= false
 						end
 					end
 					CalculateSize()
@@ -4867,7 +4863,7 @@ function redzlib:MakeWindow(Configs)
 			end
 
 			local function SetSlider(newVal, skipCallback)
-				if type(newVal) ~= "number" then return end
+				if type(newVal) -= "number" then return end
 				newVal = math.clamp(newVal, Min, Max)
 				newVal = math.floor(newVal / Increase + 0.5) * Increase
 				currentValue = newVal
@@ -4901,7 +4897,7 @@ function redzlib:MakeWindow(Configs)
 
 			ValueInput:GetPropertyChangedSignal("Text"):Connect(function()
 				local clean = ValueInput.Text:gsub("[^%d%.%-]", "")
-				if clean ~= ValueInput.Text then
+				if clean -= ValueInput.Text then
 					pcall(function() ValueInput.Text = clean end)
 				end
 			end)
@@ -4959,7 +4955,7 @@ function redzlib:MakeWindow(Configs)
 				if type(saved) == "string" then TDefault = saved end
 			end
 
-			if type(TDefault) ~= "string" then TDefault = "" end
+			if type(TDefault) -= "string" then TDefault = "" end
 
 			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -38))
 
@@ -5005,7 +5001,7 @@ function redzlib:MakeWindow(Configs)
 
 			TextBoxInput.FocusLost:Connect(Input)
 
-			if TDefault ~= "" then
+			if TDefault -= "" then
 				task.defer(function()
 					Funcs:FireCallback(Callback, TDefault)
 					SetFlag(Flag, TDefault)
