@@ -3340,44 +3340,52 @@ function redzlib:MakeWindow(Configs)
 		local TLink      = Configs.Link or nil
 		local TClickable = Configs.Clickable == true and TLink ~= nil
 
-		-- ÐÑÐ»Ð¸ ÑÐµÐ³ ÐºÐ»Ð¸ÐºÐ°Ð±ÐµÐ»ÑÐ½ÑÐ¹ â Ð¸ÑÐ¿Ð¾Ð»ÑÐ·ÑÐµÐ¼ TextButton, Ð¸Ð½Ð°ÑÐµ TextLabel
-		local TagClass = TClickable and "TextButton" or "TextLabel"
-
-		local TagRoot = InsertTheme(Create(TagClass, TagHolder, {
-			Size             = UDim2.new(0, 0, 1, 0),
-			AutomaticSize    = "X",
+		-- ÐÐ°Ð·Ð¾Ð²ÑÐµ ÑÐ²Ð¾Ð¹ÑÑÐ²Ð° Ð¾Ð±ÑÐ¸Ðµ Ð´Ð»Ñ Ð¾Ð±Ð¾Ð¸Ñ ÑÐµÐ¶Ð¸Ð¼Ð¾Ð²
+		local BaseProps = {
+			Size                 = UDim2.new(0, 0, 1, 0),
+			AutomaticSize        = "X",
 			BackgroundTransparency = 1,
-			Font             = Enum.Font.GothamMedium,
-			TextSize         = 12,
-			TextYAlignment   = Enum.TextYAlignment.Center,
-			TextColor3       = TColor,
-			Text             = TTitle,
-			Name             = "Tag_" .. TTitle,
-			AutoButtonColor  = false,
-		}), Configs.Color and "" or "DarkText")
+			Font                 = Enum.Font.GothamMedium,
+			TextSize             = 12,
+			TextYAlignment       = Enum.TextYAlignment.Center,
+			TextColor3           = TColor,
+			Text                 = TTitle,
+			Name                 = "Tag_" .. TTitle,
+		}
 
-		-- ÐÐ¾Ð´ÑÑÑÐºÐ¸Ð²Ð°Ð½Ð¸Ðµ Ð¿ÑÐ¸ Ð½Ð°Ð²ÐµÐ´ÐµÐ½Ð¸Ð¸ Ð¸ ÐºÑÑÑÐ¾Ñ Ð´Ð»Ñ ÐºÐ»Ð¸ÐºÐ°Ð±ÐµÐ»ÑÐ½ÑÑ ÑÐµÐ³Ð¾Ð²
+		local TagRoot
+
 		if TClickable then
+			-- ÐÐ»Ð¸ÐºÐ°Ð±ÐµÐ»ÑÐ½ÑÐ¹ ÑÐµÐ¶Ð¸Ð¼: TextButton
+			BaseProps.AutoButtonColor = false
+			TagRoot = InsertTheme(
+				Create("TextButton", TagHolder, BaseProps),
+				Configs.Color and "" or "DarkText"
+			)
+
 			TagRoot.MouseEnter:Connect(function()
 				CreateTween({TagRoot, "TextColor3", Theme["Color Theme"], 0.15})
-				UserInputService.MouseIconEnabled = true
 				PlayerMouse.Icon = "rbxasset://SystemCursors/PointingHand"
 			end)
 			TagRoot.MouseLeave:Connect(function()
-				CreateTween({TagRoot, "TextColor3", Configs.Color or Theme["Color Dark Text"], 0.15})
+				CreateTween({TagRoot, "TextColor3", TColor, 0.15})
 				PlayerMouse.Icon = ""
 			end)
 			TagRoot.Activated:Connect(function()
-				-- ÐÑÐ°ÑÐºÐ°Ñ Ð²ÑÐ¿ÑÑÐºÐ° ÑÐ²ÐµÑÐ° Ð¿ÑÐ¸ ÐºÐ»Ð¸ÐºÐµ
 				CreateTween({TagRoot, "TextColor3", Color3.fromRGB(255, 255, 255), 0.05})
-				task.delay(0.1, function()
+				task.delay(0.12, function()
 					CreateTween({TagRoot, "TextColor3", Theme["Color Theme"], 0.15})
 				end)
-				-- ÐÐ¾Ð¿Ð¸ÑÑÐµÐ¼ ÑÑÑÐ»ÐºÑ Ð² Ð±ÑÑÐµÑ Ð¾Ð±Ð¼ÐµÐ½Ð° (setclipboard Ð´Ð¾ÑÑÑÐ¿ÐµÐ½ Ð² executor)
 				if setclipboard then
 					setclipboard(TLink)
 				end
 			end)
+		else
+			-- ÐÐ±ÑÑÐ½ÑÐ¹ ÑÐµÐ¶Ð¸Ð¼: TextLabel
+			TagRoot = InsertTheme(
+				Create("TextLabel", TagHolder, BaseProps),
+				Configs.Color and "" or "DarkText"
+			)
 		end
 
 		local Tag = {}
