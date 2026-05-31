@@ -1,4 +1,5 @@
 local MarketplaceService = game:GetService("MarketplaceService")
+local TextService = game:GetService("TextService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
@@ -2355,6 +2356,8 @@ local Theme = redzlib.Themes[redzlib.Save.Theme]
 
 local CurrentTransparency = redzlib.Save.Transparency or 0.03
 local _MainFrame = nil
+local _CurrentBgId = ""
+local _CurrentBgTransparency = 0
 
 local function AddEle(Name, Func)
 	redzlib.Elements[Name] = Func
@@ -2407,79 +2410,85 @@ AddEle("Gradient", function(parent, props, ...)
 end)
 
 local function ButtonFrame(Instance, Title, Description, HolderSize)
-	local TitleL = InsertTheme(Create("TextLabel", {
-		Font = Enum.Font.GothamMedium,
-		TextColor3 = Theme["Color Text"],
-		Size = UDim2.new(1, -20),
-		AutomaticSize = "Y",
-		Position = UDim2.new(0, 0, 0.5),
-		AnchorPoint = Vector2.new(0, 0.5),
-		BackgroundTransparency = 1,
-		TextTruncate = "AtEnd",
-		TextSize = 10,
-		TextXAlignment = "Left",
-		Text = "",
-		RichText = true
-	}), "Text")
+	local H_SIMPLE = 25
+	local H_DESC   = 38
 
-	local DescL = InsertTheme(Create("TextLabel", {
-		Font = Enum.Font.Gotham,
-		TextColor3 = Theme["Color Dark Text"],
-		Size = UDim2.new(1, -20),
-		AutomaticSize = "Y",
-		Position = UDim2.new(0, 12, 0, 15),
-		BackgroundTransparency = 1,
-		TextWrapped = true,
-		TextSize = 8,
-		TextXAlignment = "Left",
-		Text = "",
-		RichText = true
-	}), "DarkText")
+	local hasDesc = type(Description) == "string" and Description:gsub(" ",""):len() > 0
+	local frameH = hasDesc and H_DESC or H_SIMPLE
 
 	local Frame = Make("Button", Instance, {
-		Size = UDim2.new(1, 0, 0, 25),
-		AutomaticSize = "Y",
+		Size = UDim2.new(1, 0, 0, frameH),
+		AutomaticSize = "None",
 		Name = "Option"
 	})
 	Make("Corner", Frame, UDim.new(0, 6))
 
-	local LabelHolder = Create("Frame", Frame, {
-		AutomaticSize = "Y",
-		BackgroundTransparency = 1,
+	local TitleL = InsertTheme(Create("TextLabel", Frame, {
+		Font = Enum.Font.GothamMedium,
+		TextColor3 = Theme["Color Text"],
 		Size = HolderSize,
-		Position = UDim2.new(0, 10, 0),
-		AnchorPoint = Vector2.new(0, 0)
-	}, {
-		Create("UIListLayout", {
-			SortOrder = "LayoutOrder",
-			VerticalAlignment = "Center",
-			Padding = UDim.new(0, 2)
-		}),
-		Create("UIPadding", {
-			PaddingBottom = UDim.new(0, 5),
-			PaddingTop = UDim.new(0, 5)
-		}),
-		TitleL,
-		DescL,
-	})
+		Position = UDim2.new(0, 10, 0, 7),
+		AnchorPoint = Vector2.new(0, 0),
+		BackgroundTransparency = 1,
+		TextTruncate = "AtEnd",
+		TextSize = 10,
+		TextXAlignment = "Left",
+		TextYAlignment = "Center",
+		Text = "",
+		RichText = true
+	}), "Text")
+
+	local DescL = InsertTheme(Create("TextLabel", Frame, {
+		Font = Enum.Font.Gotham,
+		TextColor3 = Theme["Color Dark Text"],
+		Size = HolderSize,
+		Position = UDim2.new(0, 10, 0, 20),
+		AnchorPoint = Vector2.new(0, 0),
+		BackgroundTransparency = 1,
+		TextWrapped = true,
+		TextSize = 8,
+		TextXAlignment = "Left",
+		TextYAlignment = "Top",
+		Text = "",
+		RichText = true,
+		Visible = false
+	}), "DarkText")
+
+	if not hasDesc then
+		TitleL.Position = UDim2.new(0, 10, 0.5, 0)
+		TitleL.AnchorPoint = Vector2.new(0, 0.5)
+		TitleL.TextYAlignment = Enum.TextYAlignment.Center
+	end
 
 	local Label = {}
-	function Label:SetTitle(NewTitle)
-		if type(NewTitle) == "string" and NewTitle:gsub(" ", ""):len() > 0 then
-			TitleL.Text = NewTitle
+
+	function Label:SetTitle(v)
+		if type(v) == "string" and v:gsub(" ",""):len() > 0 then
+			TitleL.Text = v
 		end
 	end
-	function Label:SetDesc(NewDesc)
-		if type(NewDesc) == "string" and NewDesc:gsub(" ", ""):len() > 0 then
+
+	function Label:SetDesc(v)
+		if type(v) == "string" and v:gsub(" ",""):len() > 0 then
 			DescL.Visible = true
-			DescL.Text = NewDesc
-			LabelHolder.Position = UDim2.new(0, 10, 0)
-			LabelHolder.AnchorPoint = Vector2.new(0, 0)
+			DescL.Text = v
+			TitleL.Position = UDim2.new(0, 10, 0, 9)
+			TitleL.AnchorPoint = Vector2.new(0, 0)
+
+			local frameWidth = Frame.Size.X.Offset > 0 and Frame.Size.X.Offset or 620
+			local textWidth = frameWidth - 20
+			local textSize = TextService:GetTextSize(v, 8, Enum.Font.Gotham, Vector2.new(textWidth, 9999))
+			local descH = math.max(10, textSize.Y)
+			local totalH = 9 + 12 + 4 + descH + 5
+			DescL.Size = UDim2.new(1, -20, 0, descH)
+			DescL.Position = UDim2.new(0, 10, 0, 21)
+			Frame.Size = UDim2.new(1, 0, 0, totalH)
 		else
 			DescL.Visible = false
 			DescL.Text = ""
-			LabelHolder.Position = UDim2.new(0, 10, 0.5)
-			LabelHolder.AnchorPoint = Vector2.new(0, 0.5)
+			TitleL.Position = UDim2.new(0, 10, 0.5, 0)
+			TitleL.AnchorPoint = Vector2.new(0, 0.5)
+			Frame.Size = UDim2.new(1, 0, 0, H_SIMPLE)
 		end
 	end
 
@@ -2545,10 +2554,21 @@ function redzlib:SetTheme(NewTheme)
 		local inst = Val.Instance
 		if Val.Type == "Gradient" then
 			inst.Color = Theme["Color Hub 1"]
+			if inst.Parent == _MainFrame then
+				inst.Enabled = (_CurrentBgId == "")
+			end
 		elseif Val.Type == "Frame" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
 		elseif Val.Type == "Main" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
+			if _CurrentBgId ~= "" then
+				inst.Image = _CurrentBgId
+				inst.ImageTransparency = _CurrentBgTransparency
+				inst.ScaleType = Enum.ScaleType.Stretch
+			else
+				inst.Image = ""
+				inst.ImageTransparency = 0
+			end
 		elseif Val.Type == "Stroke" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Stroke"] end
@@ -2581,26 +2601,52 @@ end
 local function NormalizeImageUrl(raw)
 	raw = tostring(raw or ""):gsub("^%s+",""):gsub("%s+$","")
 	if raw == "" then return "" end
-	if raw:match("^rbxassetid://") then return raw end
+	if raw:match("^rbxassetid://(%d+)$") then return raw end
 	if raw:match("^%d+$") then return "rbxassetid://" .. raw end
+	local digits = raw:match("%d+")
+	if digits then return "rbxassetid://" .. digits end
 	return ""
 end
 
 function redzlib:SetBackground(raw, transparency)
 	local id = NormalizeImageUrl(raw)
 	if id == "" then return end
+	_CurrentBgId = id
+	_G.ImageThemeID = id
 	if _MainFrame then
 		local trans = transparency ~= nil and math.clamp(tonumber(transparency) or 0, 0, 1) or 0
+		_CurrentBgTransparency = trans
 		_MainFrame.Image = id
 		_MainFrame.ImageTransparency = trans
 		_MainFrame.ScaleType = Enum.ScaleType.Stretch
+		local grad = _MainFrame:FindFirstChildOfClass("UIGradient")
+		if grad then grad.Enabled = false end
+	end
+end
+
+function redzlib:SetImageTransparency(value, normalize)
+	if normalize then value = value / 100 end
+	value = math.clamp(tonumber(value) or 0, 0, 1)
+	_CurrentBgTransparency = value
+	if _MainFrame then
+		if _CurrentBgId == "" then return end
+		_MainFrame.Image = _CurrentBgId
+		_MainFrame.ImageTransparency = value
+		_MainFrame.ScaleType = Enum.ScaleType.Stretch
+		local grad = _MainFrame:FindFirstChildOfClass("UIGradient")
+		if grad then grad.Enabled = false end
 	end
 end
 
 function redzlib:ClearBackground()
+	_CurrentBgId = ""
+	_CurrentBgTransparency = 0
+	_G.ImageThemeID = nil
 	if _MainFrame then
 		_MainFrame.Image = ""
 		_MainFrame.ImageTransparency = 0
+		local grad = _MainFrame:FindFirstChildOfClass("UIGradient")
+		if grad then grad.Enabled = true end
 	end
 end
 
@@ -2695,18 +2741,19 @@ function redzlib:MakeWindow(Configs)
 		Name = "SubTitle"
 	}), "DarkText")
 
-	local TagHolder = Create("Frame", SubTitle, {
-		AnchorPoint = Vector2.new(0, 0.5),
-		Position = UDim2.new(1, 8, 0.5, 0),
-		Size = UDim2.new(0, 0, 1, 0),
+	local TagHolder = Create("Frame", TopBar, {
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -60, 0.5, 0),
+		Size = UDim2.new(0, 0, 0, 16),
 		AutomaticSize = "X",
 		BackgroundTransparency = 1,
 		Name = "TagHolder"
 	}, {
 		Create("UIListLayout", {
 			FillDirection = Enum.FillDirection.Horizontal,
+			HorizontalAlignment = Enum.HorizontalAlignment.Right,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
-			Padding = UDim.new(0, 4),
+			Padding = UDim.new(0, 7),
 			SortOrder = Enum.SortOrder.LayoutOrder
 		})
 	})
@@ -2805,7 +2852,7 @@ function redzlib:MakeWindow(Configs)
 
 	SetChildren(ButtonsFolder, { CloseButton, MinimizeButton })
 
-	local Minimized, SaveSize, WaitClick
+	local Minimized, SaveSize, WaitClick, MinimizeBtnCustomImage
 	local Window, FirstTab = {}, false
 
 	function Window:CloseBtn()
@@ -2822,13 +2869,13 @@ function redzlib:MakeWindow(Configs)
 		if WaitClick then return end
 		WaitClick = true
 		if Minimized then
-			MinimizeButton.Image = "rbxassetid://10734896206"
+			MinimizeButton.Image = MinimizeBtnCustomImage or "rbxassetid://10734896206"
 			CreateTween({MainFrame, "Size", SaveSize, 0.25, true})
 			ControlSize1.Visible = true
 			ControlSize2.Visible = true
 			Minimized = false
 		else
-			MinimizeButton.Image = "rbxassetid://10734924532"
+			MinimizeButton.Image = MinimizeBtnCustomImage or "rbxassetid://10734924532"
 			SaveSize = MainFrame.Size
 			ControlSize1.Visible = false
 			ControlSize2.Visible = false
@@ -2986,12 +3033,12 @@ function redzlib:MakeWindow(Configs)
 
 		MkLabel("IMAGE (rbxassetid / url)", 1)
 		local _, ImageInput = MkInput("rbxassetid://...", 2)
-		MkLabel("SIZE  (20 Ã¢Â€Â” 120)", 3)
+		MkLabel("SIZE  (20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120)", 3)
 		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
-		local _, SizeInput = MkInput("20 Ã¢Â€Â” 120", 5)
-		MkLabel("TRANSPARENCY  (0.0 Ã¢Â€Â” 1.0)", 6)
+		local _, SizeInput = MkInput("20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120", 5)
+		MkLabel("TRANSPARENCY  (0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0)", 6)
 		local TransTrack, TransFill, TransKnob = MkSlider(7)
-		local _, TransInput = MkInput("0.0 Ã¢Â€Â” 1.0", 8)
+		local _, TransInput = MkInput("0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0", 8)
 
 		local ClosePanel = Create("TextButton", Panel, {
 			Size = UDim2.fromOffset(14, 14),
@@ -3379,10 +3426,7 @@ function redzlib:MakeWindow(Configs)
 				if id ~= "" then
 					ThemePreview.Image = id
 					ThemePreview.Visible = true
-					if MainFrame then
-						MainFrame.Image = id
-						MainFrame.ImageTransparency = 0.1
-					end
+					redzlib:SetBackground(id, 0.1)
 				end
 			end)
 
@@ -3470,6 +3514,7 @@ function redzlib:MakeWindow(Configs)
 				if id == "" then return end
 				Preview.Image = id
 				Preview.Visible = true
+				MinimizeBtnCustomImage = id
 				if MinimizeButton then
 					MinimizeButton.Image = id
 				end
@@ -3575,6 +3620,9 @@ function redzlib:MakeWindow(Configs)
 	function Window:SetBackground(raw, transparency)
 		redzlib:SetBackground(raw, transparency)
 	end
+	function Window:SetImageTransparency(value, normalize)
+		redzlib:SetImageTransparency(value, normalize)
+	end
 	function Window:ClearBackground()
 		redzlib:ClearBackground()
 	end
@@ -3586,39 +3634,106 @@ function redzlib:MakeWindow(Configs)
 	local ContainerList = {}
 	function Window:AddTag(Configs)
 		Configs = Configs or {}
-		local TTitle   = Configs[1] or Configs.Title or Configs.Name or "Tag"
-		local TColor   = Configs.Color or Theme["Color Dark Text"]
+		local TTitle     = Configs[1] or Configs.Title or Configs.Name or "Tag"
+		local TColor     = Configs.Color or Theme["Color Dark Text"]
+		local TImage     = Configs.Image or Configs[2] or nil
+		local TClickable = Configs.Clickable or false
+		local TLink      = Configs.Link or nil
 
-		local TagLabel = InsertTheme(Create("TextLabel", TagHolder, {
-			Size = UDim2.new(0, 0, 1, 0),
-			AutomaticSize = "X",
-			BackgroundTransparency = 1,
-			Font = Enum.Font.GothamMedium,
-			TextSize = 12,
-			TextYAlignment = Enum.TextYAlignment.Center,
-			TextColor3 = TColor,
-			Text = TTitle,
-			Name = "Tag_" .. TTitle,
-		}), Configs.Color and "" or "DarkText")
+		local function NormalizeAsset(img)
+			if not img then return nil end
+			img = tostring(img)
+			if img:match("^%d+$") then
+				return "rbxassetid://" .. img
+			end
+			return img
+		end
+		TImage = NormalizeAsset(TImage)
+
+		local isImageTag = TImage ~= nil
+		local TagRoot
+
+		if isImageTag then
+			local imgSize = UDim2.new(0, 16, 0, 16)
+			if TClickable then
+				TagRoot = Create("ImageButton", TagHolder, {
+					Size = imgSize,
+					AnchorPoint = Vector2.new(0, 0.5),
+					Position = UDim2.new(0, 0, 0.5, 0),
+					Image = TImage,
+					BackgroundTransparency = 1,
+					Name = "Tag_" .. TTitle,
+				})
+				local ClickDelay = false
+				TagRoot.Activated:Connect(function()
+					if ClickDelay then return end
+					ClickDelay = true
+					pcall(function() setclipboard(TLink or TImage) end)
+					CreateTween({TagRoot, "ImageTransparency", 0.5, 0.1})
+					task.wait(0.15)
+					CreateTween({TagRoot, "ImageTransparency", 0, 0.1})
+					task.wait(2)
+					ClickDelay = false
+				end)
+			else
+				TagRoot = Create("ImageLabel", TagHolder, {
+					Size = imgSize,
+					AnchorPoint = Vector2.new(0, 0.5),
+					Position = UDim2.new(0, 0, 0.5, 0),
+					Image = TImage,
+					BackgroundTransparency = 1,
+					Name = "Tag_" .. TTitle,
+				})
+			end
+		else
+			TagRoot = InsertTheme(Create("TextLabel", TagHolder, {
+				Size = UDim2.new(0, 0, 1, 0),
+				AutomaticSize = "X",
+				BackgroundTransparency = 1,
+				Font = Enum.Font.GothamMedium,
+				TextSize = 12,
+				TextYAlignment = Enum.TextYAlignment.Center,
+				TextColor3 = TColor,
+				Text = TTitle,
+				Name = "Tag_" .. TTitle,
+			}), Configs.Color and "" or "DarkText")
+		end
 
 		local Tag = {}
 
 		function Tag:SetTitle(New)
-			if type(New) == "string" then TagLabel.Text = New end
+			if type(New) == "string" then
+				if isImageTag then
+					TagRoot.Name = "Tag_" .. New
+				else
+					TagRoot.Text = New
+				end
+			end
+		end
+
+		function Tag:SetImage(New)
+			if isImageTag then
+				local url = NormalizeAsset(New)
+				if url then TagRoot.Image = url end
+			end
 		end
 
 		function Tag:SetColor(New)
 			if typeof(New) == "Color3" then
-				CreateTween({TagLabel, "TextColor3", New, 0.15})
+				if isImageTag then
+					CreateTween({TagRoot, "ImageColor3", New, 0.15})
+				else
+					CreateTween({TagRoot, "TextColor3", New, 0.15})
+				end
 			end
 		end
 
 		function Tag:Visible(Bool)
-			TagLabel.Visible = Bool ~= nil and Bool or not TagLabel.Visible
+			TagRoot.Visible = Bool ~= nil and Bool or not TagRoot.Visible
 		end
 
 		function Tag:Destroy()
-			TagLabel:Destroy()
+			TagRoot:Destroy()
 		end
 
 		return Tag
@@ -3696,23 +3811,22 @@ function redzlib:MakeWindow(Configs)
 
 		local function Tabs()
 			if Container.Parent then return end
-			for _,Frame in pairs(ContainerList) do
+			for _, Tab in ipairs(redzlib.Tabs) do
+				if Tab.Cont ~= Container then
+					Tab.func:Disable()
+				end
+			end
+			for _, Frame in ipairs(ContainerList) do
 				if Frame:IsA("ScrollingFrame") and Frame ~= Container then
 					Frame.Parent = nil
 				end
 			end
+			Container.Size = UDim2.new(1, 0, 1, 0)
 			Container.Parent = Containers
-			Container.Size = UDim2.new(1, 0, 1, 150)
-			table.foreach(redzlib.Tabs, function(_,Tab)
-				if Tab.Cont ~= Container then
-					Tab.func:Disable()
-				end
-			end)
-			CreateTween({Container, "Size", UDim2.new(1, 0, 1, 0), 0.3})
-			CreateTween({LabelTitle, "TextTransparency", 0, 0.35})
-			CreateTween({LabelIcon, "ImageTransparency", 0, 0.35})
-			CreateTween({Selected, "Size", UDim2.new(0, 4, 0, 13), 0.35})
-			CreateTween({Selected, "BackgroundTransparency", 0, 0.35})
+			CreateTween({LabelTitle, "TextTransparency", 0, 0.25})
+			CreateTween({LabelIcon, "ImageTransparency", 0, 0.25})
+			CreateTween({Selected, "Size", UDim2.new(0, 4, 0, 13), 0.25})
+			CreateTween({Selected, "BackgroundTransparency", 0, 0.25})
 		end
 		TabSelect.Activated:Connect(Tabs)
 
@@ -3800,7 +3914,6 @@ function redzlib:MakeWindow(Configs)
 			Make("Corner", HeaderBtn, UDim.new(0, 7))
 			Make("Stroke", HeaderBtn)
 
-
 			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
 				Font             = Enum.Font.GothamBold,
 				Text             = SectionName,
@@ -3818,9 +3931,9 @@ function redzlib:MakeWindow(Configs)
 				Image            = "rbxassetid://10709791437",
 				ImageColor3      = Theme["Color Dark Text"],
 				Size             = UDim2.new(0, 14, 0, 14),
-				Position         = UDim2.new(1, -16, 0.5, 0),
+				Position         = UDim2.new(1, -5, 0.5, 0),
 				AnchorPoint      = Vector2.new(1, 0.5),
-				BackgroundTransparency = 1,
+				BackgroundTransparency = 5,
 				Rotation         = 0,
 				Name             = "ArrowLabel"
 			}), "DarkText")
@@ -3835,58 +3948,67 @@ function redzlib:MakeWindow(Configs)
 
 			local InnerContainer = Create("Frame", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 0),
-				Position         = UDim2.new(0, 0, 0, 27),
+				Position         = UDim2.new(0, 0, 0, 30),
 				BackgroundTransparency = 1,
-				Name             = "SectionInner"
+				Name             = "SectionInner",
+				ClipsDescendants = false,
 			})
 			Create("UIListLayout", InnerContainer, {
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding   = UDim.new(0, 5)
 			})
-			Create("UIPadding", InnerContainer, {
-				PaddingBottom = UDim.new(0, 5),
-				PaddingTop    = UDim.new(0, 5),
-			})
+
+			local elementHeights = {}
+			local elementOrder   = {}
+			local GAP = 5
+			local PAD = 2
+
+			local function CalcInnerHeight()
+				local total = 0
+				local count = 0
+				for _, id in ipairs(elementOrder) do
+					if elementHeights[id] then
+						total = total + elementHeights[id]
+						count = count + 1
+					end
+				end
+				if count == 0 then return 0 end
+				return total + (count - 1) * GAP + PAD
+			end
 
 			local isOpen = false
 
-			local function GetInnerHeight()
-			    local count = 0
-			    local h = 0
-			    for _, child in ipairs(InnerContainer:GetChildren()) do
-			        if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Visible then
-				            h = h + child.Size.Y.Offset
-				            count = count + 1
-			        end
-			    end
-			    if count > 0 then
-			        h = h + (count - 1) * 5
+			local function ApplySizes()
+				if isOpen then
+					local h = CalcInnerHeight()
+					InnerContainer.Size = UDim2.new(1, 0, 0, h)
+					SectionWrapper.Size = UDim2.new(1, 0, 0, 30 + h)
+				else
+					InnerContainer.Size = UDim2.new(1, 0, 0, 0)
+					SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
 				end
-				h = h + 10 -- top + bottom padding
-				return h
 			end
 
-			local function RefreshWrapperSize()
-				task.defer(function()
-					if isOpen then
-						local innerH = GetInnerHeight()
-						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 24 + innerH), 0.18 })
-						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, innerH), 0.18 })
-					else
-						CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 23), 0.18 })
-						CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.18 })
-					end
-				end)
+			local function updateElementHeight(id, newHeight)
+				elementHeights[id] = newHeight
+				ApplySizes()
 			end
 
 			local function SetOpen(newState)
 				isOpen = newState
-				-- 0 = closed, > 0 = open
-				InnerContainer.Visible = isOpen
 				CreateTween({ ArrowLabel, "Rotation", isOpen and 90 or 0, 0.18 })
 				CreateTween({ BottomLine, "BackgroundTransparency", isOpen and 0 or 1, 0.15 })
 				CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.08 or 0, 0.15 })
-				RefreshWrapperSize()
+				if isOpen then
+					local h = CalcInnerHeight()
+					InnerContainer.Size = UDim2.new(1, 0, 0, 0)
+					SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
+					CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, h), 0.2 })
+					CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 30 + h), 0.2 })
+				else
+					CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.2 })
+					CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 23), 0.2 })
+				end
 			end
 
 			HeaderBtn.MouseEnter:Connect(function()
@@ -3897,16 +4019,8 @@ function redzlib:MakeWindow(Configs)
 			HeaderBtn.MouseLeave:Connect(function()
 				CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.08 or 0, 0.1 })
 			end)
-
 			HeaderBtn.Activated:Connect(function()
 				SetOpen(not isOpen)
-			end)
-
-			InnerContainer.ChildAdded:Connect(function()
-				if isOpen then RefreshWrapperSize() end
-			end)
-			InnerContainer.ChildRemoved:Connect(function()
-				if isOpen then RefreshWrapperSize() end
 			end)
 
 			if StartOpen then
@@ -3914,9 +4028,8 @@ function redzlib:MakeWindow(Configs)
 			else
 				ArrowLabel.Rotation = 0
 				BottomLine.BackgroundTransparency = 1
-				SectionWrapper.Size = UDim2.new(1, 0, 0, 26)
+				SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
 				InnerContainer.Size = UDim2.new(1, 0, 0, 0)
-				InnerContainer.Visible = false
 				isOpen = false
 			end
 
@@ -3934,22 +4047,56 @@ function redzlib:MakeWindow(Configs)
 			function Section:Toggle() SetOpen(not isOpen) end
 			function Section:Open(Bool) SetOpen(Bool ~= nil and Bool or true) end
 
-			local function WithInner(method, cfg)
+			local function WithInner(method, defaultHeight, cfg)
+				local before = {}
+				for _, c in ipairs(InnerContainer:GetChildren()) do
+					before[c] = true
+				end
+
 				local prev = Container
 				Container = InnerContainer
 				local result = method(Tab, cfg)
 				Container = prev
+
+				local id = #elementOrder + 1
+				elementOrder[id] = id
+				elementHeights[id] = defaultHeight
+
+				local frame = nil
+				for _, c in ipairs(InnerContainer:GetChildren()) do
+					if not before[c] and (c:IsA("Frame") or c:IsA("TextButton")) then
+						frame = c
+						break
+					end
+				end
+
+				if frame then
+					local h = frame.Size.Y.Offset
+					if h > 0 then
+						elementHeights[id] = h
+					end
+
+					frame:GetPropertyChangedSignal("Size"):Connect(function()
+						local newH = frame.Size.Y.Offset
+						if newH > 0 and newH ~= elementHeights[id] then
+							elementHeights[id] = newH
+							ApplySizes()
+						end
+					end)
+				end
+
+				ApplySizes()
 				return result
 			end
 
-			function Section:AddButton(cfg)        return WithInner(Tab.AddButton,        cfg) end
-			function Section:AddToggle(cfg)        return WithInner(Tab.AddToggle,        cfg) end
-			function Section:AddSlider(cfg)        return WithInner(Tab.AddSlider,        cfg) end
-			function Section:AddDropdown(cfg)      return WithInner(Tab.AddDropdown,      cfg) end
-			function Section:AddTextBox(cfg)       return WithInner(Tab.AddTextBox,       cfg) end
-			function Section:AddParagraph(cfg)     return WithInner(Tab.AddParagraph,     cfg) end
-			function Section:AddDivider(cfg)       return WithInner(Tab.AddDivider,       cfg) end
-			function Section:AddDiscordInvite(cfg) return WithInner(Tab.AddDiscordInvite, cfg) end
+			function Section:AddButton(cfg)        return WithInner(Tab.AddButton,        25, cfg) end
+			function Section:AddToggle(cfg)        return WithInner(Tab.AddToggle,        25, cfg) end
+			function Section:AddSlider(cfg)        return WithInner(Tab.AddSlider,        25, cfg) end
+			function Section:AddDropdown(cfg)      return WithInner(Tab.AddDropdown,      25, cfg) end
+			function Section:AddTextBox(cfg)       return WithInner(Tab.AddTextBox,       25, cfg) end
+			function Section:AddParagraph(cfg)     return WithInner(Tab.AddParagraph,     38, cfg) end
+			function Section:AddDivider(cfg)       return WithInner(Tab.AddDivider,       10, cfg) end
+			function Section:AddDiscordInvite(cfg) return WithInner(Tab.AddDiscordInvite, 80, cfg) end
 
 			return Section
 		end
@@ -4302,7 +4449,26 @@ function redzlib:MakeWindow(Configs)
 
 				local function UpdateLabel()
 					if MultiSelect then
-						ActiveLabel.Text = #SelectedValues > 0 and table.concat(SelectedValues, ", ") or "..."
+						if #SelectedValues == 0 then
+							ActiveLabel.Text = "..."
+						else
+							local maxW = SelectedFrame.AbsoluteSize.X - 30
+							local full = table.concat(SelectedValues, ", ")
+							local fitted = full
+							if TextService:GetTextSize(full, 8, Enum.Font.GothamBold, Vector2.new(9999, 20)).X > maxW then
+								fitted = ""
+								for i, v in ipairs(SelectedValues) do
+									local candidate = fitted == "" and v or (fitted .. ", " .. v)
+									local withDots = candidate .. (i < #SelectedValues and "..." or "")
+									if TextService:GetTextSize(withDots, 8, Enum.Font.GothamBold, Vector2.new(9999, 20)).X > maxW then
+										fitted = fitted .. "..."
+										break
+									end
+									fitted = candidate
+								end
+							end
+							ActiveLabel.Text = fitted
+						end
 					else
 						ActiveLabel.Text = tostring(Selected or "...")
 					end
@@ -4461,16 +4627,16 @@ function redzlib:MakeWindow(Configs)
 			Button.Activated:Connect(Minimize)
 			NoClickFrame.MouseButton1Down:Connect(function()
 				local mouse = PlayerMouse
-				local sh = SearchHolder.AbsolutePosition
-				local ss = SearchHolder.AbsoluteSize
-				if mouse.X >= sh.X and mouse.X <= sh.X + ss.X and mouse.Y >= sh.Y and mouse.Y <= sh.Y + ss.Y then return end
+				local df = DropFrame.AbsolutePosition
+				local ds = DropFrame.AbsoluteSize
+				if mouse.X >= df.X and mouse.X <= df.X + ds.X and mouse.Y >= df.Y and mouse.Y <= df.Y + ds.Y then return end
 				Disable()
 			end)
 			NoClickFrame.MouseButton1Click:Connect(function()
 				local mouse = PlayerMouse
-				local sh = SearchHolder.AbsolutePosition
-				local ss = SearchHolder.AbsoluteSize
-				if mouse.X >= sh.X and mouse.X <= sh.X + ss.X and mouse.Y >= sh.Y and mouse.Y <= sh.Y + ss.Y then return end
+				local df = DropFrame.AbsolutePosition
+				local ds = DropFrame.AbsoluteSize
+				if mouse.X >= df.X and mouse.X <= df.X + ds.X and mouse.Y >= df.Y and mouse.Y <= df.Y + ds.Y then return end
 				Disable()
 			end)
 			MainFrame:GetPropertyChangedSignal("Visible"):Connect(Disable)
@@ -4662,9 +4828,31 @@ function redzlib:MakeWindow(Configs)
 				return (v - Min) / (Max - Min)
 			end
 
+			local function GetDecimals(n)
+				local s = tostring(n)
+				local dot = s:find("%.")
+				if not dot then return 0 end
+				return #s - dot
+			end
+			local Decimals = GetDecimals(Increase)
+
+			local function RoundTo(val, inc)
+				local factor = 10 ^ Decimals
+				return math.floor(val / inc + 0.5) * inc
+			end
+
+			local function FormatValue(v)
+				if Decimals == 0 then
+					return tostring(math.floor(v))
+				end
+				return string.format("%." .. Decimals .. "f", v)
+			end
+
 			local function ScaleToValue(s)
 				local raw = s * (Max - Min) + Min
+				local factor = 10 ^ Decimals
 				local stepped = math.floor(raw / Increase + 0.5) * Increase
+				stepped = math.floor(stepped * factor + 0.5) / factor
 				return math.clamp(stepped, Min, Max)
 			end
 
@@ -4681,7 +4869,7 @@ function redzlib:MakeWindow(Configs)
 				currentValue = newVal
 				ApplyVisual(ValueToScale(newVal))
 				if not isFocused then
-					ValueInput.Text = tostring(newVal)
+					ValueInput.Text = FormatValue(newVal)
 				end
 				if not skipCallback then
 					SetFlag(Flag, newVal)
@@ -4726,13 +4914,12 @@ function redzlib:MakeWindow(Configs)
 				if num then
 					SetSlider(num)
 				else
-					ValueInput.Text = tostring(currentValue)
+					ValueInput.Text = FormatValue(currentValue)
 				end
 			end)
 
 			local loadedFromFlag = CheckFlag(Flag)
 			SetSlider(Default, not loadedFromFlag)
-			ValueInput.Text = tostring(Default)
 			SetFlag(Flag, Default)
 
 			local Slider = {}
