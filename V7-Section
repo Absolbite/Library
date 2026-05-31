@@ -2747,6 +2747,7 @@ function redzlib:MakeWindow(Configs)
 		Size = UDim2.new(0, 0, 0, 16),
 		AutomaticSize = "X",
 		BackgroundTransparency = 1,
+		ZIndex = 10,
 		Name = "TagHolder"
 	}, {
 		Create("UIListLayout", {
@@ -2853,19 +2854,21 @@ function redzlib:MakeWindow(Configs)
 	SetChildren(ButtonsFolder, { CloseButton, MinimizeButton })
 
 	local Minimized, SaveSize, WaitClick, MinimizeBtnCustomImage
+	local Window, FirstTab = {}, false
 
-	-- ÐÐ¾ÑÑÑÐ°Ð½Ð¾Ð²Ð¸ÑÑ ÐºÐ°ÑÑÐ¾Ð¼Ð½Ð¾Ðµ Ð¸Ð·Ð¾Ð±ÑÐ°Ð¶ÐµÐ½Ð¸Ðµ MinimizeButton Ð¸Ð· ÑÐ¾ÑÑÐ°Ð½ÐµÐ½Ð¸Ñ
+	-- ÐÐ¾ÑÑÑÐ°Ð½Ð¾Ð²Ð¸ÑÑ ÐºÐ°ÑÑÐ¾Ð¼Ð½ÑÑ ÐºÐ°ÑÑÐ¸Ð½ÐºÑ MinimizeButton Ð¸Ð· ÑÐ¾ÑÑÐ°Ð½ÐµÐ½Ð¸Ñ
 	do
-		local allSaved = redzlib.Save.MinimizeButtons or {}
-		for _, s in pairs(allSaved) do
-			if type(s) == "table" and s.image and s.image ~= "" then
-				MinimizeBtnCustomImage = s.image
-				MinimizeButton.Image = s.image
-				break
+		local saved = redzlib.Save and redzlib.Save.MinimizeButtons
+		if type(saved) == "table" then
+			for _, s in pairs(saved) do
+				if type(s) == "table" and type(s.image) == "string" and s.image ~= "" then
+					MinimizeBtnCustomImage = s.image
+					MinimizeButton.Image = s.image
+					break
+				end
 			end
 		end
 	end
-	local Window, FirstTab = {}, false
 
 	function Window:CloseBtn()
 		Window:Dialog({
@@ -3670,10 +3673,9 @@ function redzlib:MakeWindow(Configs)
 			if TClickable then
 				TagRoot = Create("ImageButton", TagHolder, {
 					Size = imgSize,
-					AnchorPoint = Vector2.new(0, 0.5),
-					Position = UDim2.new(0, 0, 0.5, 0),
 					Image = TImage,
 					BackgroundTransparency = 1,
+					ZIndex = 10,
 					Name = "Tag_" .. TTitle,
 				})
 				local ClickDelay = false
@@ -3690,10 +3692,9 @@ function redzlib:MakeWindow(Configs)
 			else
 				TagRoot = Create("ImageLabel", TagHolder, {
 					Size = imgSize,
-					AnchorPoint = Vector2.new(0, 0.5),
-					Position = UDim2.new(0, 0, 0.5, 0),
 					Image = TImage,
 					BackgroundTransparency = 1,
+					ZIndex = 10,
 					Name = "Tag_" .. TTitle,
 				})
 			end
