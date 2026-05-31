@@ -2258,6 +2258,8 @@ end
 
 local ScreenGui = Create("ScreenGui", CoreGui, {
 	Name = "smooth library",
+	DisplayOrder = 999,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 }, {
 	Create("UIScale", {
 		Scale = UIScale,
@@ -2356,6 +2358,7 @@ local Theme = redzlib.Themes[redzlib.Save.Theme]
 
 local CurrentTransparency = redzlib.Save.Transparency or 0.03
 local _MainFrame = nil
+local _BgOverlay = nil
 local _CurrentBgId = ""
 local _CurrentBgTransparency = 0
 
@@ -2561,14 +2564,8 @@ function redzlib:SetTheme(NewTheme)
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
 		elseif Val.Type == "Main" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
-			if _CurrentBgId ~= "" then
-				inst.Image = _CurrentBgId
-				inst.ImageTransparency = _CurrentBgTransparency
-				inst.ScaleType = Enum.ScaleType.Stretch
-			else
-				inst.Image = ""
-				inst.ImageTransparency = 0
-			end
+			inst.Image = ""
+			inst.ImageTransparency = 0
 		elseif Val.Type == "Stroke" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Stroke"] end
@@ -2614,13 +2611,16 @@ function redzlib:SetBackground(raw, transparency)
 	_CurrentBgId = id
 	_G.ImageThemeID = id
 	if _MainFrame then
-		local trans = transparency ~= nil and math.clamp(tonumber(transparency) or 0, 0, 1) or 0
-		_CurrentBgTransparency = trans
-		_MainFrame.Image = id
-		_MainFrame.ImageTransparency = trans
-		_MainFrame.ScaleType = Enum.ScaleType.Stretch
+		_MainFrame.Image = ""
 		local grad = _MainFrame:FindFirstChildOfClass("UIGradient")
 		if grad then grad.Enabled = false end
+	end
+	if _BgOverlay then
+		local trans = transparency ~= nil and math.clamp(tonumber(transparency) or 0, 0, 1) or 0
+		_CurrentBgTransparency = trans
+		_BgOverlay.Image = id
+		_BgOverlay.ImageTransparency = trans
+		_BgOverlay.Visible = true
 	end
 end
 
@@ -2628,13 +2628,8 @@ function redzlib:SetImageTransparency(value, normalize)
 	if normalize then value = value / 100 end
 	value = math.clamp(tonumber(value) or 0, 0, 1)
 	_CurrentBgTransparency = value
-	if _MainFrame then
-		if _CurrentBgId == "" then return end
-		_MainFrame.Image = _CurrentBgId
-		_MainFrame.ImageTransparency = value
-		_MainFrame.ScaleType = Enum.ScaleType.Stretch
-		local grad = _MainFrame:FindFirstChildOfClass("UIGradient")
-		if grad then grad.Enabled = false end
+	if _BgOverlay and _CurrentBgId ~= "" then
+		_BgOverlay.ImageTransparency = value
 	end
 end
 
@@ -2642,9 +2637,12 @@ function redzlib:ClearBackground()
 	_CurrentBgId = ""
 	_CurrentBgTransparency = 0
 	_G.ImageThemeID = nil
+	if _BgOverlay then
+		_BgOverlay.Image = ""
+		_BgOverlay.Visible = false
+	end
 	if _MainFrame then
 		_MainFrame.Image = ""
-		_MainFrame.ImageTransparency = 0
 		local grad = _MainFrame:FindFirstChildOfClass("UIGradient")
 		if grad then grad.Enabled = true end
 	end
@@ -2698,6 +2696,21 @@ function redzlib:MakeWindow(Configs)
 	}), "Main")
 
 	_MainFrame = MainFrame
+
+	-- ÐÐ²ÐµÑÐ»ÐµÐ¹ Ð¿Ð¾Ð²ÐµÑÑ Ð²ÑÐµÐ³Ð¾ ÑÐ¾Ð´ÐµÑÐ¶Ð¸Ð¼Ð¾Ð³Ð¾ GUI
+	local BgOverlay = Create("ImageLabel", MainFrame, {
+		Name = "BgOverlay",
+		Size = UDim2.fromScale(1, 1),
+		Position = UDim2.fromScale(0, 0),
+		BackgroundTransparency = 1,
+		Image = "",
+		ImageTransparency = 0,
+		ScaleType = Enum.ScaleType.Stretch,
+		ZIndex = 100,
+		Visible = false,
+	})
+	Make("Corner", BgOverlay)
+	_BgOverlay = BgOverlay
 
 	Make("Gradient", MainFrame, { Rotation = 45 })
 	MakeDrag(MainFrame)
@@ -3033,12 +3046,12 @@ function redzlib:MakeWindow(Configs)
 
 		MkLabel("IMAGE (rbxassetid / url)", 1)
 		local _, ImageInput = MkInput("rbxassetid://...", 2)
-		MkLabel("SIZE  (20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120)", 3)
+		MkLabel("SIZE  (20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120)", 3)
 		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
-		local _, SizeInput = MkInput("20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120", 5)
-		MkLabel("TRANSPARENCY  (0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0)", 6)
+		local _, SizeInput = MkInput("20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120", 5)
+		MkLabel("TRANSPARENCY  (0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0)", 6)
 		local TransTrack, TransFill, TransKnob = MkSlider(7)
-		local _, TransInput = MkInput("0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0", 8)
+		local _, TransInput = MkInput("0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0", 8)
 
 		local ClosePanel = Create("TextButton", Panel, {
 			Size = UDim2.fromOffset(14, 14),
