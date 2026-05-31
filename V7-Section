@@ -2898,7 +2898,7 @@ function redzlib:MakeWindow(Configs)
 
 		local BtnSize  = Saved.size  or Cfg.Size  or 40
 		local BtnTrans = Saved.trans ~= nil and Saved.trans or (Cfg.Transparency ~= nil and Cfg.Transparency or 0)
-		local BtnImage = NormalizeImageUrl(Cfg.Image or Saved.image or "rbxassetid://10734895698")
+		local BtnImage = NormalizeImageUrl(Cfg.Image or "rbxassetid://10734895698")
 		if Saved.posX and Saved.posY then
 			BtnPos = UDim2.fromOffset(Saved.posX, Saved.posY)
 		end
