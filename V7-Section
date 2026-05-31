@@ -2743,9 +2743,8 @@ function redzlib:MakeWindow(Configs)
 
 	local TagHolder = Create("Frame", TopBar, {
 		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -60, 0.5, 0),
-		Size = UDim2.new(0, 0, 0, 16),
-		AutomaticSize = "X",
+		Position = UDim2.new(1, -70, 0.5, 0),
+		Size = UDim2.new(0, 200, 0, 16),
 		BackgroundTransparency = 1,
 		Name = "TagHolder"
 	}, {
@@ -2892,54 +2891,45 @@ function redzlib:MakeWindow(Configs)
 		local BtnId     = Cfg.Flag or Cfg.Id or "default"
 		local BtnCorner = (Cfg.Corner and Cfg.Corner.CornerRadius) or UDim.new(0.2, 0)
 		local BtnPos    = Cfg.Position or UDim2.fromScale(0.05, 0.5)
+		local BtnSize   = Cfg.Size or 40
+		local BtnTrans  = Cfg.Transparency ~= nil and Cfg.Transparency or 0
+		local BtnImage  = Cfg.Image or "rbxassetid://10734895698"
 
+		-- ÐÐ¾ÑÐ¼Ð°Ð»Ð¸Ð·Ð°ÑÐ¸Ñ ID
+		BtnImage = tostring(BtnImage)
+		if BtnImage:match("^%d+$") then BtnImage = "rbxassetid://" .. BtnImage end
+
+		-- ÐÐ¾ÑÑÑÐ°Ð½Ð¾Ð²Ð¸ÑÑ ÑÐ¾Ð»ÑÐºÐ¾ Ð¿Ð¾Ð·Ð¸ÑÐ¸Ñ Ð¸Ð· ÑÐ¾ÑÑÐ°Ð½ÐµÐ½Ð¸Ñ
 		if not redzlib.Save.MinimizeButtons then redzlib.Save.MinimizeButtons = {} end
 		local Saved = redzlib.Save.MinimizeButtons[BtnId] or {}
-
-		local BtnSize  = Saved.size  or Cfg.Size  or 40
-		local BtnTrans = Saved.trans ~= nil and Saved.trans or (Cfg.Transparency ~= nil and Cfg.Transparency or 0)
-		local BtnImage = NormalizeImageUrl(Saved.image or Cfg.Image or "rbxassetid://10734895698")
 		if Saved.posX and Saved.posY then
 			BtnPos = UDim2.fromOffset(Saved.posX, Saved.posY)
 		end
 
-		local function SaveBtn()
-			redzlib.Save.MinimizeButtons[BtnId] = {
-				size  = BtnSize,
-				trans = BtnTrans,
-				image = BtnImage,
-				posX  = Button and Button.Position.X.Offset or nil,
-				posY  = Button and Button.Position.Y.Offset or nil,
-			}
-			SaveJson("smooth library.json", redzlib.Save)
-		end
-
 		local Button = MakeDrag(Create("ImageButton", ScreenGui, {
-			Size             = UDim2.fromOffset(BtnSize, BtnSize),
-			Position         = BtnPos,
-			BackgroundColor3 = Theme["Color Hub 2"],
+			Size                   = UDim2.fromOffset(BtnSize, BtnSize),
+			Position               = BtnPos,
+			BackgroundColor3       = Theme["Color Hub 2"],
 			BackgroundTransparency = BtnTrans,
-			Image            = BtnImage,
-			ImageColor3      = Theme["Color Theme"],
-			ScaleType        = Enum.ScaleType.Stretch,
-			AutoButtonColor  = false,
-			ZIndex           = 10,
-			Name             = "MinimizeFloatBtn_" .. BtnId
+			Image                  = BtnImage,
+			ScaleType              = Enum.ScaleType.Stretch,
+			AutoButtonColor        = false,
+			ZIndex                 = 10,
+			Name                   = "MinimizeFloatBtn_" .. BtnId
 		}))
 		local BtnCornerInst = Make("Corner", Button, BtnCorner)
 		Make("Stroke", Button)
 
 		Button.MouseEnter:Connect(function()
-			CreateTween({Button, "ImageColor3", Color3.fromRGB(255,255,255), 0.18})
 			CreateTween({Button, "BackgroundTransparency", math.max(BtnTrans - 0.15, 0), 0.18})
 		end)
 		Button.MouseLeave:Connect(function()
-			CreateTween({Button, "ImageColor3", Theme["Color Theme"], 0.18})
 			CreateTween({Button, "BackgroundTransparency", BtnTrans, 0.18})
 		end)
 
 		Button.Activated:Connect(Window.Minimize)
 
+		-- Ð¡Ð¾ÑÑÐ°Ð½ÑÑÑ ÑÐ¾Ð»ÑÐºÐ¾ Ð¿Ð¾Ð·Ð¸ÑÐ¸Ñ
 		local savePosDebounce = false
 		Button:GetPropertyChangedSignal("Position"):Connect(function()
 			if savePosDebounce then return end
@@ -2954,248 +2944,29 @@ function redzlib:MakeWindow(Configs)
 			end)
 		end)
 
-		local PanelOpen = false
-		local Panel = Create("Frame", ScreenGui, {
-			Size   = UDim2.fromOffset(220, 0),
-			BackgroundColor3 = Theme["Color Hub 2"],
-			BackgroundTransparency = 0,
-			ClipsDescendants = true,
-			Visible = false,
-			ZIndex  = 20,
-			Name    = "MinimizeBtnPanel_" .. BtnId
-		}, {
-			Make("Corner", nil, UDim.new(0, 8)),
-			Create("UIStroke", { Color = Theme["Color Stroke"], Thickness = 1 }),
-			Create("UIPadding", {
-				PaddingLeft   = UDim.new(0, 10),
-				PaddingRight  = UDim.new(0, 10),
-				PaddingTop    = UDim.new(0, 8),
-				PaddingBottom = UDim.new(0, 8)
-			}),
-			Create("UIListLayout", { Padding = UDim.new(0, 7), SortOrder = "LayoutOrder" })
-		})
-
-		local function MkLabel(text, order)
-			return Create("TextLabel", Panel, {
-				Size = UDim2.new(1, 0, 0, 14),
-				BackgroundTransparency = 1,
-				Font = Enum.Font.GothamBold,
-				TextSize = 9,
-				TextColor3 = Theme["Color Dark Text"],
-				TextXAlignment = "Left",
-				Text = text,
-				LayoutOrder = order
-			})
-		end
-
-		local function MkInput(placeholder, order)
-			local h = Create("Frame", Panel, {
-				Size = UDim2.new(1, 0, 0, 22),
-				BackgroundColor3 = Theme["Color Stroke"],
-				LayoutOrder = order
-			})
-			Make("Corner", h, UDim.new(0, 4))
-			local box = Create("TextBox", h, {
-				Size = UDim2.new(1, -10, 1, 0),
-				Position = UDim2.new(0, 5, 0, 0),
-				BackgroundTransparency = 1,
-				Font = Enum.Font.Gotham,
-				TextSize = 9,
-				TextColor3 = Theme["Color Text"],
-				PlaceholderText = placeholder,
-				ClearTextOnFocus = false,
-				Text = ""
-			})
-			return h, box
-		end
-
-		local function MkSlider(order)
-			local track = Create("Frame", Panel, {
-				Size = UDim2.new(1, 0, 0, 14),
-				BackgroundColor3 = Theme["Color Stroke"],
-				LayoutOrder = order
-			})
-			Make("Corner", track, UDim.new(0.5, 0))
-			local fill = Create("Frame", track, {
-				Size = UDim2.new(0, 0, 1, 0),
-				BackgroundColor3 = Theme["Color Theme"]
-			})
-			Make("Corner", fill, UDim.new(0.5, 0))
-			local knob = Create("Frame", track, {
-				Size = UDim2.new(0, 12, 0, 12),
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.new(0, 0, 0.5, 0),
-				BackgroundColor3 = Color3.fromRGB(255,255,255)
-			})
-			Make("Corner", knob, UDim.new(0.5, 0))
-			return track, fill, knob
-		end
-
-		MkLabel("IMAGE (rbxassetid / url)", 1)
-		local _, ImageInput = MkInput("rbxassetid://...", 2)
-		MkLabel("SIZE  (20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120)", 3)
-		local SizeTrack, SizeFill, SizeKnob = MkSlider(4)
-		local _, SizeInput = MkInput("20 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 120", 5)
-		MkLabel("TRANSPARENCY  (0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0)", 6)
-		local TransTrack, TransFill, TransKnob = MkSlider(7)
-		local _, TransInput = MkInput("0.0 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 1.0", 8)
-
-		local ClosePanel = Create("TextButton", Panel, {
-			Size = UDim2.fromOffset(14, 14),
-			Position = UDim2.new(1, -4, 0, 4),
-			AnchorPoint = Vector2.new(1, 0),
-			BackgroundTransparency = 1,
-			Font = Enum.Font.GothamBold,
-			TextSize = 12,
-			TextColor3 = Theme["Color Dark Text"],
-				Text = "X",
-			ZIndex = 25
-		})
-
-		local PanelList = Panel:FindFirstChildOfClass("UIListLayout")
-		local function UpdatePanelHeight()
-			Panel.Size = UDim2.fromOffset(220, PanelList.AbsoluteContentSize.Y + 16)
-		end
-		PanelList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdatePanelHeight)
-
-		local function CloseP()
-			Panel.Visible = false
-			PanelOpen = false
-		end
-
-		local function RepositionPanel()
-			local vp  = workspace.CurrentCamera.ViewportSize
-			local bp  = Button.AbsolutePosition
-			local bs  = Button.AbsoluteSize
-			local px  = bp.X + bs.X + 6
-			local py  = bp.Y
-			if px + 220 > vp.X then px = bp.X - 226 end
-			if py + Panel.Size.Y.Offset > vp.Y then py = vp.Y - Panel.Size.Y.Offset - 4 end
-			Panel.Position = UDim2.fromOffset(px, py)
-		end
-
-		local function OpenPanel()
-			UpdatePanelHeight()
-			RepositionPanel()
-			Panel.Visible = true
-			PanelOpen = true
-			SizeInput.Text  = tostring(BtnSize)
-			TransInput.Text = tostring(BtnTrans)
-			ImageInput.Text = BtnImage
-			local sc = math.clamp((BtnSize - 20) / 100, 0, 1)
-			SizeFill.Size  = UDim2.new(sc, 0, 1, 0)
-			SizeKnob.Position = UDim2.new(sc, 0, 0.5, 0)
-			local tc = math.clamp(BtnTrans, 0, 1)
-			TransFill.Size = UDim2.new(tc, 0, 1, 0)
-			TransKnob.Position = UDim2.new(tc, 0, 0.5, 0)
-		end
-
-		ClosePanel.Activated:Connect(CloseP)
-		Button.MouseButton2Down:Connect(function()
-			if PanelOpen then CloseP() else OpenPanel() end
-		end)
-
-		local function ApplyImage(raw)
-			local id = NormalizeImageUrl(raw)
-			if id == "" then return end
-			Button.Image = id
-			Button.ScaleType = Enum.ScaleType.Stretch
-			BtnImage = id
-			SaveBtn()
-		end
-
-		local function ApplySize(val)
-			val = math.clamp(math.floor(val + 0.5), 20, 120)
-			BtnSize = val
-			Button.Size = UDim2.fromOffset(val, val)
-			SizeInput.Text = tostring(val)
-			local sc = (val - 20) / 100
-			SizeFill.Size = UDim2.new(sc, 0, 1, 0)
-			SizeKnob.Position = UDim2.new(sc, 0, 0.5, 0)
-			SaveBtn()
-		end
-
-		local function ApplyTrans(val)
-			val = math.clamp(math.floor(val * 100 + 0.5) / 100, 0, 1)
-			BtnTrans = val
-			Button.BackgroundTransparency = val
-			TransInput.Text = tostring(val)
-			TransFill.Size = UDim2.new(val, 0, 1, 0)
-			TransKnob.Position = UDim2.new(val, 0, 0.5, 0)
-			SaveBtn()
-		end
-
-		ImageInput.FocusLost:Connect(function() ApplyImage(ImageInput.Text) end)
-		SizeInput.FocusLost:Connect(function()
-			local n = tonumber(SizeInput.Text)
-			if n then ApplySize(n) end
-		end)
-		TransInput.FocusLost:Connect(function()
-			local n = tonumber(TransInput.Text)
-			if n then ApplyTrans(n) end
-		end)
-
-		local function SliderDrag(track, fill, knob, onValue, minV, maxV)
-			track.InputBegan:Connect(function(inp)
-				if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
-					while UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-						RunService.Heartbeat:Wait()
-						local m = UserInputService:GetMouseLocation()
-						local rel = math.clamp((m.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
-						fill.Size = UDim2.new(rel, 0, 1, 0)
-						knob.Position = UDim2.new(rel, 0, 0.5, 0)
-						onValue(minV + rel * (maxV - minV))
-					end
-				end
-			end)
-		end
-
-		SliderDrag(SizeTrack, SizeFill, SizeKnob, ApplySize, 20, 120)
-		SliderDrag(TransTrack, TransFill, TransKnob, ApplyTrans, 0, 1)
-
-		UserInputService.InputBegan:Connect(function(inp)
-			if inp.UserInputType == Enum.UserInputType.MouseButton1 and PanelOpen then
-				local m  = UserInputService:GetMouseLocation()
-				local pp = Panel.AbsolutePosition
-				local ps = Panel.AbsoluteSize
-				local bp = Button.AbsolutePosition
-				local bs = Button.AbsoluteSize
-				local inPanel  = m.X >= pp.X and m.X <= pp.X+ps.X and m.Y >= pp.Y and m.Y <= pp.Y+ps.Y
-				local inButton = m.X >= bp.X and m.X <= bp.X+bs.X and m.Y >= bp.Y and m.Y <= bp.Y+bs.Y
-				if not inPanel and not inButton then CloseP() end
-			end
-		end)
-
-		if Cfg.Button then SetProps(Button, Cfg.Button) end
-
-		SaveBtn = function()
-			local p = Button.Position
-			redzlib.Save.MinimizeButtons[BtnId] = {
-				size  = BtnSize,
-				trans = BtnTrans,
-				image = BtnImage,
-				posX  = p.X.Offset ~= 0 and p.X.Offset or nil,
-				posY  = p.Y.Offset ~= 0 and p.Y.Offset or nil,
-			}
-			SaveJson("smooth library.json", redzlib.Save)
-		end
-
 		return {
-			Button        = Button,
-			Panel         = Panel,
-			SetImage      = function(_, img)  ApplyImage(img)         end,
-			SetSize       = function(_, sz)   ApplySize(sz)           end,
-			SetTrans      = function(_, tr)   ApplyTrans(tr)          end,
-			SetCorner     = function(_, udim) BtnCornerInst.CornerRadius = udim end,
-			OpenSettings  = OpenPanel,
-			CloseSettings = CloseP,
-			Destroy       = function(_)
-				CloseP()
+			Button    = Button,
+			SetImage  = function(_, img)
+				img = tostring(img)
+				if img:match("^%d+$") then img = "rbxassetid://" .. img end
+				Button.Image = img
+			end,
+			SetSize   = function(_, sz)
+				sz = math.clamp(math.floor(sz + 0.5), 20, 120)
+				Button.Size = UDim2.fromOffset(sz, sz)
+			end,
+			SetTrans  = function(_, tr)
+				Button.BackgroundTransparency = math.clamp(tr, 0, 1)
+			end,
+			SetCorner = function(_, udim)
+				BtnCornerInst.CornerRadius = udim
+			end,
+			Destroy   = function(_)
 				Button:Destroy()
-				Panel:Destroy()
 			end
 		}
 	end
+
 	function Window:Set(Val1, Val2)
 		if type(Val1) == "string" and type(Val2) == "string" then
 			Title.Text = Val1
@@ -3654,36 +3425,29 @@ function redzlib:MakeWindow(Configs)
 		local TagRoot
 
 		if isImageTag then
-			local imgSize = UDim2.new(0, 16, 0, 16)
+			-- Ð¡Ð¾Ð·Ð´Ð°ÑÐ¼ Ð½Ð°Ð¿ÑÑÐ¼ÑÑ ÑÐµÑÐµÐ· Instance.new Ð±ÐµÐ· UIListLayout-ÐºÐ¾Ð½ÑÐ»Ð¸ÐºÑÐ°
+			local inst = Instance.new(TClickable and "ImageButton" or "ImageLabel")
+			inst.Size = UDim2.fromOffset(16, 16)
+			inst.BackgroundTransparency = 1
+			inst.Image = TImage
+			inst.ScaleType = Enum.ScaleType.Stretch
+			inst.Name = "Tag_" .. TTitle
+			inst.Parent = TagHolder
+			TagRoot = inst
+
 			if TClickable then
-				TagRoot = Create("ImageButton", TagHolder, {
-					Size = imgSize,
-					AnchorPoint = Vector2.new(0, 0.5),
-					Position = UDim2.new(0, 0, 0.5, 0),
-					Image = TImage,
-					BackgroundTransparency = 1,
-					Name = "Tag_" .. TTitle,
-				})
+				inst.AutoButtonColor = false
 				local ClickDelay = false
-				TagRoot.Activated:Connect(function()
+				inst.Activated:Connect(function()
 					if ClickDelay then return end
 					ClickDelay = true
 					pcall(function() setclipboard(TLink or TImage) end)
-					CreateTween({TagRoot, "ImageTransparency", 0.5, 0.1})
+					CreateTween({inst, "ImageTransparency", 0.5, 0.1})
 					task.wait(0.15)
-					CreateTween({TagRoot, "ImageTransparency", 0, 0.1})
+					CreateTween({inst, "ImageTransparency", 0, 0.1})
 					task.wait(2)
 					ClickDelay = false
 				end)
-			else
-				TagRoot = Create("ImageLabel", TagHolder, {
-					Size = imgSize,
-					AnchorPoint = Vector2.new(0, 0.5),
-					Position = UDim2.new(0, 0, 0.5, 0),
-					Image = TImage,
-					BackgroundTransparency = 1,
-					Name = "Tag_" .. TTitle,
-				})
 			end
 		else
 			TagRoot = InsertTheme(Create("TextLabel", TagHolder, {
