@@ -2747,7 +2747,6 @@ function redzlib:MakeWindow(Configs)
 		Size = UDim2.new(0, 0, 0, 16),
 		AutomaticSize = "X",
 		BackgroundTransparency = 1,
-		ZIndex = 10,
 		Name = "TagHolder"
 	}, {
 		Create("UIListLayout", {
@@ -2856,20 +2855,6 @@ function redzlib:MakeWindow(Configs)
 	local Minimized, SaveSize, WaitClick, MinimizeBtnCustomImage
 	local Window, FirstTab = {}, false
 
-	-- ÐÐ¾ÑÑÑÐ°Ð½Ð¾Ð²Ð¸ÑÑ ÐºÐ°ÑÑÐ¾Ð¼Ð½ÑÑ ÐºÐ°ÑÑÐ¸Ð½ÐºÑ MinimizeButton Ð¸Ð· ÑÐ¾ÑÑÐ°Ð½ÐµÐ½Ð¸Ñ
-	do
-		local saved = redzlib.Save and redzlib.Save.MinimizeButtons
-		if type(saved) == "table" then
-			for _, s in pairs(saved) do
-				if type(s) == "table" and type(s.image) == "string" and s.image ~= "" then
-					MinimizeBtnCustomImage = s.image
-					MinimizeButton.Image = s.image
-					break
-				end
-			end
-		end
-	end
-
 	function Window:CloseBtn()
 		Window:Dialog({
 			Title = "Close",
@@ -2913,7 +2898,7 @@ function redzlib:MakeWindow(Configs)
 
 		local BtnSize  = Saved.size  or Cfg.Size  or 40
 		local BtnTrans = Saved.trans ~= nil and Saved.trans or (Cfg.Transparency ~= nil and Cfg.Transparency or 0)
-		local BtnImage = NormalizeImageUrl(Saved.image or Cfg.Image or "rbxassetid://10734895698")
+		local BtnImage = NormalizeImageUrl(Cfg.Image or Saved.image or "rbxassetid://10734895698")
 		if Saved.posX and Saved.posY then
 			BtnPos = UDim2.fromOffset(Saved.posX, Saved.posY)
 		end
@@ -3675,7 +3660,7 @@ function redzlib:MakeWindow(Configs)
 					Size = imgSize,
 					Image = TImage,
 					BackgroundTransparency = 1,
-					ZIndex = 10,
+					ScaleType = Enum.ScaleType.Stretch,
 					Name = "Tag_" .. TTitle,
 				})
 				local ClickDelay = false
@@ -3694,7 +3679,7 @@ function redzlib:MakeWindow(Configs)
 					Size = imgSize,
 					Image = TImage,
 					BackgroundTransparency = 1,
-					ZIndex = 10,
+					ScaleType = Enum.ScaleType.Stretch,
 					Name = "Tag_" .. TTitle,
 				})
 			end
