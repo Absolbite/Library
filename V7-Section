@@ -2835,11 +2835,11 @@ function redzlib:MakeWindow(Configs)
 		local BtnTrans  = Cfg.Transparency ~= nil and Cfg.Transparency or 0
 		local BtnImage  = Cfg.Image or "rbxassetid://10734895698"
 
-		-- ÃÂÃÂ¾ÃÂÃÂ¼ÃÂ°ÃÂ»ÃÂ¸ÃÂ·ÃÂ°ÃÂÃÂ¸ÃÂ ID
+		-- ÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ¼ÃÂÃÂ°ÃÂÃÂ»ÃÂÃÂ¸ÃÂÃÂ·ÃÂÃÂ°ÃÂÃÂÃÂÃÂ¸ÃÂÃÂ ID
 		BtnImage = tostring(BtnImage)
 		if BtnImage:match("^%d+$") then BtnImage = "rbxassetid://" .. BtnImage end
 
-		-- ÃÂÃÂ¾ÃÂÃÂÃÂÃÂ°ÃÂ½ÃÂ¾ÃÂ²ÃÂ¸ÃÂÃÂ ÃÂÃÂ¾ÃÂ»ÃÂÃÂºÃÂ¾ ÃÂ¿ÃÂ¾ÃÂ·ÃÂ¸ÃÂÃÂ¸ÃÂ ÃÂ¸ÃÂ· ÃÂÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂ
+		-- ÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ°ÃÂÃÂ½ÃÂÃÂ¾ÃÂÃÂ²ÃÂÃÂ¸ÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂ¾ÃÂÃÂ»ÃÂÃÂÃÂÃÂºÃÂÃÂ¾ ÃÂÃÂ¿ÃÂÃÂ¾ÃÂÃÂ·ÃÂÃÂ¸ÃÂÃÂÃÂÃÂ¸ÃÂÃÂ ÃÂÃÂ¸ÃÂÃÂ· ÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂÃÂÃÂ°ÃÂÃÂ½ÃÂÃÂµÃÂÃÂ½ÃÂÃÂ¸ÃÂÃÂ
 		if not redzlib.Save.MinimizeButtons then redzlib.Save.MinimizeButtons = {} end
 		local Saved = redzlib.Save.MinimizeButtons[BtnId] or {}
 		if Saved.posX and Saved.posY then
@@ -2869,7 +2869,7 @@ function redzlib:MakeWindow(Configs)
 
 		Button.Activated:Connect(Window.Minimize)
 
-		-- ÃÂ¡ÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂÃÂÃÂ ÃÂÃÂ¾ÃÂ»ÃÂÃÂºÃÂ¾ ÃÂ¿ÃÂ¾ÃÂ·ÃÂ¸ÃÂÃÂ¸ÃÂ
+		-- ÃÂÃÂ¡ÃÂÃÂ¾ÃÂÃÂÃÂÃÂÃÂÃÂ°ÃÂÃÂ½ÃÂÃÂÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂ¾ÃÂÃÂ»ÃÂÃÂÃÂÃÂºÃÂÃÂ¾ ÃÂÃÂ¿ÃÂÃÂ¾ÃÂÃÂ·ÃÂÃÂ¸ÃÂÃÂÃÂÃÂ¸ÃÂÃÂ
 		local savePosDebounce = false
 		Button:GetPropertyChangedSignal("Position"):Connect(function()
 			if savePosDebounce then return end
@@ -3335,20 +3335,50 @@ function redzlib:MakeWindow(Configs)
 	local ContainerList = {}
 	function Window:AddTag(Configs)
 		Configs = Configs or {}
-		local TTitle = Configs[1] or Configs.Title or Configs.Name or "Tag"
-		local TColor = Configs.Color or Theme["Color Dark Text"]
+		local TTitle     = Configs[1] or Configs.Title or Configs.Name or "Tag"
+		local TColor     = Configs.Color or Theme["Color Dark Text"]
+		local TLink      = Configs.Link or nil
+		local TClickable = Configs.Clickable == true and TLink ~= nil
 
-		local TagRoot = InsertTheme(Create("TextLabel", TagHolder, {
-			Size = UDim2.new(0, 0, 1, 0),
-			AutomaticSize = "X",
+		-- ÐÑÐ»Ð¸ ÑÐµÐ³ ÐºÐ»Ð¸ÐºÐ°Ð±ÐµÐ»ÑÐ½ÑÐ¹ â Ð¸ÑÐ¿Ð¾Ð»ÑÐ·ÑÐµÐ¼ TextButton, Ð¸Ð½Ð°ÑÐµ TextLabel
+		local TagClass = TClickable and "TextButton" or "TextLabel"
+
+		local TagRoot = InsertTheme(Create(TagClass, TagHolder, {
+			Size             = UDim2.new(0, 0, 1, 0),
+			AutomaticSize    = "X",
 			BackgroundTransparency = 1,
-			Font = Enum.Font.GothamMedium,
-			TextSize = 12,
-			TextYAlignment = Enum.TextYAlignment.Center,
-			TextColor3 = TColor,
-			Text = TTitle,
-			Name = "Tag_" .. TTitle,
+			Font             = Enum.Font.GothamMedium,
+			TextSize         = 12,
+			TextYAlignment   = Enum.TextYAlignment.Center,
+			TextColor3       = TColor,
+			Text             = TTitle,
+			Name             = "Tag_" .. TTitle,
+			AutoButtonColor  = false,
 		}), Configs.Color and "" or "DarkText")
+
+		-- ÐÐ¾Ð´ÑÑÑÐºÐ¸Ð²Ð°Ð½Ð¸Ðµ Ð¿ÑÐ¸ Ð½Ð°Ð²ÐµÐ´ÐµÐ½Ð¸Ð¸ Ð¸ ÐºÑÑÑÐ¾Ñ Ð´Ð»Ñ ÐºÐ»Ð¸ÐºÐ°Ð±ÐµÐ»ÑÐ½ÑÑ ÑÐµÐ³Ð¾Ð²
+		if TClickable then
+			TagRoot.MouseEnter:Connect(function()
+				CreateTween({TagRoot, "TextColor3", Theme["Color Theme"], 0.15})
+				UserInputService.MouseIconEnabled = true
+				PlayerMouse.Icon = "rbxasset://SystemCursors/PointingHand"
+			end)
+			TagRoot.MouseLeave:Connect(function()
+				CreateTween({TagRoot, "TextColor3", Configs.Color or Theme["Color Dark Text"], 0.15})
+				PlayerMouse.Icon = ""
+			end)
+			TagRoot.Activated:Connect(function()
+				-- ÐÑÐ°ÑÐºÐ°Ñ Ð²ÑÐ¿ÑÑÐºÐ° ÑÐ²ÐµÑÐ° Ð¿ÑÐ¸ ÐºÐ»Ð¸ÐºÐµ
+				CreateTween({TagRoot, "TextColor3", Color3.fromRGB(255, 255, 255), 0.05})
+				task.delay(0.1, function()
+					CreateTween({TagRoot, "TextColor3", Theme["Color Theme"], 0.15})
+				end)
+				-- ÐÐ¾Ð¿Ð¸ÑÑÐµÐ¼ ÑÑÑÐ»ÐºÑ Ð² Ð±ÑÑÐµÑ Ð¾Ð±Ð¼ÐµÐ½Ð° (setclipboard Ð´Ð¾ÑÑÑÐ¿ÐµÐ½ Ð² executor)
+				if setclipboard then
+					setclipboard(TLink)
+				end
+			end)
+		end
 
 		local Tag = {}
 		function Tag:SetTitle(New)
@@ -3356,8 +3386,12 @@ function redzlib:MakeWindow(Configs)
 		end
 		function Tag:SetColor(New)
 			if typeof(New) == "Color3" then
+				TColor = New
 				CreateTween({TagRoot, "TextColor3", New, 0.15})
 			end
+		end
+		function Tag:SetLink(New)
+			if type(New) == "string" then TLink = New end
 		end
 		function Tag:Visible(Bool)
 			TagRoot.Visible = Bool ~= nil and Bool or not TagRoot.Visible
