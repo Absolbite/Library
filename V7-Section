@@ -2741,21 +2741,23 @@ function redzlib:MakeWindow(Configs)
 		Name = "SubTitle"
 	}), "DarkText")
 
-	local TagHolder = Create("Frame", TopBar, {
-		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -70, 0.5, 0),
-		Size = UDim2.new(0, 200, 0, 16),
-		BackgroundTransparency = 1,
-		Name = "TagHolder"
-	}, {
-		Create("UIListLayout", {
-			FillDirection = Enum.FillDirection.Horizontal,
-			HorizontalAlignment = Enum.HorizontalAlignment.Right,
-			VerticalAlignment = Enum.VerticalAlignment.Center,
-			Padding = UDim.new(0, 7),
-			SortOrder = Enum.SortOrder.LayoutOrder
-		})
-	})
+	-- TagHolder: Ð´Ð¾ÑÐµÑÐ½Ð¸Ð¹ MainFrame Ð½Ð°Ð¿ÑÑÐ¼ÑÑ, ÑÐ¸ÐºÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½Ð°Ñ Ð¿Ð¾Ð·Ð¸ÑÐ¸Ñ ÑÐ¿ÑÐ°Ð²Ð° Ð¾Ñ SubTitle
+	local TagHolder = Instance.new("Frame")
+	TagHolder.Name = "TagHolder"
+	TagHolder.BackgroundTransparency = 1
+	TagHolder.Size = UDim2.fromOffset(200, 20)
+	TagHolder.Position = UDim2.new(1, -75, 0, 4)
+	TagHolder.AnchorPoint = Vector2.new(1, 0)
+	TagHolder.Parent = TopBar
+	TagHolder.ClipsDescendants = false
+
+	local _tagLayout = Instance.new("UIListLayout")
+	_tagLayout.FillDirection = Enum.FillDirection.Horizontal
+	_tagLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+	_tagLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+	_tagLayout.Padding = UDim.new(0, 6)
+	_tagLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	_tagLayout.Parent = TagHolder
 
 	local MainScroll = InsertTheme(Create("ScrollingFrame", Components, {
 		Size = UDim2.new(0, redzlib.Save.TabSize, 1, -TopBar.Size.Y.Offset),
@@ -2895,11 +2897,11 @@ function redzlib:MakeWindow(Configs)
 		local BtnTrans  = Cfg.Transparency ~= nil and Cfg.Transparency or 0
 		local BtnImage  = Cfg.Image or "rbxassetid://10734895698"
 
-		-- ÐÐ¾ÑÐ¼Ð°Ð»Ð¸Ð·Ð°ÑÐ¸Ñ ID
+		-- ÃÂÃÂ¾ÃÂÃÂ¼ÃÂ°ÃÂ»ÃÂ¸ÃÂ·ÃÂ°ÃÂÃÂ¸ÃÂ ID
 		BtnImage = tostring(BtnImage)
 		if BtnImage:match("^%d+$") then BtnImage = "rbxassetid://" .. BtnImage end
 
-		-- ÐÐ¾ÑÑÑÐ°Ð½Ð¾Ð²Ð¸ÑÑ ÑÐ¾Ð»ÑÐºÐ¾ Ð¿Ð¾Ð·Ð¸ÑÐ¸Ñ Ð¸Ð· ÑÐ¾ÑÑÐ°Ð½ÐµÐ½Ð¸Ñ
+		-- ÃÂÃÂ¾ÃÂÃÂÃÂÃÂ°ÃÂ½ÃÂ¾ÃÂ²ÃÂ¸ÃÂÃÂ ÃÂÃÂ¾ÃÂ»ÃÂÃÂºÃÂ¾ ÃÂ¿ÃÂ¾ÃÂ·ÃÂ¸ÃÂÃÂ¸ÃÂ ÃÂ¸ÃÂ· ÃÂÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂµÃÂ½ÃÂ¸ÃÂ
 		if not redzlib.Save.MinimizeButtons then redzlib.Save.MinimizeButtons = {} end
 		local Saved = redzlib.Save.MinimizeButtons[BtnId] or {}
 		if Saved.posX and Saved.posY then
@@ -2929,7 +2931,7 @@ function redzlib:MakeWindow(Configs)
 
 		Button.Activated:Connect(Window.Minimize)
 
-		-- Ð¡Ð¾ÑÑÐ°Ð½ÑÑÑ ÑÐ¾Ð»ÑÐºÐ¾ Ð¿Ð¾Ð·Ð¸ÑÐ¸Ñ
+		-- ÃÂ¡ÃÂ¾ÃÂÃÂÃÂ°ÃÂ½ÃÂÃÂÃÂ ÃÂÃÂ¾ÃÂ»ÃÂÃÂºÃÂ¾ ÃÂ¿ÃÂ¾ÃÂ·ÃÂ¸ÃÂÃÂ¸ÃÂ
 		local savePosDebounce = false
 		Button:GetPropertyChangedSignal("Position"):Connect(function()
 			if savePosDebounce then return end
@@ -3405,101 +3407,91 @@ function redzlib:MakeWindow(Configs)
 	local ContainerList = {}
 	function Window:AddTag(Configs)
 		Configs = Configs or {}
-		local TTitle     = Configs[1] or Configs.Title or Configs.Name or "Tag"
-		local TColor     = Configs.Color or Theme["Color Dark Text"]
-		local TImage     = Configs.Image or Configs[2] or nil
-		local TClickable = Configs.Clickable or false
-		local TLink      = Configs.Link or nil
+		local title     = Configs.Title or Configs.Name or Configs[1] or "Tag"
+		local image     = Configs.Image or Configs[2]
+		local clickable = Configs.Clickable or false
+		local link      = Configs.Link
+		local color     = Configs.Color
 
-		local function NormalizeAsset(img)
-			if not img then return nil end
-			img = tostring(img)
-			if img:match("^%d+$") then
-				return "rbxassetid://" .. img
+		if image then
+			image = tostring(image)
+			if not image:find("rbxassetid://") then
+				local d = image:match("%d+")
+				if d then image = "rbxassetid://" .. d end
 			end
-			return img
 		end
-		TImage = NormalizeAsset(TImage)
 
-		local isImageTag = TImage ~= nil
-		local TagRoot
+		local root
 
-		if isImageTag then
-			-- Ð¡Ð¾Ð·Ð´Ð°ÑÐ¼ Ð½Ð°Ð¿ÑÑÐ¼ÑÑ ÑÐµÑÐµÐ· Instance.new Ð±ÐµÐ· UIListLayout-ÐºÐ¾Ð½ÑÐ»Ð¸ÐºÑÐ°
-			local inst = Instance.new(TClickable and "ImageButton" or "ImageLabel")
-			inst.Size = UDim2.fromOffset(16, 16)
-			inst.BackgroundTransparency = 1
-			inst.Image = TImage
-			inst.ScaleType = Enum.ScaleType.Stretch
-			inst.Name = "Tag_" .. TTitle
-			inst.Parent = TagHolder
-			TagRoot = inst
+		if image then
+			if clickable then
+				root = Instance.new("ImageButton")
+				root.AutoButtonColor = false
+			else
+				root = Instance.new("ImageLabel")
+			end
+			root.Size = UDim2.fromOffset(16, 16)
+			root.BackgroundTransparency = 1
+			root.Image = image
+			root.ScaleType = Enum.ScaleType.Stretch
+			root.ImageTransparency = 0
+			root.Name = "Tag_" .. title
+			root.Parent = TagHolder
 
-			if TClickable then
-				inst.AutoButtonColor = false
-				local ClickDelay = false
-				inst.Activated:Connect(function()
-					if ClickDelay then return end
-					ClickDelay = true
-					pcall(function() setclipboard(TLink or TImage) end)
-					CreateTween({inst, "ImageTransparency", 0.5, 0.1})
-					task.wait(0.15)
-					CreateTween({inst, "ImageTransparency", 0, 0.1})
-					task.wait(2)
-					ClickDelay = false
+			if clickable then
+				local debounce = false
+				root.Activated:Connect(function()
+					if debounce then return end
+					debounce = true
+					pcall(setclipboard, link or image)
+					root.ImageTransparency = 0.5
+					task.wait(0.3)
+					root.ImageTransparency = 0
+					task.wait(1.7)
+					debounce = false
 				end)
 			end
 		else
-			TagRoot = InsertTheme(Create("TextLabel", TagHolder, {
-				Size = UDim2.new(0, 0, 1, 0),
-				AutomaticSize = "X",
-				BackgroundTransparency = 1,
-				Font = Enum.Font.GothamMedium,
-				TextSize = 12,
-				TextYAlignment = Enum.TextYAlignment.Center,
-				TextColor3 = TColor,
-				Text = TTitle,
-				Name = "Tag_" .. TTitle,
-			}), Configs.Color and "" or "DarkText")
+			root = Instance.new("TextLabel")
+			root.Size = UDim2.new(0, 0, 1, 0)
+			root.AutomaticSize = Enum.AutomaticSize.X
+			root.BackgroundTransparency = 1
+			root.Font = Enum.Font.GothamMedium
+			root.TextSize = 11
+			root.TextColor3 = color or Theme["Color Dark Text"]
+			root.TextYAlignment = Enum.TextYAlignment.Center
+			root.Text = title
+			root.Name = "Tag_" .. title
+			root.Parent = TagHolder
+			if not color then InsertTheme(root, "DarkText") end
 		end
 
 		local Tag = {}
-
-		function Tag:SetTitle(New)
-			if type(New) == "string" then
-				if isImageTag then
-					TagRoot.Name = "Tag_" .. New
-				else
-					TagRoot.Text = New
+		function Tag:SetImage(img)
+			if root:IsA("ImageLabel") or root:IsA("ImageButton") then
+				img = tostring(img)
+				if not img:find("rbxassetid://") then
+					local d = img:match("%d+")
+					if d then img = "rbxassetid://" .. d end
 				end
+				root.Image = img
 			end
 		end
-
-		function Tag:SetImage(New)
-			if isImageTag then
-				local url = NormalizeAsset(New)
-				if url then TagRoot.Image = url end
-			end
+		function Tag:SetColor(c)
+			if typeof(c) ~= "Color3" then return end
+			if root:IsA("TextLabel") then root.TextColor3 = c
+			else root.ImageColor3 = c end
 		end
-
-		function Tag:SetColor(New)
-			if typeof(New) == "Color3" then
-				if isImageTag then
-					CreateTween({TagRoot, "ImageColor3", New, 0.15})
-				else
-					CreateTween({TagRoot, "TextColor3", New, 0.15})
-				end
-			end
+		function Tag:SetTitle(t)
+			if root:IsA("TextLabel") then root.Text = t end
+			root.Name = "Tag_" .. t
 		end
-
-		function Tag:Visible(Bool)
-			TagRoot.Visible = Bool ~= nil and Bool or not TagRoot.Visible
+		function Tag:Visible(v)
+			root.Visible = v ~= nil and v or not root.Visible
 		end
-
 		function Tag:Destroy()
-			TagRoot:Destroy()
+			root:Destroy()
 		end
-
 		return Tag
 	end
 
