@@ -2597,7 +2597,7 @@ end
 
 function redzlib:MakeWindow(Configs)
 	local WTitle = Configs[1] or Configs.Name or Configs.Title or "smooth library"
-	local WMiniText = Configs[2] or Configs.SubTitle or "modified - ChDrago"
+	local WMiniText = Configs[2] or Configs.SubTitle or "by : redz9999"
 
 	local SaveFolder = Configs[3] or Configs.SaveFolder or false
 
@@ -2866,7 +2866,7 @@ function redzlib:MakeWindow(Configs)
 		end)
 
 		Button.Activated:Connect(Window.Minimize)
-
+  
 		local savePosDebounce = false
 		Button:GetPropertyChangedSignal("Position"):Connect(function()
 			if savePosDebounce then return end
@@ -3631,14 +3631,14 @@ function redzlib:MakeWindow(Configs)
 				Size             = UDim2.new(1, 0, 0, 1),
 				Position         = UDim2.new(0, 0, 0, 26),
 				BackgroundColor3 = Theme["Color Theme"],
-				BackgroundTransparency = 1,
+				BackgroundTransparency = 0,
 				Name             = "BottomLine"
 			}), "Theme")
-			Create("UIGradient", BottomLine, {
+			local BottomLineGradient = Create("UIGradient", BottomLine, {
 				Transparency = NumberSequence.new({
 					NumberSequenceKeypoint.new(0.00, 1),
-					NumberSequenceKeypoint.new(0.15, 0),
-					NumberSequenceKeypoint.new(0.85, 0),
+					NumberSequenceKeypoint.new(0.15, 1),
+					NumberSequenceKeypoint.new(0.85, 1),
 					NumberSequenceKeypoint.new(1.00, 1)
 				})
 			})
@@ -3694,7 +3694,21 @@ function redzlib:MakeWindow(Configs)
 			local function SetOpen(newState)
 				isOpen = newState
 				CreateTween({ ArrowLabel, "Rotation", isOpen and 90 or 0, 0.18 })
-				CreateTween({ BottomLine, "BackgroundTransparency", isOpen and 0 or 1, 0.15 })
+				if isOpen then
+					BottomLineGradient.Transparency = NumberSequence.new({
+						NumberSequenceKeypoint.new(0.00, 1),
+						NumberSequenceKeypoint.new(0.15, 0),
+						NumberSequenceKeypoint.new(0.85, 0),
+						NumberSequenceKeypoint.new(1.00, 1)
+					})
+				else
+					BottomLineGradient.Transparency = NumberSequence.new({
+						NumberSequenceKeypoint.new(0.00, 1),
+						NumberSequenceKeypoint.new(0.15, 1),
+						NumberSequenceKeypoint.new(0.85, 1),
+						NumberSequenceKeypoint.new(1.00, 1)
+					})
+				end
 				CreateTween({ HeaderBtn, "BackgroundTransparency", isOpen and 0.08 or 0, 0.15 })
 				if isOpen then
 					local h = CalcInnerHeight()
@@ -3724,7 +3738,7 @@ function redzlib:MakeWindow(Configs)
 				task.defer(function() SetOpen(true) end)
 			else
 				ArrowLabel.Rotation = 0
-				BottomLine.BackgroundTransparency = 1
+				-- gradient already fully transparent by default
 				SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
 				InnerContainer.Size = UDim2.new(1, 0, 0, 0)
 				isOpen = false
