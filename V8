@@ -2558,7 +2558,7 @@ function redzlib:SetTheme(NewTheme)
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
 		elseif Val.Type == "SectionFrame" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
-			inst.BackgroundTransparency = CurrentTransparency
+			inst.BackgroundTransparency = math.clamp(CurrentTransparency + 0.35, 0, 0.95)
 		elseif Val.Type == "Main" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
 			inst.Image = ""
@@ -2593,7 +2593,7 @@ function redzlib:SetTransparency(value)
 	table.foreach(redzlib.Instances, function(_,Val)
 		if not Val or not Val.Instance or not Val.Instance.Parent then return end
 		if Val.Type == "SectionFrame" then
-			Val.Instance.BackgroundTransparency = value
+			Val.Instance.BackgroundTransparency = math.clamp(value + 0.35, 0, 0.95)
 		end
 	end)
 end
@@ -3491,11 +3491,7 @@ function redzlib:MakeWindow(Configs)
 
 		TabSelect.MouseEnter:Connect(function()
 			CreateTween({LabelTitle, "TextTransparency", 0, 0.15})
-		end)
-		TabSelect.MouseLeave:Connect(function()
-			if TabSelect.BackgroundTransparency == 1 then
-				CreateTween({LabelTitle, "TextTransparency", 0.45, 0.15})
-			end
+			CreateTween({LabelIcon, "ImageTransparency", 0, 0.15})
 		end)
 
 		local Container = InsertTheme(Create("ScrollingFrame", {
@@ -3538,12 +3534,21 @@ function redzlib:MakeWindow(Configs)
 			end
 			Container.Size = UDim2.new(1, 0, 1, 0)
 			Container.Parent = Containers
+			TabSelect.BackgroundTransparency = 0.85
+			TabSelect.BackgroundColor3 = Theme["Color Theme"]
 			CreateTween({LabelTitle, "TextTransparency", 0, 0.25})
 			CreateTween({LabelIcon, "ImageTransparency", 0, 0.25})
 			CreateTween({Selected, "Size", UDim2.new(0, 3, 0.6, 0), 0.25})
 			CreateTween({Selected, "BackgroundTransparency", 0, 0.25})
 		end
 		TabSelect.Activated:Connect(Tabs)
+
+		TabSelect.MouseLeave:Connect(function()
+			if TabSelect.BackgroundTransparency == 1 then
+				CreateTween({LabelTitle, "TextTransparency", 0.45, 0.15})
+				CreateTween({LabelIcon, "ImageTransparency", 0.45, 0.15})
+			end
+		end)
 
 		FirstTab = true
 		local Tab = {}
@@ -3552,6 +3557,7 @@ function redzlib:MakeWindow(Configs)
 
 		function Tab:Disable()
 			Container.Parent = nil
+			TabSelect.BackgroundTransparency = 1
 			CreateTween({LabelTitle, "TextTransparency", 0.45, 0.35})
 			CreateTween({LabelIcon, "ImageTransparency", 0.45, 0.35})
 			CreateTween({Selected, "Size", UDim2.new(0, 3, 0, 0), 0.35})
@@ -3621,7 +3627,7 @@ function redzlib:MakeWindow(Configs)
 			local HeaderBtn = InsertTheme(Create("TextButton", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 23),
 				BackgroundColor3 = Theme["Color Hub 2"],
-				BackgroundTransparency = CurrentTransparency,
+				BackgroundTransparency = math.clamp(CurrentTransparency + 0.35, 0, 0.95),
 				Text             = "",
 				AutoButtonColor  = false,
 				Name             = "SectionHeader"
