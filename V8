@@ -1218,7 +1218,7 @@ local redzlib = {
 	},
 	Save = {
 		UISize = {550, 380},
-		TabSize = 100,
+		TabSize = 150,
 		TabHeight = 32,
 		Theme = "Darker",
 		Transparency = 0.03,
@@ -3667,12 +3667,6 @@ function redzlib:MakeWindow(Configs)
 				Name             = "SectionInner",
 				ClipsDescendants = false,
 			})
-			Create("UIPadding", InnerContainer, {
-				PaddingLeft  = UDim.new(0, 10),
-				PaddingRight = UDim.new(0, 10),
-				PaddingTop   = UDim.new(0, 5),
-				PaddingBottom = UDim.new(0, 5)
-			})
 			Create("UIListLayout", InnerContainer, {
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding   = UDim.new(0, 5)
@@ -3681,7 +3675,7 @@ function redzlib:MakeWindow(Configs)
 			local elementHeights = {}
 			local elementOrder   = {}
 			local GAP = 5
-			local PAD = 10
+			local PAD = 1
 
 			local function CalcInnerHeight()
 				local total = 0
