@@ -1218,7 +1218,7 @@ local redzlib = {
 	},
 	Save = {
 		UISize = {550, 380},
-		TabSize = 120,
+		TabSize = 100,
 		TabHeight = 32,
 		Theme = "Darker",
 		Transparency = 0.03,
@@ -3539,7 +3539,12 @@ function redzlib:MakeWindow(Configs)
 		end
 		TabSelect.Activated:Connect(Tabs)
 
-
+		if not FirstTab then
+			task.defer(function()
+				TabSelect.BackgroundTransparency = 0.85
+				TabSelect.BackgroundColor3 = Theme["Color Theme"]
+			end)
+		end
 
 		FirstTab = true
 		local Tab = {}
