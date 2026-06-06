@@ -1218,7 +1218,7 @@ local redzlib = {
 	},
 	Save = {
 		UISize = {550, 380},
-		TabSize = 150,
+		TabSize = 120,
 		TabHeight = 32,
 		Theme = "Darker",
 		Transparency = 0.03,
@@ -2556,6 +2556,9 @@ function redzlib:SetTheme(NewTheme)
 			end
 		elseif Val.Type == "Frame" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
+		elseif Val.Type == "SectionFrame" then
+			inst.BackgroundColor3 = Theme["Color Hub 2"]
+			inst.BackgroundTransparency = CurrentTransparency
 		elseif Val.Type == "Main" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
 			inst.Image = ""
@@ -2587,6 +2590,12 @@ function redzlib:SetTransparency(value)
 	if _MainFrame then
 		_MainFrame.BackgroundTransparency = value
 	end
+	table.foreach(redzlib.Instances, function(_,Val)
+		if not Val or not Val.Instance or not Val.Instance.Parent then return end
+		if Val.Type == "SectionFrame" then
+			Val.Instance.BackgroundTransparency = value
+		end
+	end)
 end
 
 
@@ -3612,11 +3621,11 @@ function redzlib:MakeWindow(Configs)
 			local HeaderBtn = InsertTheme(Create("TextButton", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 23),
 				BackgroundColor3 = Theme["Color Hub 2"],
-				BackgroundTransparency = 0,
+				BackgroundTransparency = CurrentTransparency,
 				Text             = "",
 				AutoButtonColor  = false,
 				Name             = "SectionHeader"
-			}), "Frame")
+			}), "SectionFrame")
 			Make("Corner", HeaderBtn, UDim.new(0, 7))
 			Make("Stroke", HeaderBtn)
 
