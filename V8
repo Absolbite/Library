@@ -2837,12 +2837,16 @@ function redzlib:MakeWindow(Configs)
 			CreateTween({MainFrame, "Size", SaveSize, 0.25, true})
 			ControlSize1.Visible = true
 			ControlSize2.Visible = true
+			TopBarDivider.Visible = true
+			SideDivider.Visible = true
 			Minimized = false
 		else
 			MinimizeButton.Image = MinimizeBtnCustomImage or "rbxassetid://10734924532"
 			SaveSize = MainFrame.Size
 			ControlSize1.Visible = false
 			ControlSize2.Visible = false
+			TopBarDivider.Visible = false
+			SideDivider.Visible = false
 			CreateTween({MainFrame, "Size", UDim2.fromOffset(MainFrame.Size.X.Offset, 28), 0.25, true})
 			Minimized = true
 		end
