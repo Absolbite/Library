@@ -3669,14 +3669,25 @@ function redzlib:MakeWindow(Configs)
 			Make("Corner", HeaderBtn, UDim.new(0, 4))
 			Make("Stroke", HeaderBtn)
 
-			local SectionDivider = InsertTheme(Create("Frame", SectionWrapper, {
-				Size             = UDim2.new(1, -24, 0, 1),
-				Position         = UDim2.new(0, 12, 0, 23),
-				BackgroundColor3 = Theme["Color Stroke"],
+			local SectionDivider = Create("Frame", SectionWrapper, {
+				Size             = UDim2.new(1, 0, 0, 1),
+				Position         = UDim2.new(0, 0, 0, 27),
 				BorderSizePixel  = 0,
 				Visible          = false,
 				Name             = "SectionDivider"
-			}), "Stroke")
+			})
+			Create("UIGradient", SectionDivider, {
+				Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0.00, Theme["Color Stroke"]),
+					ColorSequenceKeypoint.new(1.00, Theme["Color Stroke"])
+				}),
+				Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0.00, 0.85),
+					NumberSequenceKeypoint.new(0.15, 0),
+					NumberSequenceKeypoint.new(0.85, 0),
+					NumberSequenceKeypoint.new(1.00, 0.85)
+				})
+			})
 
 			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
 				Font             = Enum.Font.GothamBold,
@@ -3766,7 +3777,7 @@ function redzlib:MakeWindow(Configs)
 					local h = CalcInnerHeight()
 					InnerContainer.Size = UDim2.new(1, 0, 0, 0)
 					ContentClip.Size = UDim2.new(1, 0, 0, 0)
-					SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
+					SectionWrapper.Size = UDim2.new(1, 0, 0, 28)
 					CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, h), 0.2 })
 					CreateTween({ ContentClip, "Size", UDim2.new(1, 0, 0, h + 7), 0.2 })
 					CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 23 + h + 7), 0.2 })
