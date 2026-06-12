@@ -3666,8 +3666,16 @@ function redzlib:MakeWindow(Configs)
 				AutoButtonColor  = false,
 				Name             = "SectionHeader"
 			}), "SectionFrame")
-			Make("Corner", HeaderBtn, UDim.new(0, 7))
+			Make("Corner", HeaderBtn, UDim.new(0, 4))
 			Make("Stroke", HeaderBtn)
+
+			local SectionDivider = InsertTheme(Create("Frame", ContentClip, {
+				Size             = UDim2.new(1, -24, 0, 1),
+				Position         = UDim2.new(0, 12, 0, 0),
+				BackgroundColor3 = Theme["Color Stroke"],
+				BorderSizePixel  = 0,
+				Name             = "SectionDivider"
+			}), "Stroke")
 
 			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
 				Font             = Enum.Font.GothamBold,
