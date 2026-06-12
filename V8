@@ -2652,6 +2652,13 @@ function redzlib:MakeWindow(Configs)
 
 	local MainCorner = Make("Corner", MainFrame)
 
+	local MainStroke = Create("UIStroke", MainFrame, {
+		Color = Theme["Color Stroke"],
+		Thickness = 1.5,
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	})
+	InsertTheme(MainStroke, "Stroke")
+
 	local Components = Create("Folder", MainFrame, { Name = "Components" })
 	local DropdownHolder = Create("Folder", ScreenGui, { Name = "Dropdown" })
 
@@ -2739,15 +2746,15 @@ function redzlib:MakeWindow(Configs)
 
 	local TopBarDivider = InsertTheme(Create("Frame", Components, {
 		Size = UDim2.new(1, 0, 0, 1),
-		Position = UDim2.new(0, 0, 0, TopBar.Size.Y.Offset),
+		Position = UDim2.new(0, 0, 0, TopBar.Size.Y.Offset + 4),
 		BackgroundColor3 = Theme["Color Stroke"],
 		BorderSizePixel = 0,
 		Name = "TopBarDivider"
 	}), "Stroke")
 
 	local SideDivider = InsertTheme(Create("Frame", Components, {
-		Size = UDim2.new(0, 1, 1, -TopBar.Size.Y.Offset),
-		Position = UDim2.new(0, MainScroll.Size.X.Offset, 0, TopBar.Size.Y.Offset),
+		Size = UDim2.new(0, 1, 1, -(TopBar.Size.Y.Offset + 4)),
+		Position = UDim2.new(0, MainScroll.Size.X.Offset, 0, TopBar.Size.Y.Offset + 4),
 		BackgroundColor3 = Theme["Color Stroke"],
 		BorderSizePixel = 0,
 		Name = "SideDivider"
@@ -2777,7 +2784,7 @@ function redzlib:MakeWindow(Configs)
 		MainScroll.Size = UDim2.new(0, ControlSize2.Position.X.Offset, 1, -TopBar.Size.Y.Offset)
 		Containers.Size = UDim2.new(1, -MainScroll.Size.X.Offset, 1, -TopBar.Size.Y.Offset)
 		MainFrame.Size = ControlSize1.Position
-		SideDivider.Position = UDim2.new(0, MainScroll.Size.X.Offset, 0, TopBar.Size.Y.Offset)
+		SideDivider.Position = UDim2.new(0, MainScroll.Size.X.Offset, 0, TopBar.Size.Y.Offset + 4)
 	end
 
 	ControlSize1:GetPropertyChangedSignal("Position"):Connect(ControlSize)
@@ -2837,16 +2844,12 @@ function redzlib:MakeWindow(Configs)
 			CreateTween({MainFrame, "Size", SaveSize, 0.25, true})
 			ControlSize1.Visible = true
 			ControlSize2.Visible = true
-			TopBarDivider.Visible = true
-			SideDivider.Visible = true
 			Minimized = false
 		else
 			MinimizeButton.Image = MinimizeBtnCustomImage or "rbxassetid://10734924532"
 			SaveSize = MainFrame.Size
 			ControlSize1.Visible = false
 			ControlSize2.Visible = false
-			TopBarDivider.Visible = false
-			SideDivider.Visible = false
 			CreateTween({MainFrame, "Size", UDim2.fromOffset(MainFrame.Size.X.Offset, 28), 0.25, true})
 			Minimized = true
 		end
