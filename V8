@@ -2412,6 +2412,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 
 	local Frame = Make("Button", Instance, {
 		Size = UDim2.new(1, -2, 0, frameH),
+		Position = UDim2.new(0, 1, 0, 0),
 		AutomaticSize = "None",
 		Name = "Option"
 	})
@@ -3533,8 +3534,8 @@ function redzlib:MakeWindow(Configs)
 			Name = ("Container %i [ %s ]"):format(#ContainerList + 1, TName)
 		}, {
 			Create("UIPadding", {
-				PaddingLeft = UDim.new(0, 8),
-				PaddingRight = UDim.new(0, 8),
+				PaddingLeft = UDim.new(0, 6),
+				PaddingRight = UDim.new(0, 6),
 				PaddingTop = UDim.new(0, 8),
 				PaddingBottom = UDim.new(0, 8)
 			}),
@@ -3644,12 +3645,21 @@ function redzlib:MakeWindow(Configs)
 			local SectionWrapper = Create("Frame", Container, {
 				Size             = UDim2.new(1, 0, 0, 23),
 				BackgroundTransparency = 1,
-				ClipsDescendants = true,
+				ClipsDescendants = false,
 				Name             = "Option"
 			})
 
+			local ContentClip = Create("Frame", SectionWrapper, {
+				Size             = UDim2.new(1, 0, 1, -23),
+				Position         = UDim2.new(0, 0, 0, 23),
+				BackgroundTransparency = 1,
+				ClipsDescendants = true,
+				Name             = "ContentClip"
+			})
+
 			local HeaderBtn = InsertTheme(Create("TextButton", SectionWrapper, {
-				Size             = UDim2.new(1, -2, 0, 23),
+				Size             = UDim2.new(1, -2, 0, 21),
+				Position         = UDim2.new(0, 1, 0, 1),
 				BackgroundColor3 = Theme["Color Hub 2"],
 				BackgroundTransparency = math.clamp(CurrentTransparency + 0.35, 0, 0.95),
 				Text             = "",
@@ -3684,9 +3694,9 @@ function redzlib:MakeWindow(Configs)
 			}), "DarkText")
 
 
-			local InnerContainer = Create("Frame", SectionWrapper, {
+			local InnerContainer = Create("Frame", ContentClip, {
 				Size             = UDim2.new(1, 0, 0, 0),
-				Position         = UDim2.new(0, 0, 0, 30),
+				Position         = UDim2.new(0, 0, 0, 7),
 				BackgroundTransparency = 1,
 				Name             = "SectionInner",
 				ClipsDescendants = false,
@@ -3725,9 +3735,11 @@ function redzlib:MakeWindow(Configs)
 				if isOpen then
 					local h = CalcInnerHeight()
 					InnerContainer.Size = UDim2.new(1, 0, 0, h)
-					SectionWrapper.Size = UDim2.new(1, 0, 0, 30 + h)
+					ContentClip.Size = UDim2.new(1, 0, 0, h + 7)
+					SectionWrapper.Size = UDim2.new(1, 0, 0, 23 + h + 7)
 				else
 					InnerContainer.Size = UDim2.new(1, 0, 0, 0)
+					ContentClip.Size = UDim2.new(1, 0, 0, 0)
 					SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
 				end
 			end
@@ -3743,11 +3755,14 @@ function redzlib:MakeWindow(Configs)
 				if isOpen then
 					local h = CalcInnerHeight()
 					InnerContainer.Size = UDim2.new(1, 0, 0, 0)
+					ContentClip.Size = UDim2.new(1, 0, 0, 0)
 					SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
 					CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, h), 0.2 })
-					CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 30 + h), 0.2 })
+					CreateTween({ ContentClip, "Size", UDim2.new(1, 0, 0, h + 7), 0.2 })
+					CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 23 + h + 7), 0.2 })
 				else
 					CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.2 })
+					CreateTween({ ContentClip, "Size", UDim2.new(1, 0, 0, 0), 0.2 })
 					CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 23), 0.2 })
 				end
 			end
