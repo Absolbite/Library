@@ -1220,7 +1220,7 @@ local redzlib = {
 		UISize = {550, 380},
 		TabSize = 110,
 		TabHeight = 32,
-		Theme = "Monochrome",
+		Theme = "Darker",
 		Transparency = 0.03,
 		MinimizeButtons = {}
 	},
@@ -2354,17 +2354,6 @@ local function BrightenColor(c, amount)
 	)
 end
 
-local function ElementStrokeColor()
-	local t = Theme["Color Theme"]
-	local s = Theme["Color Stroke"]
-	local mix = 0.55
-	return Color3.fromRGB(
-		math.clamp(t.R * 255 * mix + s.R * 255 * (1 - mix), 0, 255),
-		math.clamp(t.G * 255 * mix + s.G * 255 * (1 - mix), 0, 255),
-		math.clamp(t.B * 255 * mix + s.B * 255 * (1 - mix), 0, 255)
-	)
-end
-
 local function SaveJson(FileName, save)
 	if writefile then
 		local json = HttpService:JSONEncode(save)
@@ -2406,7 +2395,7 @@ end)
 AddEle("ElementStroke", function(parent, props, ...)
 	local args = {...}
 	local New = InsertTheme(SetProps(Create("UIStroke", parent, {
-		Color = args[1] or ElementStrokeColor(),
+		Color = args[1] or BrightenColor(Theme["Color Stroke"], 55),
 		Thickness = args[2] or 1,
 		ApplyStrokeMode = "Border"
 	}), props), "ElementStroke")
@@ -2596,7 +2585,7 @@ function redzlib:SetTheme(NewTheme)
 			if prop ~= "" then inst[prop] = Theme["Color Stroke"] end
 		elseif Val.Type == "ElementStroke" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = ElementStrokeColor() end
+			if prop ~= "" then inst[prop] = BrightenColor(Theme["Color Stroke"], 55) end
 		elseif Val.Type == "Theme" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
@@ -2687,7 +2676,7 @@ function redzlib:MakeWindow(Configs)
 	local MainCorner = Make("Corner", MainFrame)
 
 	local MainStroke = InsertTheme(Create("UIStroke", MainFrame, {
-		Color = ElementStrokeColor(),
+		Color = BrightenColor(Theme["Color Stroke"], 55),
 		Thickness = 1.5,
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	}), "ElementStroke")
@@ -3731,8 +3720,8 @@ function redzlib:MakeWindow(Configs)
 			})
 
 			local ClipFrame = Create("Frame", SectionWrapper, {
-				Size             = UDim2.new(1, 4, 0, 0),
-				Position         = UDim2.new(0, -2, 0, 25),
+				Size             = UDim2.new(1, 0, 0, 0),
+				Position         = UDim2.new(0, 0, 0, 25),
 				BackgroundTransparency = 1,
 				ClipsDescendants = true,
 				Name             = "SectionClip",
@@ -3750,17 +3739,8 @@ function redzlib:MakeWindow(Configs)
 				Padding   = UDim.new(0, 5)
 			})
 			Create("UIPadding", InnerContainer, {
-				PaddingLeft   = UDim.new(0, 2),
-				PaddingRight  = UDim.new(0, 2),
 				PaddingTop    = UDim.new(0, 5),
-				PaddingBottom = UDim.new(0, 3),
-			})
-
-			local BottomGuard = Create("Frame", InnerContainer, {
-				Size             = UDim2.new(1, 0, 0, 2),
-				BackgroundTransparency = 1,
-				Name             = "BottomGuard",
-				LayoutOrder      = 999999,
+				PaddingBottom = UDim.new(0, 5),
 			})
 
 			local elementHeights = {}
