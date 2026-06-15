@@ -1220,7 +1220,7 @@ local redzlib = {
 		UISize = {550, 380},
 		TabSize = 110,
 		TabHeight = 32,
-		Theme = "Monochrome",
+		Theme = "Darker",
 		Transparency = 0.03,
 		MinimizeButtons = {}
 	},
@@ -2675,12 +2675,11 @@ function redzlib:MakeWindow(Configs)
 
 	local MainCorner = Make("Corner", MainFrame)
 
-	local MainStroke = Create("UIStroke", MainFrame, {
-		Color = Theme["Color Stroke"],
+	local MainStroke = InsertTheme(Create("UIStroke", MainFrame, {
+		Color = BrightenColor(Theme["Color Stroke"], 55),
 		Thickness = 1.5,
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	})
-	InsertTheme(MainStroke, "Stroke")
+	}), "ElementStroke")
 
 	local Components = Create("Folder", MainFrame, { Name = "Components" })
 	local DropdownHolder = Create("Folder", ScreenGui, { Name = "Dropdown" })
@@ -3554,10 +3553,10 @@ function redzlib:MakeWindow(Configs)
 			Name = ("Container %i [ %s ]"):format(#ContainerList + 1, TName)
 		}, {
 			Create("UIPadding", {
-				PaddingLeft = UDim.new(0, 5),
-				PaddingRight = UDim.new(0, 11),
-				PaddingTop = UDim.new(0, 11),
-				PaddingBottom = UDim.new(0, 11)
+				PaddingLeft = UDim.new(0, 6),
+				PaddingRight = UDim.new(0, 6),
+				PaddingTop = UDim.new(0, 6),
+				PaddingBottom = UDim.new(0, 6)
 			}),
 			Create("UIListLayout", { Padding = UDim.new(0, 5) })
 		}), "ScrollBar")
@@ -3665,7 +3664,7 @@ function redzlib:MakeWindow(Configs)
 			local SectionWrapper = Create("Frame", Container, {
 				Size             = UDim2.new(1, 0, 0, 23),
 				BackgroundTransparency = 1,
-				ClipsDescendants = true,
+				ClipsDescendants = false,
 				Name             = "Option"
 			})
 
@@ -3678,7 +3677,7 @@ function redzlib:MakeWindow(Configs)
 				Name             = "SectionHeader"
 			}), "SectionFrame")
 			Make("Corner", HeaderBtn, UDim.new(0, 7))
-			Make("Stroke", HeaderBtn)
+			Make("ElementStroke", HeaderBtn)
 
 			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
 				Font             = Enum.Font.GothamBold,
@@ -3706,7 +3705,7 @@ function redzlib:MakeWindow(Configs)
 
 			local BottomLine = InsertTheme(Create("Frame", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 1),
-				Position         = UDim2.new(0, 0, 0, 26),
+				Position         = UDim2.new(0, 0, 0, 24),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 1,
 				Name             = "BottomLine"
@@ -3722,7 +3721,7 @@ function redzlib:MakeWindow(Configs)
 
 			local InnerContainer = Create("Frame", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 0),
-				Position         = UDim2.new(0, 0, 0, 30),
+				Position         = UDim2.new(0, 0, 0, 29),
 				BackgroundTransparency = 1,
 				Name             = "SectionInner",
 				ClipsDescendants = false,
@@ -3731,11 +3730,15 @@ function redzlib:MakeWindow(Configs)
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding   = UDim.new(0, 5)
 			})
+			Create("UIPadding", InnerContainer, {
+				PaddingTop    = UDim.new(0, 5),
+				PaddingBottom = UDim.new(0, 0),
+			})
 
 			local elementHeights = {}
 			local elementOrder   = {}
 			local GAP = 5
-			local PAD = 1
+			local PAD_TOP = 5
 
 			local function CalcInnerHeight()
 				local total = 0
@@ -3747,7 +3750,7 @@ function redzlib:MakeWindow(Configs)
 					end
 				end
 				if count == 0 then return 0 end
-				return total + (count - 1) * GAP + PAD
+				return total + (count - 1) * GAP + PAD_TOP
 			end
 
 			local isOpen = false
@@ -3756,7 +3759,7 @@ function redzlib:MakeWindow(Configs)
 				if isOpen then
 					local h = CalcInnerHeight()
 					InnerContainer.Size = UDim2.new(1, 0, 0, h)
-					SectionWrapper.Size = UDim2.new(1, 0, 0, 30 + h)
+					SectionWrapper.Size = UDim2.new(1, 0, 0, 29 + h)
 				else
 					InnerContainer.Size = UDim2.new(1, 0, 0, 0)
 					SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
@@ -3777,7 +3780,7 @@ function redzlib:MakeWindow(Configs)
 					InnerContainer.Size = UDim2.new(1, 0, 0, 0)
 					SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
 					CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, h), 0.2 })
-					CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 30 + h), 0.2 })
+					CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 29 + h), 0.2 })
 				else
 					CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.2 })
 					CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 23), 0.2 })
