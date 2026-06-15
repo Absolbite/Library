@@ -1220,7 +1220,7 @@ local redzlib = {
 		UISize = {550, 380},
 		TabSize = 110,
 		TabHeight = 32,
-		Theme = "Darker",
+		Theme = "Monochrome",
 		Transparency = 0.03,
 		MinimizeButtons = {}
 	},
@@ -2345,6 +2345,15 @@ local function VerifyTheme(Theme)
 	end
 end
 
+local function BrightenColor(c, amount)
+	amount = amount or 55
+	return Color3.fromRGB(
+		math.clamp(c.R * 255 + amount, 0, 255),
+		math.clamp(c.G * 255 + amount, 0, 255),
+		math.clamp(c.B * 255 + amount, 0, 255)
+	)
+end
+
 local function SaveJson(FileName, save)
 	if writefile then
 		local json = HttpService:JSONEncode(save)
@@ -2383,6 +2392,16 @@ AddEle("Stroke", function(parent, props, ...)
 	return New
 end)
 
+AddEle("ElementStroke", function(parent, props, ...)
+	local args = {...}
+	local New = InsertTheme(SetProps(Create("UIStroke", parent, {
+		Color = args[1] or BrightenColor(Theme["Color Stroke"], 55),
+		Thickness = args[2] or 1,
+		ApplyStrokeMode = "Border"
+	}), props), "ElementStroke")
+	return New
+end)
+
 AddEle("Button", function(parent, props, ...)
 	local New = InsertTheme(SetProps(Create("TextButton", parent, {
 		Text = "",
@@ -2416,6 +2435,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		Name = "Option"
 	})
 	Make("Corner", Frame, UDim.new(0, 6))
+	Make("ElementStroke", Frame)
 
 	local TitleL = InsertTheme(Create("TextLabel", Frame, {
 		Font = Enum.Font.GothamMedium,
@@ -2563,6 +2583,9 @@ function redzlib:SetTheme(NewTheme)
 		elseif Val.Type == "Stroke" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Stroke"] end
+		elseif Val.Type == "ElementStroke" then
+			local prop = GetColor(inst)
+			if prop ~= "" then inst[prop] = BrightenColor(Theme["Color Stroke"], 55) end
 		elseif Val.Type == "Theme" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
@@ -3531,10 +3554,10 @@ function redzlib:MakeWindow(Configs)
 			Name = ("Container %i [ %s ]"):format(#ContainerList + 1, TName)
 		}, {
 			Create("UIPadding", {
-				PaddingLeft = UDim.new(0, 4),
-				PaddingRight = UDim.new(0, 10),
-				PaddingTop = UDim.new(0, 10),
-				PaddingBottom = UDim.new(0, 10)
+				PaddingLeft = UDim.new(0, 5),
+				PaddingRight = UDim.new(0, 11),
+				PaddingTop = UDim.new(0, 11),
+				PaddingBottom = UDim.new(0, 11)
 			}),
 			Create("UIListLayout", { Padding = UDim.new(0, 5) })
 		}), "ScrollBar")
@@ -4785,16 +4808,16 @@ function redzlib:MakeWindow(Configs)
 				BackgroundTransparency = 1
 			})
 
-			local InviteLabel = Create("TextLabel", InviteHolder, {
+			local InviteLabel = InsertTheme(Create("TextLabel", InviteHolder, {
 				Size = UDim2.new(1, 0, 0, 15),
 				Position = UDim2.new(0, 5),
-				TextColor3 = Color3.fromRGB(40, 150, 255),
+				TextColor3 = Theme["Color Theme"],
 				Font = Enum.Font.GothamBold,
 				TextXAlignment = "Left",
 				BackgroundTransparency = 1,
 				TextSize = 10,
 				Text = Invite
-			})
+			}), "Theme")
 
 			local FrameHolder = InsertTheme(Create("Frame", InviteHolder, {
 				Size = UDim2.new(1, 0, 0, 65),
@@ -4803,6 +4826,7 @@ function redzlib:MakeWindow(Configs)
 				BackgroundColor3 = Theme["Color Hub 2"]
 			}), "Frame")
 			Make("Corner", FrameHolder)
+			Make("ElementStroke", FrameHolder)
 
 			local ImageLabel = Create("ImageLabel", FrameHolder, {
 				Size = UDim2.new(0, 30, 0, 30),
@@ -4811,7 +4835,7 @@ function redzlib:MakeWindow(Configs)
 				BackgroundTransparency = 1
 			})
 			Make("Corner", ImageLabel, UDim.new(0, 4))
-			Make("Stroke", ImageLabel)
+			Make("ElementStroke", ImageLabel)
 
 			local LTitle = InsertTheme(Create("TextLabel", FrameHolder, {
 				Size = UDim2.new(1, -52, 0, 15),
@@ -4837,17 +4861,19 @@ function redzlib:MakeWindow(Configs)
 				Text = Desc
 			}), "DarkText")
 
-			local JoinButton = Create("TextButton", FrameHolder, {
+			local JoinButton = InsertTheme(Create("TextButton", FrameHolder, {
 				Size = UDim2.new(1, -14, 0, 16),
 				AnchorPoint = Vector2.new(0.5, 1),
 				Position = UDim2.new(0.5, 0, 1, -7),
 				Text = "Join",
 				Font = Enum.Font.GothamBold,
 				TextSize = 12,
-				TextColor3 = Color3.fromRGB(220, 220, 220),
-				BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-			})
+				TextColor3 = Theme["Color Text"],
+				BackgroundColor3 = Theme["Color Hub 2"],
+				AutoButtonColor = false
+			}), "Frame")
 			Make("Corner", JoinButton, UDim.new(0, 5))
+			Make("ElementStroke", JoinButton)
 
 			local ClickDelay
 			JoinButton.Activated:Connect(function()
@@ -4862,8 +4888,8 @@ function redzlib:MakeWindow(Configs)
 				task.wait(5)
 				SetProps(JoinButton, {
 					Text = "Join",
-					BackgroundColor3 = Color3.fromRGB(50, 150, 50),
-					TextColor3 = Color3.fromRGB(220, 220, 220)
+					BackgroundColor3 = Theme["Color Hub 2"],
+					TextColor3 = Theme["Color Text"]
 				})
 				ClickDelay = false
 			end)
