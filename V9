@@ -2377,7 +2377,7 @@ end
 
 AddEle("Corner", function(parent, CornerRadius)
 	local New = SetProps(Create("UICorner", parent, {
-		CornerRadius = CornerRadius or UDim.new(0, 7)
+		CornerRadius = CornerRadius or UDim.new(0, 3)
 	}), nil)
 	return New
 end)
@@ -2395,7 +2395,7 @@ end)
 AddEle("ElementStroke", function(parent, props, ...)
 	local args = {...}
 	local New = InsertTheme(SetProps(Create("UIStroke", parent, {
-		Color = args[1] or BrightenColor(Theme["Color Stroke"], 120),
+		Color = args[1] or Theme["Color Theme"],
 		Thickness = args[2] or 1,
 		ApplyStrokeMode = "Border"
 	}), props), "ElementStroke")
@@ -2434,7 +2434,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		AutomaticSize = "None",
 		Name = "Option"
 	})
-	Make("Corner", Frame, UDim.new(0, 6))
+	Make("Corner", Frame, UDim.new(0, 3))
 	Make("ElementStroke", Frame)
 
 	local TitleL = InsertTheme(Create("TextLabel", Frame, {
@@ -2585,7 +2585,7 @@ function redzlib:SetTheme(NewTheme)
 			if prop ~= "" then inst[prop] = Theme["Color Stroke"] end
 		elseif Val.Type == "ElementStroke" then
 			local prop = GetColor(inst)
-			if prop ~= "" then inst[prop] = BrightenColor(Theme["Color Stroke"], 120) end
+			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
 		elseif Val.Type == "Theme" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
@@ -2676,7 +2676,7 @@ function redzlib:MakeWindow(Configs)
 	local MainCorner = Make("Corner", MainFrame)
 
 	local MainStroke = InsertTheme(Create("UIStroke", MainFrame, {
-		Color = BrightenColor(Theme["Color Stroke"], 120),
+		Color = Theme["Color Theme"],
 		Thickness = 1.5,
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	}), "ElementStroke")
@@ -3130,7 +3130,7 @@ function redzlib:MakeWindow(Configs)
 					AutoButtonColor = false,
 					Name = tname
 				}), "Frame")
-				Make("Corner", TBtn, UDim.new(0, 4))
+				Make("Corner", TBtn, UDim.new(0, 3))
 				if isActive then Make("Stroke", TBtn) end
 				TBtn.Activated:Connect(function()
 					redzlib:SetTheme(tname)
@@ -3159,7 +3159,7 @@ function redzlib:MakeWindow(Configs)
 				Position = UDim2.fromOffset(12, 186),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
-			Make("Corner", ThemeImgHolder, UDim.new(0, 5))
+			Make("Corner", ThemeImgHolder, UDim.new(0, 3))
 
 			local ThemeImgInput = InsertTheme(Create("TextBox", ThemeImgHolder, {
 				Size = UDim2.new(1, -10, 1, 0),
@@ -3183,7 +3183,7 @@ function redzlib:MakeWindow(Configs)
 				Image = "",
 				Visible = false
 			})
-			Make("Corner", ThemePreview, UDim.new(0, 4))
+			Make("Corner", ThemePreview, UDim.new(0, 3))
 
 			ThemeImgInput.FocusLost:Connect(function()
 				local id = NormalizeImageId(ThemeImgInput.Text)
@@ -3211,7 +3211,7 @@ function redzlib:MakeWindow(Configs)
 				Position = UDim2.fromOffset(12, 88),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
-			Make("Corner", ImgHolder, UDim.new(0, 5))
+			Make("Corner", ImgHolder, UDim.new(0, 3))
 
 			local ImgInput = InsertTheme(Create("TextBox", ImgHolder, {
 				Size = UDim2.new(1, -10, 1, 0),
@@ -3243,7 +3243,7 @@ function redzlib:MakeWindow(Configs)
 				Position = UDim2.fromOffset(12, 136),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
-			Make("Corner", MainImgHolder, UDim.new(0, 5))
+			Make("Corner", MainImgHolder, UDim.new(0, 3))
 
 			local MainImgInput = InsertTheme(Create("TextBox", MainImgHolder, {
 				Size = UDim2.new(1, -10, 1, 0),
@@ -3267,7 +3267,7 @@ function redzlib:MakeWindow(Configs)
 				Image = "",
 				Visible = false
 			})
-			Make("Corner", Preview, UDim.new(0, 6))
+			Make("Corner", Preview, UDim.new(0, 3))
 			Make("Stroke", Preview)
 
 			ContentY = 210
@@ -3329,7 +3329,7 @@ function redzlib:MakeWindow(Configs)
 			local BtnColor = Cfg.Color
 			ButtonCount = ButtonCount + 1
 			local Btn = Make("Button", ButtonsHolder)
-			Make("Corner", Btn, UDim.new(0, 5))
+			Make("Corner", Btn, UDim.new(0, 3))
 			SetProps(Btn, {
 				Text = Name,
 				Font = Enum.Font.GothamBold,
@@ -3444,7 +3444,7 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		if hasOutline then
-			Make("Corner", TagRoot, UDim.new(0, 5))
+			Make("Corner", TagRoot, UDim.new(0, 3))
 			Create("UIStroke", TagRoot, {
 				Color           = TOutline,
 				Thickness       = 1.2,
@@ -3502,7 +3502,7 @@ function redzlib:MakeWindow(Configs)
 			AutoButtonColor = false,
 			Name = "TabBtn"
 		})
-		Make("Corner", TabSelect, UDim.new(0, 8))
+		Make("Corner", TabSelect, UDim.new(0, 3))
 
 		local iconOffset = TIcon and 38 or 14
 		local LabelTitle = InsertTheme(Create("TextLabel", TabSelect, {
@@ -3534,7 +3534,7 @@ function redzlib:MakeWindow(Configs)
 			BackgroundColor3 = Theme["Color Theme"],
 			BackgroundTransparency = FirstTab and 1 or 0
 		}), "Theme")
-		Make("Corner", Selected, UDim.new(0, 4))
+		Make("Corner", Selected, UDim.new(0, 3))
 
 
 
@@ -3676,7 +3676,7 @@ function redzlib:MakeWindow(Configs)
 				AutoButtonColor  = false,
 				Name             = "SectionHeader"
 			}), "SectionFrame")
-			Make("Corner", HeaderBtn, UDim.new(0, 7))
+			Make("Corner", HeaderBtn, UDim.new(0, 3))
 			Make("ElementStroke", HeaderBtn)
 
 			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
@@ -3705,7 +3705,7 @@ function redzlib:MakeWindow(Configs)
 
 			local BottomLine = InsertTheme(Create("Frame", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 1),
-				Position         = UDim2.new(0, 0, 0, 24),
+				Position         = UDim2.new(0, 0, 0, 27),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 1,
 				Name             = "BottomLine"
@@ -3721,7 +3721,7 @@ function redzlib:MakeWindow(Configs)
 
 			local ClipFrame = Create("Frame", SectionWrapper, {
 				Size             = UDim2.new(1, 4, 0, 0),
-				Position         = UDim2.new(0, -2, 0, 25),
+				Position         = UDim2.new(0, -2, 0, 30),
 				BackgroundTransparency = 1,
 				ClipsDescendants = true,
 				Name             = "SectionClip",
@@ -3771,7 +3771,7 @@ function redzlib:MakeWindow(Configs)
 					local h = CalcInnerHeight()
 					InnerContainer.Size = UDim2.new(1, 0, 0, h)
 					ClipFrame.Size     = UDim2.new(1, 4, 0, h)
-					SectionWrapper.Size = UDim2.new(1, 0, 0, 25 + h)
+					SectionWrapper.Size = UDim2.new(1, 0, 0, 30 + h)
 				else
 					InnerContainer.Size = UDim2.new(1, 0, 0, 0)
 					ClipFrame.Size     = UDim2.new(1, 4, 0, 0)
@@ -3795,7 +3795,7 @@ function redzlib:MakeWindow(Configs)
 					SectionWrapper.Size = UDim2.new(1, 0, 0, 23)
 					CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, h), 0.2 })
 					CreateTween({ ClipFrame,      "Size", UDim2.new(1, 4, 0, h), 0.2 })
-					CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 25 + h), 0.2 })
+					CreateTween({ SectionWrapper, "Size", UDim2.new(1, 0, 0, 30 + h), 0.2 })
 				else
 					CreateTween({ InnerContainer, "Size", UDim2.new(1, 0, 0, 0), 0.2 })
 					CreateTween({ ClipFrame,      "Size", UDim2.new(1, 4, 0, 0), 0.2 })
@@ -4039,7 +4039,7 @@ function redzlib:MakeWindow(Configs)
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
-			Make("Corner", SelectedFrame, UDim.new(0, 4))
+			Make("Corner", SelectedFrame, UDim.new(0, 3))
 
 			local ActiveLabel = InsertTheme(Create("TextLabel", SelectedFrame, {
 				Size = UDim2.new(0.85, 0, 0.85, 0),
@@ -4087,7 +4087,7 @@ function redzlib:MakeWindow(Configs)
 				BackgroundColor3 = Theme["Color Stroke"],
 				Name = "SearchHolder"
 			}), "Stroke")
-			Make("Corner", SearchHolder, UDim.new(0, 4))
+			Make("Corner", SearchHolder, UDim.new(0, 3))
 
 			local SearchIcon = Create("ImageLabel", SearchHolder, {
 				Size = UDim2.new(0, 12, 0, 12),
@@ -4322,7 +4322,7 @@ function redzlib:MakeWindow(Configs)
 						Name = "Option",
 						Size = UDim2.new(1, 0, 0, 21),
 					})
-					Make("Corner", Btn, UDim.new(0, 4))
+					Make("Corner", Btn, UDim.new(0, 3))
 
 					local IsSelectedDot = InsertTheme(Create("Frame", Btn, {
 						Position = UDim2.new(0, 1, 0.5),
@@ -4591,7 +4591,7 @@ function redzlib:MakeWindow(Configs)
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
-			Make("Corner", InputHolder, UDim.new(0, 4))
+			Make("Corner", InputHolder, UDim.new(0, 3))
 
 			local ValueInput = InsertTheme(Create("TextBox", InputHolder, {
 				Size = UDim2.new(1, -6, 0.85, 0),
@@ -4751,7 +4751,7 @@ function redzlib:MakeWindow(Configs)
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Stroke"]
 			}), "Stroke")
-			Make("Corner", SelectedFrame, UDim.new(0, 4))
+			Make("Corner", SelectedFrame, UDim.new(0, 3))
 
 			local TextBoxInput = InsertTheme(Create("TextBox", SelectedFrame, {
 				Size = UDim2.new(0.85, 0, 0.85, 0),
@@ -4854,7 +4854,7 @@ function redzlib:MakeWindow(Configs)
 				Image = Logo,
 				BackgroundTransparency = 1
 			})
-			Make("Corner", ImageLabel, UDim.new(0, 4))
+			Make("Corner", ImageLabel, UDim.new(0, 3))
 			Make("ElementStroke", ImageLabel)
 
 			local LTitle = InsertTheme(Create("TextLabel", FrameHolder, {
@@ -4892,7 +4892,7 @@ function redzlib:MakeWindow(Configs)
 				BackgroundColor3 = Theme["Color Hub 2"],
 				AutoButtonColor = false
 			}), "Frame")
-			Make("Corner", JoinButton, UDim.new(0, 5))
+			Make("Corner", JoinButton, UDim.new(0, 3))
 			Make("ElementStroke", JoinButton)
 
 			local ClickDelay
