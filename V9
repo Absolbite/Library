@@ -2445,13 +2445,16 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 	local hasDesc = type(Description) == "string" and Description:gsub(" ",""):len() > 0
 	local frameH = hasDesc and H_DESC or H_SIMPLE
 
-	local Frame = Make("Button", Instance, {
+	local Frame = InsertTheme(Create("TextButton", Instance, {
 		Size = UDim2.new(1, 0, 0, frameH),
 		AutomaticSize = "None",
+		Text = "",
+		AutoButtonColor = false,
+		BackgroundColor3 = Theme["Color Theme"],
+		BackgroundTransparency = 0.85,
 		Name = "Option"
-	})
+	}), "Theme")
 	Make("Corner", Frame, UDim.new(0, 6))
-	Make("ElementStroke", Frame)
 
 	local TitleL = InsertTheme(Create("TextLabel", Frame, {
 		Font = Enum.Font.GothamMedium,
@@ -3688,14 +3691,13 @@ function redzlib:MakeWindow(Configs)
 
 			local HeaderBtn = InsertTheme(Create("TextButton", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 23),
-				BackgroundColor3 = Theme["Color Hub 2"],
-				BackgroundTransparency = Theme["Panel Transparency"] or math.clamp(CurrentTransparency + 0.35, 0, 0.95),
+				BackgroundColor3 = Theme["Color Theme"],
+				BackgroundTransparency = 0.85,
 				Text             = "",
 				AutoButtonColor  = false,
 				Name             = "SectionHeader"
-			}), "SectionFrame")
+			}), "Theme")
 			Make("Corner", HeaderBtn, UDim.new(0, 7))
-			Make("ElementStroke", HeaderBtn)
 
 			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
 				Font             = Enum.Font.GothamBold,
