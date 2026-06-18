@@ -1211,6 +1211,20 @@ local redzlib = {
 			["Color Text"] = Color3.fromRGB(255, 218, 238),
 			["Color Dark Text"] = Color3.fromRGB(210, 145, 180)
 		},
+		White = {
+			["Color Hub 1"] = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)),
+				ColorSequenceKeypoint.new(0.50, Color3.fromRGB(250, 250, 250)),
+				ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 255, 255))
+			}),
+			["Color Hub 2"] = Color3.fromRGB(255, 255, 255),
+			["Color Stroke"] = Color3.fromRGB(255, 255, 255),
+			["Color Theme"] = Color3.fromRGB(255, 255, 255),
+			["Color Text"] = Color3.fromRGB(255, 255, 255),
+			["Color Dark Text"] = Color3.fromRGB(225, 225, 225),
+			["Stroke Transparency"] = 1,
+			["Panel Transparency"] = 0.85
+		},
 
 	},
 	Info = {
@@ -1220,7 +1234,7 @@ local redzlib = {
 		UISize = {550, 380},
 		TabSize = 110,
 		TabHeight = 32,
-		Theme = "Darker",
+		Theme = "White",
 		Transparency = 0.03,
 		MinimizeButtons = {}
 	},
@@ -2387,6 +2401,7 @@ AddEle("Stroke", function(parent, props, ...)
 	local New = InsertTheme(SetProps(Create("UIStroke", parent, {
 		Color = args[1] or Theme["Color Stroke"],
 		Thickness = args[2] or 1,
+		Transparency = Theme["Stroke Transparency"] or 0,
 		ApplyStrokeMode = "Border"
 	}), props), "Stroke")
 	return New
@@ -2397,6 +2412,7 @@ AddEle("ElementStroke", function(parent, props, ...)
 	local New = InsertTheme(SetProps(Create("UIStroke", parent, {
 		Color = args[1] or BrightenColor(Theme["Color Stroke"], 55),
 		Thickness = args[2] or 1,
+		Transparency = Theme["Stroke Transparency"] or 0,
 		ApplyStrokeMode = "Border"
 	}), props), "ElementStroke")
 	return New
@@ -2407,7 +2423,7 @@ AddEle("Button", function(parent, props, ...)
 		Text = "",
 		Size = UDim2.fromScale(1, 1),
 		BackgroundColor3 = Theme["Color Hub 2"],
-		BackgroundTransparency = math.clamp(CurrentTransparency + 0.55, 0, 0.95),
+		BackgroundTransparency = Theme["Panel Transparency"] or math.clamp(CurrentTransparency + 0.55, 0, 0.95),
 		AutoButtonColor = false
 	}), props), "Frame")
 
@@ -2429,13 +2445,16 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 	local hasDesc = type(Description) == "string" and Description:gsub(" ",""):len() > 0
 	local frameH = hasDesc and H_DESC or H_SIMPLE
 
-	local Frame = Make("Button", Instance, {
+	local Frame = InsertTheme(Create("TextButton", Instance, {
 		Size = UDim2.new(1, 0, 0, frameH),
 		AutomaticSize = "None",
+		Text = "",
+		AutoButtonColor = false,
+		BackgroundColor3 = Theme["Color Theme"],
+		BackgroundTransparency = 0.85,
 		Name = "Option"
-	})
+	}), "Theme")
 	Make("Corner", Frame, UDim.new(0, 6))
-	Make("ElementStroke", Frame)
 
 	local TitleL = InsertTheme(Create("TextLabel", Frame, {
 		Font = Enum.Font.GothamMedium,
@@ -2572,10 +2591,10 @@ function redzlib:SetTheme(NewTheme)
 			end
 		elseif Val.Type == "Frame" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
-			inst.BackgroundTransparency = math.clamp(CurrentTransparency + 0.55, 0, 0.95)
+			inst.BackgroundTransparency = Theme["Panel Transparency"] or math.clamp(CurrentTransparency + 0.55, 0, 0.95)
 		elseif Val.Type == "SectionFrame" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
-			inst.BackgroundTransparency = math.clamp(CurrentTransparency + 0.35, 0, 0.95)
+			inst.BackgroundTransparency = Theme["Panel Transparency"] or math.clamp(CurrentTransparency + 0.35, 0, 0.95)
 		elseif Val.Type == "Main" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
 			inst.Image = ""
@@ -2583,9 +2602,11 @@ function redzlib:SetTheme(NewTheme)
 		elseif Val.Type == "Stroke" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Stroke"] end
+			if inst:IsA("UIStroke") then inst.Transparency = Theme["Stroke Transparency"] or 0 end
 		elseif Val.Type == "ElementStroke" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = BrightenColor(Theme["Color Stroke"], 55) end
+			if inst:IsA("UIStroke") then inst.Transparency = Theme["Stroke Transparency"] or 0 end
 		elseif Val.Type == "Theme" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
@@ -2751,7 +2772,7 @@ function redzlib:MakeWindow(Configs)
 		Create("UIPadding", {
 			PaddingLeft = UDim.new(0, 10),
 			PaddingRight = UDim.new(0, 10),
-			PaddingTop = UDim.new(0, 10),
+			PaddingTop = UDim.new(0, 6),
 			PaddingBottom = UDim.new(0, 10)
 		}),
 		Create("UIListLayout", { Padding = UDim.new(0, 5) })
@@ -3502,7 +3523,7 @@ function redzlib:MakeWindow(Configs)
 			AutoButtonColor = false,
 			Name = "TabBtn"
 		})
-		Make("Corner", TabSelect, UDim.new(0, 8))
+		Make("Corner", TabSelect, UDim.new(0, 3))
 
 		local iconOffset = TIcon and 38 or 14
 		local LabelTitle = InsertTheme(Create("TextLabel", TabSelect, {
@@ -3520,7 +3541,7 @@ function redzlib:MakeWindow(Configs)
 
 		local LabelIcon = InsertTheme(Create("ImageLabel", TabSelect, {
 			Position = UDim2.new(0, 10, 0.5),
-			Size = UDim2.new(0, 18, 0, 18),
+			Size = UDim2.new(0, 14, 0, 14),
 			AnchorPoint = Vector2.new(0, 0.5),
 			Image = TIcon or "",
 			BackgroundTransparency = 1,
@@ -3670,14 +3691,13 @@ function redzlib:MakeWindow(Configs)
 
 			local HeaderBtn = InsertTheme(Create("TextButton", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 23),
-				BackgroundColor3 = Theme["Color Hub 2"],
-				BackgroundTransparency = math.clamp(CurrentTransparency + 0.35, 0, 0.95),
+				BackgroundColor3 = Theme["Color Theme"],
+				BackgroundTransparency = 0.85,
 				Text             = "",
 				AutoButtonColor  = false,
 				Name             = "SectionHeader"
-			}), "SectionFrame")
-			Make("Corner", HeaderBtn, UDim.new(0, 7))
-			Make("ElementStroke", HeaderBtn)
+			}), "Theme")
+			Make("Corner", HeaderBtn, UDim.new(0, 3))
 
 			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
 				Font             = Enum.Font.GothamBold,
@@ -3704,12 +3724,13 @@ function redzlib:MakeWindow(Configs)
 			}), "DarkText")
 
 			local BottomLine = InsertTheme(Create("Frame", SectionWrapper, {
-				Size             = UDim2.new(1, 0, 0, 1),
-				Position         = UDim2.new(0, 0, 0, 24),
+				Size             = UDim2.new(1, 0, 0, 2),
+				Position         = UDim2.new(0, 0, 0, 25.5),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 1,
 				Name             = "BottomLine"
 			}), "Theme")
+			Make("Corner", BottomLine, UDim.new(0.5, 0))
 			Create("UIGradient", BottomLine, {
 				Transparency = NumberSequence.new({
 					NumberSequenceKeypoint.new(0.00, 1),
@@ -3747,7 +3768,7 @@ function redzlib:MakeWindow(Configs)
 			local elementOrder   = {}
 			local GAP = 5
 			local PAD_TOP = 5
-			local PAD_BOT = 5
+			local PAD_BOT = 0.5
 
 			local function CalcInnerHeight()
 				local total = 0
