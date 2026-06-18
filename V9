@@ -3523,7 +3523,7 @@ function redzlib:MakeWindow(Configs)
 			AutoButtonColor = false,
 			Name = "TabBtn"
 		})
-		Make("Corner", TabSelect, UDim.new(0, 8))
+		Make("Corner", TabSelect, UDim.new(0, 3))
 
 		local iconOffset = TIcon and 38 or 14
 		local LabelTitle = InsertTheme(Create("TextLabel", TabSelect, {
@@ -3697,7 +3697,7 @@ function redzlib:MakeWindow(Configs)
 				AutoButtonColor  = false,
 				Name             = "SectionHeader"
 			}), "Theme")
-			Make("Corner", HeaderBtn, UDim.new(0, 7))
+			Make("Corner", HeaderBtn, UDim.new(0, 3))
 
 			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
 				Font             = Enum.Font.GothamBold,
@@ -3725,19 +3725,11 @@ function redzlib:MakeWindow(Configs)
 
 			local BottomLine = InsertTheme(Create("Frame", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 1),
-				Position         = UDim2.new(0, 0, 0, 24),
+				Position         = UDim2.new(0, 0, 0, 27),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 1,
 				Name             = "BottomLine"
 			}), "Theme")
-			Create("UIGradient", BottomLine, {
-				Transparency = NumberSequence.new({
-					NumberSequenceKeypoint.new(0.00, 1),
-					NumberSequenceKeypoint.new(0.15, 0),
-					NumberSequenceKeypoint.new(0.85, 0),
-					NumberSequenceKeypoint.new(1.00, 1)
-				})
-			})
 
 			local ClipFrame = Create("Frame", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 0),
