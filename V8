@@ -1234,7 +1234,7 @@ local redzlib = {
 		UISize = {550, 380},
 		TabSize = 110,
 		TabHeight = 32,
-		Theme = "White",
+		Theme = "Darker",
 		Transparency = 0.03,
 		MinimizeButtons = {}
 	},
