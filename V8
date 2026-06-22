@@ -2473,19 +2473,20 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 
 	local DescL = InsertTheme(Create("TextLabel", Frame, {
 		Font = Enum.Font.Gotham,
-		TextColor3 = Theme["Color Dark Text"],
+		TextColor3 = Theme["Color Text"],
 		Size = HolderSize,
 		Position = UDim2.new(0, 10, 0, 20),
 		AnchorPoint = Vector2.new(0, 0),
 		BackgroundTransparency = 1,
 		TextWrapped = true,
-		TextSize = 8,
+		TextSize = 9,
+		LineHeight = 1.25,
 		TextXAlignment = "Left",
 		TextYAlignment = "Top",
 		Text = "",
 		RichText = true,
 		Visible = false
-	}), "DarkText")
+	}), "Text")
 
 	if not hasDesc then
 		TitleL.Position = UDim2.new(0, 10, 0.5, 0)
@@ -2510,8 +2511,10 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 
 			local frameWidth = Frame.Size.X.Offset > 0 and Frame.Size.X.Offset or 620
 			local textWidth = frameWidth - 20
-			local textSize = TextService:GetTextSize(v, 8, Enum.Font.Gotham, Vector2.new(textWidth, 9999))
-			local descH = math.max(10, textSize.Y)
+			local lines = 0
+			for _ in v:gmatch("[^\n]*") do lines = lines + 1 end
+			local textSize = TextService:GetTextSize(v, 9, Enum.Font.Gotham, Vector2.new(textWidth, 9999))
+			local descH = math.max(10, math.ceil(textSize.Y * 1.25) + (lines - 1) * 2)
 			local totalH = 9 + 12 + 4 + descH + 5
 			DescL.Size = UDim2.new(1, -20, 0, descH)
 			DescL.Position = UDim2.new(0, 10, 0, 21)
@@ -2787,21 +2790,17 @@ function redzlib:MakeWindow(Configs)
 		Name = "Containers"
 	})
 
-	local TopBarDivider = InsertTheme(Create("Frame", Components, {
-		Size = UDim2.new(1, 0, 0, 1),
-		Position = UDim2.new(0, 0, 0, TopBar.Size.Y.Offset),
-		BackgroundColor3 = Theme["Color Stroke"],
-		BorderSizePixel = 0,
+	local TopBarDivider = Create("Frame", Components, {
+		Size = UDim2.new(0, 0, 0, 0),
+		BackgroundTransparency = 1,
 		Name = "TopBarDivider"
-	}), "Stroke")
+	})
 
-	local SideDivider = InsertTheme(Create("Frame", Components, {
-		Size = UDim2.new(0, 1, 1, -TopBar.Size.Y.Offset),
-		Position = UDim2.new(0, MainScroll.Size.X.Offset, 0, TopBar.Size.Y.Offset),
-		BackgroundColor3 = Theme["Color Stroke"],
-		BorderSizePixel = 0,
+	local SideDivider = Create("Frame", Components, {
+		Size = UDim2.new(0, 0, 0, 0),
+		BackgroundTransparency = 1,
 		Name = "SideDivider"
-	}), "Stroke")
+	})
 
 	local ControlSize1 = MakeDrag(Create("ImageButton", MainFrame, {
 		Size = UDim2.new(0, 35, 0, 35),
@@ -2913,7 +2912,6 @@ function redzlib:MakeWindow(Configs)
 		local BtnImage  = Cfg.Image or "rbxassetid://10734895698"
 
 		BtnImage = tostring(BtnImage)
-		if BtnImage:match("^%d+$") then BtnImage = "rbxassetid://" .. BtnImage end
 
 		if not redzlib.Save.MinimizeButtons then redzlib.Save.MinimizeButtons = {} end
 		local Saved = redzlib.Save.MinimizeButtons[BtnId] or {}
@@ -3001,11 +2999,7 @@ function redzlib:MakeWindow(Configs)
 
 		local function NormalizeImageId(raw)
 			raw = tostring(raw or ""):gsub("^%s+",""):gsub("%s+$","")
-			if raw == "" then return "" end
-			if raw:match("^rbxassetid://") then return raw end
-			if raw:match("^https?://") then return raw end
-			if raw:match("^%d+$") then return "rbxassetid://" .. raw end
-			return "rbxassetid://" .. raw
+			return raw
 		end
 
 		local baseW = DType == "theme" and 310 or DType == "image" and 290 or 270
@@ -3508,12 +3502,9 @@ function redzlib:MakeWindow(Configs)
 	function Window:MakeTab(paste, Configs)
 		if type(paste) == "table" then Configs = paste end
 		local TName = Configs[1] or Configs.Title or "Tab!"
-		local TIcon = Configs[2] or Configs.Icon or ""
-
-		TIcon = redzlib:GetIcon(TIcon)
-		if not TIcon:find("rbxassetid://") or TIcon:gsub("rbxassetid://", ""):len() < 6 then
-			TIcon = false
-		end
+		local TIcon = Configs[2] or Configs.Icon or Configs.Image or ""
+		TIcon = redzlib:GetIcon(tostring(TIcon))
+		if TIcon == "" then TIcon = false end
 
 		local TabHeight = 23
 		local TabSelect = Create("TextButton", MainScroll, {
@@ -4785,14 +4776,6 @@ function redzlib:MakeWindow(Configs)
 				Text = TDefault
 			}), "Text")
 
-			local Pencil = Create("ImageLabel", SelectedFrame, {
-				Size = UDim2.new(0, 12, 0, 12),
-				Position = UDim2.new(0, -5, 0.5),
-				AnchorPoint = Vector2.new(1, 0.5),
-				Image = "rbxassetid://15637081879",
-				BackgroundTransparency = 1
-			})
-
 			local TextBox = {}
 			local function Input()
 				local Text = TextBoxInput.Text
@@ -4812,13 +4795,6 @@ function redzlib:MakeWindow(Configs)
 					SetFlag(Flag, TDefault)
 				end)
 			end
-
-			TextBoxInput.FocusLost:Connect(function()
-				CreateTween({Pencil, "ImageColor3", Color3.fromRGB(255, 255, 255), 0.2})
-			end)
-			TextBoxInput.Focused:Connect(function()
-				CreateTween({Pencil, "ImageColor3", Theme["Color Theme"], 0.2})
-			end)
 
 			TextBox.OnChanging = false
 			function TextBox:Visible(...) Funcs:ToggleVisible(Button, ...) end
