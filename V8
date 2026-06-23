@@ -2511,10 +2511,8 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 
 			local frameWidth = Frame.Size.X.Offset > 0 and Frame.Size.X.Offset or 620
 			local textWidth = frameWidth - 20
-			local lines = 0
-			for _ in v:gmatch("[^\n]*") do lines = lines + 1 end
 			local textSize = TextService:GetTextSize(v, 9, Enum.Font.Gotham, Vector2.new(textWidth, 9999))
-			local descH = math.max(10, math.ceil(textSize.Y * 1.25) + (lines - 1) * 2)
+			local descH = math.max(10, textSize.Y)
 			local totalH = 9 + 12 + 4 + descH + 5
 			DescL.Size = UDim2.new(1, -20, 0, descH)
 			DescL.Position = UDim2.new(0, 10, 0, 21)
@@ -2619,6 +2617,8 @@ function redzlib:SetTheme(NewTheme)
 		elseif Val.Type == "DarkText" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Dark Text"] end
+		elseif Val.Type == "TabBG" then
+			inst.BackgroundColor3 = Theme["Color Theme"]
 		elseif Val.Type == "ScrollBar" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
@@ -3403,13 +3403,20 @@ function redzlib:MakeWindow(Configs)
 	local ContainerList = {}
 	function Window:AddTag(Configs)
 		Configs = Configs or {}
-		local TTitle     = Configs[1] or Configs.Title or Configs.Name or "Tag"
+		local TTitle     = Configs[1] or Configs.Title or Configs.Name or ""
+		local TImage     = Configs.Image or Configs.Icon or nil
 		local TColor     = Configs.Color or Theme["Color Dark Text"]
 		local TLink      = Configs.Link or nil
 		local TClickable = Configs.Clickable == true and TLink ~= nil
-		local TOutline   = Configs.Outline -- Color3 or nil
+		local TOutline   = Configs.Outline
+
+		if TImage then
+			TImage = redzlib:GetIcon(tostring(TImage))
+			if TImage == "" then TImage = nil end
+		end
 
 		local hasOutline = typeof(TOutline) == "Color3"
+		local hasImage   = TImage ~= nil
 		local TextCol    = hasOutline and (Configs.Color or Color3.fromRGB(235, 235, 235)) or TColor
 
 		local BaseProps = {
@@ -3466,9 +3473,22 @@ function redzlib:MakeWindow(Configs)
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 			})
 			Create("UIPadding", TagRoot, {
-				PaddingLeft  = UDim.new(0, 7),
+				PaddingLeft  = UDim.new(0, hasImage and 4 or 7),
 				PaddingRight = UDim.new(0, 7),
 			})
+		end
+
+		if hasImage then
+			local iconSize = 12
+			local ImgLabel = Create("ImageLabel", TagRoot, {
+				Size               = UDim2.new(0, iconSize, 0, iconSize),
+				Position           = UDim2.new(0, hasOutline and 5 or 2, 0.5),
+				AnchorPoint        = Vector2.new(0, 0.5),
+				Image              = TImage,
+				BackgroundTransparency = 1,
+				ImageColor3        = TextCol,
+			})
+			TagRoot.Text = TTitle ~= "" and ("  " .. TTitle) or ""
 		end
 
 		local Tag = {}
@@ -3507,13 +3527,14 @@ function redzlib:MakeWindow(Configs)
 		if TIcon == "" then TIcon = false end
 
 		local TabHeight = 23
-		local TabSelect = Create("TextButton", MainScroll, {
+		local TabSelect = InsertTheme(Create("TextButton", MainScroll, {
 			Size = UDim2.new(1, 0, 0, TabHeight),
 			BackgroundTransparency = 1,
+			BackgroundColor3 = Theme["Color Theme"],
 			Text = "",
 			AutoButtonColor = false,
 			Name = "TabBtn"
-		})
+		}), "TabBG")
 		Make("Corner", TabSelect, UDim.new(0, 3))
 
 		local iconOffset = TIcon and 38 or 14
