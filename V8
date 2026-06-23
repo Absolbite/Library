@@ -3473,22 +3473,40 @@ function redzlib:MakeWindow(Configs)
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 			})
 			Create("UIPadding", TagRoot, {
-				PaddingLeft  = UDim.new(0, hasImage and 4 or 7),
+				PaddingLeft  = UDim.new(0, 7),
 				PaddingRight = UDim.new(0, 7),
 			})
 		end
 
 		if hasImage then
 			local iconSize = 12
-			local ImgLabel = Create("ImageLabel", TagRoot, {
+			TagRoot.Text = ""
+			Create("UIListLayout", TagRoot, {
+				FillDirection       = Enum.FillDirection.Horizontal,
+				VerticalAlignment   = Enum.VerticalAlignment.Center,
+				HorizontalAlignment = Enum.HorizontalAlignment.Center,
+				Padding             = UDim.new(0, TTitle ~= "" and 4 or 0),
+				SortOrder           = Enum.SortOrder.LayoutOrder,
+			})
+			Create("ImageLabel", TagRoot, {
 				Size               = UDim2.new(0, iconSize, 0, iconSize),
-				Position           = UDim2.new(0, hasOutline and 5 or 2, 0.5),
-				AnchorPoint        = Vector2.new(0, 0.5),
 				Image              = TImage,
 				BackgroundTransparency = 1,
 				ImageColor3        = TextCol,
+				LayoutOrder        = 1,
 			})
-			TagRoot.Text = TTitle ~= "" and ("  " .. TTitle) or ""
+			if TTitle ~= "" then
+				Create("TextLabel", TagRoot, {
+					Size               = UDim2.new(0, 0, 1, 0),
+					AutomaticSize      = Enum.AutomaticSize.X,
+					BackgroundTransparency = 1,
+					Font               = Enum.Font.GothamMedium,
+					TextSize           = 10,
+					TextColor3         = TextCol,
+					Text               = TTitle,
+					LayoutOrder        = 2,
+				})
+			end
 		end
 
 		local Tag = {}
@@ -4682,7 +4700,9 @@ function redzlib:MakeWindow(Configs)
 			local function SetSlider(newVal, skipCallback)
 				if type(newVal) ~= "number" then return end
 				newVal = math.clamp(newVal, Min, Max)
+				local factor = 10 ^ Decimals
 				newVal = math.floor(newVal / Increase + 0.5) * Increase
+				newVal = math.floor(newVal * factor + 0.5) / factor
 				currentValue = newVal
 				ApplyVisual(ValueToScale(newVal))
 				if not isFocused then
