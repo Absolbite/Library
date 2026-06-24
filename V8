@@ -2717,26 +2717,28 @@ function redzlib:MakeWindow(Configs)
 	local Title = InsertTheme(Create("TextLabel", TopBar, {
 		Position = UDim2.new(0, 15, 0.5),
 		AnchorPoint = Vector2.new(0, 0.5),
-		AutomaticSize = "XY",
+		AutomaticSize = "X",
+		Size = UDim2.new(0, 0, 0, 28),
 		Text = WTitle,
 		TextXAlignment = "Left",
+		TextYAlignment = "Center",
 		TextSize = 12,
 		TextColor3 = Theme["Color Text"],
 		BackgroundTransparency = 1,
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamBold,
 		Name = "Title"
 	}), "Text")
 
-	local SubTitle = InsertTheme(Create("TextLabel", Title, {
-		Size = UDim2.fromScale(0, 1),
+	local SubTitle = InsertTheme(Create("TextLabel", TopBar, {
 		AutomaticSize = "X",
-		AnchorPoint = Vector2.new(0, 1),
-		Position = UDim2.new(1, 5, 0.9),
+		Size = UDim2.new(0, 0, 0, 28),
+		AnchorPoint = Vector2.new(0, 0.5),
+		Position = UDim2.new(0, 15 + TextService:GetTextSize(WTitle, 12, Enum.Font.GothamBold, Vector2.new(9999, 28)).X + 8, 0.5),
 		Text = WMiniText,
 		TextColor3 = Theme["Color Dark Text"],
 		BackgroundTransparency = 1,
 		TextXAlignment = "Left",
-		TextYAlignment = "Bottom",
+		TextYAlignment = "Center",
 		TextSize = 8,
 		Font = Enum.Font.Gotham,
 		Name = "SubTitle"
@@ -3555,7 +3557,7 @@ function redzlib:MakeWindow(Configs)
 		}), "TabBG")
 		Make("Corner", TabSelect, UDim.new(0, 3))
 
-		local iconOffset = TIcon and 38 or 14
+		local iconOffset = TIcon and 36 or 14
 		local LabelTitle = InsertTheme(Create("TextLabel", TabSelect, {
 			Size = UDim2.new(1, -iconOffset - 8, 1),
 			Position = UDim2.fromOffset(iconOffset, 0),
@@ -3669,6 +3671,8 @@ function redzlib:MakeWindow(Configs)
 			local DText = type(Configs) == "string" and Configs
 				or (type(Configs) == "table" and (Configs[1] or Configs.Text or Configs.Title or Configs.Name))
 				or nil
+			local DIcon = type(Configs) == "table" and (Configs.Icon or Configs.Image) or nil
+			if DIcon then DIcon = redzlib:GetIcon(tostring(DIcon)); if DIcon == "" then DIcon = nil end end
 
 			local DividerFrame = Create("Frame", Container, {
 				Size = UDim2.new(1, 0, 0, DText and 20 or 10),
@@ -3677,13 +3681,25 @@ function redzlib:MakeWindow(Configs)
 			})
 
 			if DText then
+				local labelX = 10
+				if DIcon then
+					InsertTheme(Create("ImageLabel", DividerFrame, {
+						Size               = UDim2.new(0, 11, 0, 11),
+						Position           = UDim2.new(0, 10, 0.5, 0),
+						AnchorPoint        = Vector2.new(0, 0.5),
+						Image              = DIcon,
+						BackgroundTransparency = 1,
+						ImageColor3        = Theme["Color Text"],
+					}), "Text")
+					labelX = 25
+				end
 				InsertTheme(Create("TextLabel", DividerFrame, {
 					Font             = Enum.Font.GothamBold,
 					Text             = DText,
 					TextColor3       = Theme["Color Text"],
 					TextSize         = 11,
-					Size             = UDim2.new(1, -10, 1, 0),
-					Position         = UDim2.new(0, 10, 0, 0),
+					Size             = UDim2.new(1, -labelX - 4, 1, 0),
+					Position         = UDim2.new(0, labelX, 0, 0),
 					BackgroundTransparency = 1,
 					TextXAlignment   = Enum.TextXAlignment.Left,
 					TextYAlignment   = Enum.TextYAlignment.Center,
@@ -3711,6 +3727,8 @@ function redzlib:MakeWindow(Configs)
 			Configs = type(Configs) == "string" and { Name = Configs } or (Configs or {})
 			local SectionName = Configs[1] or Configs.Name or Configs.Title or Configs.Section or "Section"
 			local StartOpen   = Configs[2] or Configs.Open or Configs.Default or false
+			local SIcon = Configs.Icon or Configs.Image or nil
+			if SIcon then SIcon = redzlib:GetIcon(tostring(SIcon)); if SIcon == "" then SIcon = nil end end
 
 			local SectionWrapper = Create("Frame", Container, {
 				Size             = UDim2.new(1, 0, 0, 23),
@@ -3729,6 +3747,20 @@ function redzlib:MakeWindow(Configs)
 			}), "Theme")
 			Make("Corner", HeaderBtn, UDim.new(0, 3))
 
+			local labelLeftOffset = 12
+			if SIcon then
+				InsertTheme(Create("ImageLabel", HeaderBtn, {
+					Size               = UDim2.new(0, 12, 0, 12),
+					Position           = UDim2.new(0, 10, 0.5, 0),
+					AnchorPoint        = Vector2.new(0, 0.5),
+					Image              = SIcon,
+					BackgroundTransparency = 1,
+					ImageColor3        = Theme["Color Text"],
+					Name               = "SectionIcon"
+				}), "Text")
+				labelLeftOffset = 26
+			end
+
 			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
 				Font             = Enum.Font.GothamBold,
 				Text             = SectionName,
@@ -3736,7 +3768,7 @@ function redzlib:MakeWindow(Configs)
 				TextSize         = 10,
 				TextXAlignment   = Enum.TextXAlignment.Left,
 				Size             = UDim2.new(1, -40, 1, 0),
-				Position         = UDim2.new(0, 12, 0, 0),
+				Position         = UDim2.new(0, labelLeftOffset, 0, 0),
 				BackgroundTransparency = 1,
 				TextTruncate     = Enum.TextTruncate.AtEnd,
 				Name             = "SectionTitle"
