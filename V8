@@ -4146,7 +4146,7 @@ function redzlib:MakeWindow(Configs)
 			})
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
 			InsertTheme(Create("UIStroke", SelectedFrame, {
-				Thickness = 1,
+				Thickness = 3,
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 				Color = Theme["Color Stroke"]
 			}), "Stroke")
@@ -4703,7 +4703,7 @@ function redzlib:MakeWindow(Configs)
 			})
 			Make("Corner", InputHolder, UDim.new(0, 4))
 			InsertTheme(Create("UIStroke", InputHolder, {
-				Thickness = 1,
+				Thickness = 3,
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 				Color = Theme["Color Stroke"]
 			}), "Stroke")
@@ -4870,7 +4870,7 @@ function redzlib:MakeWindow(Configs)
 			})
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
 			InsertTheme(Create("UIStroke", SelectedFrame, {
-				Thickness = 1,
+				Thickness = 3,
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 				Color = Theme["Color Stroke"]
 			}), "Stroke")
