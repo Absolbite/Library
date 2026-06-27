@@ -2746,7 +2746,7 @@ function redzlib:MakeWindow(Configs)
 
 	local TagHolder = Create("Frame", TopBar, {
 		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -70, 0.5, 0),
+		Position = UDim2.new(1, -60, 0.5, 0),
 		Size = UDim2.new(0, 200, 0, 16),
 		BackgroundTransparency = 1,
 		Name = "TagHolder"
@@ -3758,7 +3758,7 @@ function redzlib:MakeWindow(Configs)
 					ImageColor3        = Theme["Color Text"],
 					Name               = "SectionIcon"
 				}), "Text")
-				labelLeftOffset = 26
+				labelLeftOffset = 34
 			end
 
 			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
