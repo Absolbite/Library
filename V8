@@ -2746,7 +2746,7 @@ function redzlib:MakeWindow(Configs)
 
 	local TagHolder = Create("Frame", TopBar, {
 		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -63, 0.5, 0),
+		Position = UDim2.new(1, -60, 0.5, 0),
 		Size = UDim2.new(0, 200, 0, 18),
 		BackgroundTransparency = 1,
 		Name = "TagHolder"
@@ -3978,11 +3978,28 @@ function redzlib:MakeWindow(Configs)
 
 		function Tab:AddParagraph(Configs)
 			local PName = Configs[1] or Configs.Title or "Paragraph"
-			local PDesc = Configs[2] or Configs.Text or ""
+			local Paragraph = {}
+
+			-- ÑÐ¾Ð±Ð¸ÑÐ°ÐµÐ¼ ÑÐµÐºÑÑ: Ð¿Ð¾Ð´Ð´ÐµÑÐ¶ÐºÐ° Text ÐºÐ°Ðº ÑÑÑÐ¾ÐºÐ¸, Ð¼Ð°ÑÑÐ¸Ð²Ð° Ð¸Ð»Ð¸ Ð½ÐµÑÐºÐ¾Ð»ÑÐºÐ¸Ñ Text[n]
+			local lines = {}
+			if type(Configs.Text) == "table" then
+				for _, v in ipairs(Configs.Text) do
+					table.insert(lines, tostring(v))
+				end
+			elseif type(Configs.Text) == "string" then
+				table.insert(lines, Configs.Text)
+			end
+			-- Ð¿Ð¾Ð´Ð´ÐµÑÐ¶ÐºÐ° Text1, Text2, Text3 ...
+			local i = 1
+			while Configs["Text"..i] do
+				table.insert(lines, tostring(Configs["Text"..i]))
+				i = i + 1
+			end
+
+			local PDesc = #lines > 0 and table.concat(lines, "\n") or ""
 
 			local Frame, LabelFunc = ButtonFrame(Container, PName, PDesc, UDim2.new(1, -20))
 
-			local Paragraph = {}
 			function Paragraph:Visible(...) Funcs:ToggleVisible(Frame, ...) end
 			function Paragraph:Destroy() Frame:Destroy() end
 			function Paragraph:SetTitle(Val) LabelFunc:SetTitle(GetStr(Val)) end
@@ -4673,13 +4690,18 @@ function redzlib:MakeWindow(Configs)
 			})
 			Make("Corner", SliderIcon)
 
-			local InputHolder = InsertTheme(Create("Frame", Button, {
+			local InputHolder = Create("Frame", Button, {
 				Size = UDim2.new(0, 38, 0, 18),
 				Position = UDim2.new(1, -125, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
-				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke")
+				BackgroundTransparency = 1,
+			})
 			Make("Corner", InputHolder, UDim.new(0, 4))
+			InsertTheme(Create("UIStroke", InputHolder, {
+				Thickness = 1,
+				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+				Color = Theme["Color Stroke"]
+			}), "Stroke")
 
 			local ValueInput = InsertTheme(Create("TextBox", InputHolder, {
 				Size = UDim2.new(1, -6, 0.85, 0),
@@ -4835,13 +4857,18 @@ function redzlib:MakeWindow(Configs)
 
 			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -38))
 
-			local SelectedFrame = InsertTheme(Create("Frame", Button, {
+			local SelectedFrame = Create("Frame", Button, {
 				Size = UDim2.new(0, 150, 0, 18),
 				Position = UDim2.new(1, -10, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
-				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke")
+				BackgroundTransparency = 1,
+			})
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
+			InsertTheme(Create("UIStroke", SelectedFrame, {
+				Thickness = 1,
+				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+				Color = Theme["Color Stroke"]
+			}), "Stroke")
 
 			local TextBoxInput = InsertTheme(Create("TextBox", SelectedFrame, {
 				Size = UDim2.new(0.85, 0, 0.85, 0),
