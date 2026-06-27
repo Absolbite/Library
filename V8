@@ -3481,7 +3481,7 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		if hasImage then
-			local iconSize = 16
+			local iconSize = 17
 			TagRoot.Text = ""
 			Create("UIListLayout", TagRoot, {
 				FillDirection       = Enum.FillDirection.Horizontal,
@@ -3490,12 +3490,20 @@ function redzlib:MakeWindow(Configs)
 				Padding             = UDim.new(0, TTitle ~= "" and 4 or 0),
 				SortOrder           = Enum.SortOrder.LayoutOrder,
 			})
-			Create("ImageLabel", TagRoot, {
+			local ImgLabel = Create("ImageLabel", TagRoot, {
 				Size               = UDim2.new(0, iconSize, 0, iconSize),
 				Image              = TImage,
 				BackgroundTransparency = 1,
 				LayoutOrder        = 1,
 			})
+			if TClickable then
+				TagRoot.Activated:Connect(function()
+					CreateTween({ImgLabel, "ImageTransparency", 0.5, 0.07})
+					task.delay(0.07, function()
+						CreateTween({ImgLabel, "ImageTransparency", 0, 0.12})
+					end)
+				end)
+			end
 			if TTitle ~= "" then
 				Create("TextLabel", TagRoot, {
 					Size               = UDim2.new(0, 0, 1, 0),
