@@ -2746,8 +2746,8 @@ function redzlib:MakeWindow(Configs)
 
 	local TagHolder = Create("Frame", TopBar, {
 		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -64, 0.5, 0),
-		Size = UDim2.new(0, 200, 0, 16),
+		Position = UDim2.new(1, -63, 0.5, 0),
+		Size = UDim2.new(0, 200, 0, 18),
 		BackgroundTransparency = 1,
 		Name = "TagHolder"
 	}, {
@@ -3481,7 +3481,7 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		if hasImage then
-			local iconSize = 12
+			local iconSize = 16
 			TagRoot.Text = ""
 			Create("UIListLayout", TagRoot, {
 				FillDirection       = Enum.FillDirection.Horizontal,
@@ -3494,7 +3494,6 @@ function redzlib:MakeWindow(Configs)
 				Size               = UDim2.new(0, iconSize, 0, iconSize),
 				Image              = TImage,
 				BackgroundTransparency = 1,
-				ImageColor3        = TextCol,
 				LayoutOrder        = 1,
 			})
 			if TTitle ~= "" then
