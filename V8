@@ -4138,13 +4138,18 @@ function redzlib:MakeWindow(Configs)
 
 			local Button, LabelFunc = ButtonFrame(Container, DName, DDesc, UDim2.new(1, -180))
 
-			local SelectedFrame = InsertTheme(Create("Frame", Button, {
+			local SelectedFrame = Create("Frame", Button, {
 				Size = UDim2.new(0, 150, 0, 18),
 				Position = UDim2.new(1, -10, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
-				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke")
+				BackgroundTransparency = 1,
+			})
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
+			InsertTheme(Create("UIStroke", SelectedFrame, {
+				Thickness = 1,
+				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+				Color = Theme["Color Stroke"]
+			}), "Stroke")
 
 			local ActiveLabel = InsertTheme(Create("TextLabel", SelectedFrame, {
 				Size = UDim2.new(0.85, 0, 0.85, 0),
