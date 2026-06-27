@@ -3557,7 +3557,7 @@ function redzlib:MakeWindow(Configs)
 		}), "TabBG")
 		Make("Corner", TabSelect, UDim.new(0, 3))
 
-		local iconOffset = TIcon and 36 or 14
+		local iconOffset = TIcon and 31 or 14
 		local LabelTitle = InsertTheme(Create("TextLabel", TabSelect, {
 			Size = UDim2.new(1, -iconOffset - 8, 1),
 			Position = UDim2.fromOffset(iconOffset, 0),
@@ -3691,7 +3691,7 @@ function redzlib:MakeWindow(Configs)
 						BackgroundTransparency = 1,
 						ImageColor3        = Theme["Color Text"],
 					}), "Text")
-					labelX = 25
+					labelX = 28
 				end
 				InsertTheme(Create("TextLabel", DividerFrame, {
 					Font             = Enum.Font.GothamBold,
@@ -3758,7 +3758,7 @@ function redzlib:MakeWindow(Configs)
 					ImageColor3        = Theme["Color Text"],
 					Name               = "SectionIcon"
 				}), "Text")
-				labelLeftOffset = 34
+				labelLeftOffset = 29
 			end
 
 			local HeaderLabel = InsertTheme(Create("TextLabel", HeaderBtn, {
