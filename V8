@@ -4060,12 +4060,12 @@ function redzlib:MakeWindow(Configs)
 
 			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -38))
 
-			local ToggleHolder = InsertTheme(Create("Frame", Button, {
+			local ToggleHolder = Create("Frame", Button, {
 				Size = UDim2.new(0, 35, 0, 18),
 				Position = UDim2.new(1, -10, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
-				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke")
+				BackgroundColor3 = Color3.fromRGB(45, 45, 48)
+			})
 			Make("Corner", ToggleHolder, UDim.new(0.5, 0))
 
 			local Slider = Create("Frame", ToggleHolder, {
@@ -4075,12 +4075,12 @@ function redzlib:MakeWindow(Configs)
 				AnchorPoint = Vector2.new(0.5, 0.5)
 			})
 
-			local ToggleKnob = InsertTheme(Create("Frame", Slider, {
+			local ToggleKnob = Create("Frame", Slider, {
 				Size = UDim2.new(0, 12, 0, 12),
 				Position = UDim2.new(0, 0, 0.5),
 				AnchorPoint = Vector2.new(0, 0.5),
-				BackgroundColor3 = Theme["Color Theme"]
-			}), "Theme")
+				BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			})
 			Make("Corner", ToggleKnob, UDim.new(0.5, 0))
 
 			local WaitToggle
@@ -4090,12 +4090,12 @@ function redzlib:MakeWindow(Configs)
 				SetFlag(Flag, Default)
 				Funcs:FireCallback(Callback, Default)
 				if Default then
+					CreateTween({ToggleHolder, "BackgroundColor3", Theme["Color Theme"], 0.25})
 					CreateTween({ToggleKnob, "Position", UDim2.new(1, 0, 0.5), 0.25})
-					CreateTween({ToggleKnob, "BackgroundTransparency", 0, 0.25})
 					CreateTween({ToggleKnob, "AnchorPoint", Vector2.new(1, 0.5), 0.25})
 				else
+					CreateTween({ToggleHolder, "BackgroundColor3", Color3.fromRGB(45, 45, 48), 0.25})
 					CreateTween({ToggleKnob, "Position", UDim2.new(0, 0, 0.5), 0.25})
-					CreateTween({ToggleKnob, "BackgroundTransparency", 0.8, 0.25})
 					CreateTween({ToggleKnob, "AnchorPoint", Vector2.new(0, 0.5), 0.25})
 				end
 				WaitToggle = false
@@ -4138,18 +4138,14 @@ function redzlib:MakeWindow(Configs)
 
 			local Button, LabelFunc = ButtonFrame(Container, DName, DDesc, UDim2.new(1, -180))
 
-			local SelectedFrame = Create("Frame", Button, {
-				Size = UDim2.new(0, 150, 0, 18),
+			local SelectedFrame = InsertTheme(Create("Frame", Button, {
+				Size = UDim2.new(0, 200, 0, 26),
 				Position = UDim2.new(1, -10, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
-				BackgroundTransparency = 1,
-			})
-			Make("Corner", SelectedFrame, UDim.new(0, 4))
-			InsertTheme(Create("UIStroke", SelectedFrame, {
-				Thickness = 3,
-				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-				Color = Theme["Color Stroke"]
+				BackgroundColor3 = Theme["Color Stroke"],
+				BackgroundTransparency = 0.4,
 			}), "Stroke")
+			Make("Corner", SelectedFrame, UDim.new(0, 6))
 
 			local ActiveLabel = InsertTheme(Create("TextLabel", SelectedFrame, {
 				Size = UDim2.new(0.85, 0, 0.85, 0),
@@ -4663,7 +4659,7 @@ function redzlib:MakeWindow(Configs)
 			local Button, LabelFunc = ButtonFrame(Container, SName, SDesc, UDim2.new(1, -180))
 
 			local SliderHolder = Create("TextButton", Button, {
-				Size = UDim2.new(0, 110, 1, 0),
+				Size = UDim2.new(0, 130, 1, 0),
 				Position = UDim2.new(1, -10, 0, 0),
 				AnchorPoint = Vector2.new(1, 0),
 				AutoButtonColor = false,
@@ -4673,7 +4669,7 @@ function redzlib:MakeWindow(Configs)
 
 			local SliderBar = InsertTheme(Create("Frame", SliderHolder, {
 				BackgroundColor3 = Theme["Color Stroke"],
-				Size = UDim2.new(1, -20, 0, 6),
+				Size = UDim2.new(1, -20, 0, 8),
 				Position = UDim2.new(0.5, 0, 0.5),
 				AnchorPoint = Vector2.new(0.5, 0.5)
 			}), "Stroke")
@@ -4687,26 +4683,22 @@ function redzlib:MakeWindow(Configs)
 			Make("Corner", Indicator)
 
 			local SliderIcon = Create("Frame", SliderBar, {
-				Size = UDim2.new(0, 6, 0, 12),
-				BackgroundColor3 = Color3.fromRGB(220, 220, 220),
+				Size = UDim2.new(0, 10, 0, 18),
+				BackgroundColor3 = Color3.fromRGB(235, 235, 235),
 				Position = UDim2.fromScale(0, 0.5),
 				AnchorPoint = Vector2.new(0.5, 0.5),
-				BackgroundTransparency = 0.2
+				BackgroundTransparency = 0
 			})
 			Make("Corner", SliderIcon)
 
-			local InputHolder = Create("Frame", Button, {
-				Size = UDim2.new(0, 38, 0, 18),
-				Position = UDim2.new(1, -125, 0.5),
+			local InputHolder = InsertTheme(Create("Frame", Button, {
+				Size = UDim2.new(0, 52, 0, 26),
+				Position = UDim2.new(1, -145, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
-				BackgroundTransparency = 1,
-			})
-			Make("Corner", InputHolder, UDim.new(0, 4))
-			InsertTheme(Create("UIStroke", InputHolder, {
-				Thickness = 3,
-				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-				Color = Theme["Color Stroke"]
+				BackgroundColor3 = Theme["Color Stroke"],
+				BackgroundTransparency = 0.4,
 			}), "Stroke")
+			Make("Corner", InputHolder, UDim.new(0, 6))
 
 			local ValueInput = InsertTheme(Create("TextBox", InputHolder, {
 				Size = UDim2.new(1, -6, 0.85, 0),
@@ -4862,18 +4854,14 @@ function redzlib:MakeWindow(Configs)
 
 			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -38))
 
-			local SelectedFrame = Create("Frame", Button, {
-				Size = UDim2.new(0, 150, 0, 18),
+			local SelectedFrame = InsertTheme(Create("Frame", Button, {
+				Size = UDim2.new(0, 250, 0, 26),
 				Position = UDim2.new(1, -10, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
-				BackgroundTransparency = 1,
-			})
-			Make("Corner", SelectedFrame, UDim.new(0, 4))
-			InsertTheme(Create("UIStroke", SelectedFrame, {
-				Thickness = 3,
-				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-				Color = Theme["Color Stroke"]
+				BackgroundColor3 = Theme["Color Stroke"],
+				BackgroundTransparency = 0.4,
 			}), "Stroke")
+			Make("Corner", SelectedFrame, UDim.new(0, 6))
 
 			local TextBoxInput = InsertTheme(Create("TextBox", SelectedFrame, {
 				Size = UDim2.new(0.85, 0, 0.85, 0),
