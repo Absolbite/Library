@@ -2583,67 +2583,45 @@ function redzlib:SetTheme(NewTheme)
 	Theme = redzlib.Themes[NewTheme]
 
 	Connection:FireConnection("ThemeChanged", NewTheme)
-	table.foreach(redzlib.Instances, function(_, Val)
-		if not Val or not Val.Instance then return end
-		local ok, parentCheck = pcall(function() return Val.Instance.Parent end)
-		if not ok or not parentCheck then return end
+	table.foreach(redzlib.Instances, function(_,Val)
+		if not Val or not Val.Instance or not Val.Instance.Parent then return end
 		local inst = Val.Instance
-
 		if Val.Type == "Gradient" then
 			inst.Color = Theme["Color Hub 1"]
-
+			if inst.Parent == _MainFrame then
+			end
 		elseif Val.Type == "Frame" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
-			inst.BackgroundTransparency = Theme["Panel Transparency"]
-				or math.clamp(CurrentTransparency + 0.55, 0, 0.95)
-
+			inst.BackgroundTransparency = Theme["Panel Transparency"] or math.clamp(CurrentTransparency + 0.55, 0, 0.95)
 		elseif Val.Type == "SectionFrame" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
-			inst.BackgroundTransparency = Theme["Panel Transparency"]
-				or math.clamp(CurrentTransparency + 0.35, 0, 0.95)
-
+			inst.BackgroundTransparency = Theme["Panel Transparency"] or math.clamp(CurrentTransparency + 0.35, 0, 0.95)
 		elseif Val.Type == "Main" then
-			-- ÐÐµ ÑÑÐ¾Ð³Ð°ÐµÐ¼ Image/ImageTransparency â Ð³ÑÐ°Ð´Ð¸ÐµÐ½Ñ Ð¾Ð±Ð½Ð¾Ð²Ð»ÑÐµÑÑÑ ÑÐµÑÐµÐ· ÑÐ¸Ð¿ "Gradient"
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
-			inst.BackgroundTransparency = CurrentTransparency
-
+			inst.Image = ""
+			inst.ImageTransparency = 0
 		elseif Val.Type == "Stroke" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Stroke"] end
 			if inst:IsA("UIStroke") then inst.Transparency = Theme["Stroke Transparency"] or 0 end
-
 		elseif Val.Type == "ElementStroke" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = BrightenColor(Theme["Color Stroke"], 55) end
 			if inst:IsA("UIStroke") then inst.Transparency = Theme["Stroke Transparency"] or 0 end
-
 		elseif Val.Type == "Theme" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
-
 		elseif Val.Type == "Text" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Text"] end
-
 		elseif Val.Type == "DarkText" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Dark Text"] end
-
 		elseif Val.Type == "TabBG" then
 			inst.BackgroundColor3 = Theme["Color Theme"]
-
 		elseif Val.Type == "ScrollBar" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
-
-		elseif Val.Type == "ImageTheme" then
-			inst.ImageColor3 = Theme["Color Theme"]
-
-		elseif Val.Type == "ImageText" then
-			inst.ImageColor3 = Theme["Color Text"]
-
-		elseif Val.Type == "ImageDarkText" then
-			inst.ImageColor3 = Theme["Color Dark Text"]
 		end
 	end)
 end
@@ -3068,14 +3046,14 @@ function redzlib:MakeWindow(Configs)
 			Position = UDim2.new(0, 0, 0, 0)
 		})
 
-		InsertTheme(Create("ImageLabel", TopBar, {
+		Create("ImageLabel", TopBar, {
 			Size = UDim2.fromOffset(16, 16),
 			Position = UDim2.new(0, 12, 0.5),
 			AnchorPoint = Vector2.new(0, 0.5),
 			Image = resolvedIcon,
 			ImageColor3 = Theme["Color Theme"],
 			BackgroundTransparency = 1
-		}), "ImageTheme")
+		})
 
 		InsertTheme(Create("TextLabel", TopBar, {
 			Font = Enum.Font.GothamBold,
@@ -3089,7 +3067,7 @@ function redzlib:MakeWindow(Configs)
 			TextTruncate = "AtEnd"
 		}), "Text")
 
-		local XBtn = InsertTheme(Create("ImageButton", TopBar, {
+		local XBtn = Create("ImageButton", TopBar, {
 			Size = UDim2.fromOffset(14, 14),
 			Position = UDim2.new(1, -10, 0.5),
 			AnchorPoint = Vector2.new(1, 0.5),
@@ -3097,7 +3075,7 @@ function redzlib:MakeWindow(Configs)
 			ImageColor3 = Theme["Color Dark Text"],
 			BackgroundTransparency = 1,
 			AutoButtonColor = false
-		}), "ImageDarkText")
+		})
 
 		InsertTheme(Create("Frame", Frame, {
 			Size = UDim2.new(1, -24, 0, 1),
@@ -4002,6 +3980,7 @@ function redzlib:MakeWindow(Configs)
 			local PName = Configs[1] or Configs.Title or "Paragraph"
 			local Paragraph = {}
 
+			-- ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã‚ÂÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¾ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â±ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¸ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â‚Â¬ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â°ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂµÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¼ ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â€ÂšÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂµÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã‚ÂÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â€Âš: ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¿ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¾ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â´ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â´ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂµÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â‚Â¬ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¶ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â° Text ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â°ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Âº ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã‚ÂÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â€ÂšÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â‚Â¬ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¾ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¸, ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¼ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â°ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã‚ÂÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã‚ÂÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¸ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â²ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â° ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¸ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â»ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¸ ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â½ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂµÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã‚ÂÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¾ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â»ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã…Â’ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¸ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â€Â¦ Text[n]
 			local lines = {}
 			if type(Configs.Text) == "table" then
 				for _, v in ipairs(Configs.Text) do
@@ -4010,6 +3989,7 @@ function redzlib:MakeWindow(Configs)
 			elseif type(Configs.Text) == "string" then
 				table.insert(lines, Configs.Text)
 			end
+			-- ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¿ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¾ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â´ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â´ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂµÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â‚Â¬ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¶ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â° Text1, Text2, Text3 ...
 			local i = 1
 			while Configs["Text"..i] do
 				table.insert(lines, tostring(Configs["Text"..i]))
@@ -4216,14 +4196,14 @@ function redzlib:MakeWindow(Configs)
 			}), "Stroke")
 			Make("Corner", SearchHolder, UDim.new(0, 4))
 
-			local SearchIcon = InsertTheme(Create("ImageLabel", SearchHolder, {
+			local SearchIcon = Create("ImageLabel", SearchHolder, {
 				Size = UDim2.new(0, 12, 0, 12),
 				Position = UDim2.new(0, 5, 0.5),
 				AnchorPoint = Vector2.new(0, 0.5),
 				BackgroundTransparency = 1,
 				Image = "rbxassetid://10734943674",
 				ImageColor3 = Theme["Color Dark Text"]
-			}), "ImageDarkText")
+			})
 
 			local SearchBox = InsertTheme(Create("TextBox", SearchHolder, {
 				Size = UDim2.new(1, -24, 1, 0),
