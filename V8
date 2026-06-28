@@ -2511,8 +2511,15 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 
 			local frameWidth = Frame.Size.X.Offset > 0 and Frame.Size.X.Offset or 620
 			local textWidth = frameWidth - 20
-			local textSize = TextService:GetTextSize(v, 9, Enum.Font.Gotham, Vector2.new(textWidth, 9999))
-			local descH = math.max(10, textSize.Y)
+			local lineH = 9
+			local lineGap = math.floor(9 * 1.25 + 0.5)
+			local totalLines = 0
+			for line in (v .. "\n"):gmatch("([^\n]*)\n") do
+				local lineSize = TextService:GetTextSize(line == "" and " " or line, lineH, Enum.Font.Gotham, Vector2.new(textWidth, 9999))
+				local wrappedLines = math.max(1, math.ceil(lineSize.X / textWidth))
+				totalLines = totalLines + wrappedLines
+			end
+			local descH = math.max(lineH, totalLines * lineGap)
 			local totalH = 9 + 12 + 4 + descH + 5
 			DescL.Size = UDim2.new(1, -20, 0, descH)
 			DescL.Position = UDim2.new(0, 10, 0, 21)
@@ -2984,9 +2991,11 @@ function redzlib:MakeWindow(Configs)
 	function Window:Set(Val1, Val2)
 		if type(Val1) == "string" and type(Val2) == "string" then
 			Title.Text = Val1
-			Title.SubTitle.Text = Val2
+			SubTitle.Text = Val2
+			SubTitle.Position = UDim2.new(0, 15 + TextService:GetTextSize(Val1, 12, Enum.Font.GothamBold, Vector2.new(9999, 28)).X + 8, 0.5)
 		elseif type(Val1) == "string" then
 			Title.Text = Val1
+			SubTitle.Position = UDim2.new(0, 15 + TextService:GetTextSize(Val1, 12, Enum.Font.GothamBold, Vector2.new(9999, 28)).X + 8, 0.5)
 		end
 	end
 	function Window:Dialog(Configs)
@@ -3980,7 +3989,7 @@ function redzlib:MakeWindow(Configs)
 			local PName = Configs[1] or Configs.Title or "Paragraph"
 			local Paragraph = {}
 
-			-- ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã‚ÂÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¾ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â±ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¸ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â‚Â¬ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â°ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂµÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¼ ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â€ÂšÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂµÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã‚ÂÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â€Âš: ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¿ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¾ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â´ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â´ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂµÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â‚Â¬ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¶ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â° Text ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â°ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Âº ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã‚ÂÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â€ÂšÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â‚Â¬ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¾ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¸, ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¼ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â°ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã‚ÂÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã‚ÂÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¸ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â²ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â° ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¸ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â»ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¸ ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â½ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂµÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã‚ÂÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¾ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â»ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã…Â’ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¸ÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â€Â¦ Text[n]
+			-- ÃÂÃ¢ÂÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ±ÃÂÃÂÃÂÃÂ¸ÃÂÃ¢ÂÂÃÂÃ¢ÂÂ¬ÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂµÃÂÃÂÃÂÃÂ¼ ÃÂÃ¢ÂÂÃÂÃ¢ÂÂÃÂÃÂÃÂÃÂµÃÂÃÂÃÂÃÂºÃÂÃ¢ÂÂÃÂÃÂÃÂÃ¢ÂÂÃÂÃ¢ÂÂ: ÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ´ÃÂÃÂÃÂÃÂ´ÃÂÃÂÃÂÃÂµÃÂÃ¢ÂÂÃÂÃ¢ÂÂ¬ÃÂÃÂÃÂÃÂ¶ÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ° Text ÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂº ÃÂÃ¢ÂÂÃÂÃÂÃÂÃ¢ÂÂÃÂÃ¢ÂÂÃÂÃ¢ÂÂÃÂÃ¢ÂÂ¬ÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ¸, ÃÂÃÂÃÂÃÂ¼ÃÂÃÂÃÂÃÂ°ÃÂÃ¢ÂÂÃÂÃÂÃÂÃ¢ÂÂÃÂÃÂÃÂÃÂÃÂÃÂ¸ÃÂÃÂÃÂÃÂ²ÃÂÃÂÃÂÃÂ° ÃÂÃÂÃÂÃÂ¸ÃÂÃÂÃÂÃÂ»ÃÂÃÂÃÂÃÂ¸ ÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂÃÂµÃÂÃ¢ÂÂÃÂÃÂÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ»ÃÂÃ¢ÂÂÃÂÃÂÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ¸ÃÂÃ¢ÂÂÃÂÃ¢ÂÂ¦ Text[n]
 			local lines = {}
 			if type(Configs.Text) == "table" then
 				for _, v in ipairs(Configs.Text) do
@@ -3989,7 +3998,7 @@ function redzlib:MakeWindow(Configs)
 			elseif type(Configs.Text) == "string" then
 				table.insert(lines, Configs.Text)
 			end
-			-- ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¿ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¾ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â´ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â´ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂµÃƒÂƒÃ¢Â€Â˜ÃƒÂ‚Ã¢Â‚Â¬ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â¶ÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚ÂºÃƒÂƒÃ‚ÂÃƒÂ‚Ã‚Â° Text1, Text2, Text3 ...
+			-- ÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ´ÃÂÃÂÃÂÃÂ´ÃÂÃÂÃÂÃÂµÃÂÃ¢ÂÂÃÂÃ¢ÂÂ¬ÃÂÃÂÃÂÃÂ¶ÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ° Text1, Text2, Text3 ...
 			local i = 1
 			while Configs["Text"..i] do
 				table.insert(lines, tostring(Configs["Text"..i]))
