@@ -2440,56 +2440,43 @@ end)
 
 local function ButtonFrame(Instance, Title, Description, HolderSize)
 	local H_SIMPLE = 25
+	local H_DESC   = 38
 
-	local hasDesc = type(Description) == "string" and Description:gsub(" ", ""):len() > 0
+	local hasDesc = type(Description) == "string" and Description:gsub(" ",""):len() > 0
+	local frameH = hasDesc and H_DESC or H_SIMPLE
 
 	local Frame = InsertTheme(Create("TextButton", Instance, {
-		Size = UDim2.new(1, 0, 0, 0),
-		AutomaticSize = "Y",
+		Size = UDim2.new(1, 0, 0, frameH),
+		AutomaticSize = "None",
 		Text = "",
 		AutoButtonColor = false,
 		BackgroundColor3 = Theme["Color Theme"],
 		BackgroundTransparency = 0.85,
-		Name = "Option",
-		ClipsDescendants = false
+		Name = "Option"
 	}), "Theme")
 	Make("Corner", Frame, UDim.new(0, 6))
-
-	Create("UIPadding", Frame, {
-		PaddingTop = UDim.new(0, 7),
-		PaddingBottom = UDim.new(0, 7),
-		PaddingLeft = UDim.new(0, 10),
-		PaddingRight = UDim.new(0, 10)
-	})
-
-	Create("UIListLayout", Frame, {
-		FillDirection = Enum.FillDirection.Vertical,
-		HorizontalAlignment = Enum.HorizontalAlignment.Left,
-		VerticalAlignment = Enum.VerticalAlignment.Center,
-		Padding = UDim.new(0, 3),
-		SortOrder = Enum.SortOrder.LayoutOrder
-	})
 
 	local TitleL = InsertTheme(Create("TextLabel", Frame, {
 		Font = Enum.Font.GothamMedium,
 		TextColor3 = Theme["Color Text"],
-		Size = UDim2.new(1, 0, 0, 12),
-		AutomaticSize = "None",
+		Size = HolderSize,
+		Position = UDim2.new(0, 10, 0, 7),
+		AnchorPoint = Vector2.new(0, 0),
 		BackgroundTransparency = 1,
 		TextTruncate = "AtEnd",
 		TextSize = 10,
 		TextXAlignment = "Left",
 		TextYAlignment = "Center",
 		Text = "",
-		RichText = true,
-		LayoutOrder = 1
+		RichText = true
 	}), "Text")
 
 	local DescL = InsertTheme(Create("TextLabel", Frame, {
 		Font = Enum.Font.Gotham,
-		TextColor3 = Theme["Color Dark Text"],
-		Size = UDim2.new(1, 0, 0, 0),
-		AutomaticSize = "Y",
+		TextColor3 = Theme["Color Text"],
+		Size = HolderSize,
+		Position = UDim2.new(0, 10, 0, 20),
+		AnchorPoint = Vector2.new(0, 0),
 		BackgroundTransparency = 1,
 		TextWrapped = true,
 		TextSize = 9,
@@ -2498,31 +2485,45 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		TextYAlignment = "Top",
 		Text = "",
 		RichText = true,
-		Visible = false,
-		LayoutOrder = 2
-	}), "DarkText")
+		Visible = false
+	}), "Text")
+
+	if not hasDesc then
+		TitleL.Position = UDim2.new(0, 10, 0.5, 0)
+		TitleL.AnchorPoint = Vector2.new(0, 0.5)
+		TitleL.TextYAlignment = Enum.TextYAlignment.Center
+	end
 
 	local Label = {}
 
 	function Label:SetTitle(v)
-		if type(v) == "string" and v:gsub(" ", ""):len() > 0 then
+		if type(v) == "string" and v:gsub(" ",""):len() > 0 then
 			TitleL.Text = v
 		end
 	end
 
 	function Label:SetDesc(v)
-		if type(v) == "string" and v:gsub(" ", ""):len() > 0 then
+		if type(v) == "string" and v:gsub(" ",""):len() > 0 then
 			DescL.Visible = true
 			DescL.Text = v
+			TitleL.Position = UDim2.new(0, 10, 0, 9)
+			TitleL.AnchorPoint = Vector2.new(0, 0)
+
+			local frameWidth = Frame.Size.X.Offset > 0 and Frame.Size.X.Offset or 620
+			local textWidth = frameWidth - 20
+			local textSize = TextService:GetTextSize(v, 9, Enum.Font.Gotham, Vector2.new(textWidth, 9999))
+			local descH = math.max(10, textSize.Y)
+			local totalH = 9 + 12 + 4 + descH + 5
+			DescL.Size = UDim2.new(1, -20, 0, descH)
+			DescL.Position = UDim2.new(0, 10, 0, 21)
+			Frame.Size = UDim2.new(1, 0, 0, totalH)
 		else
 			DescL.Visible = false
 			DescL.Text = ""
+			TitleL.Position = UDim2.new(0, 10, 0.5, 0)
+			TitleL.AnchorPoint = Vector2.new(0, 0.5)
+			Frame.Size = UDim2.new(1, 0, 0, H_SIMPLE)
 		end
-	end
-
-	if not hasDesc then
-		Frame.AutomaticSize = "None"
-		Frame.Size = UDim2.new(1, 0, 0, H_SIMPLE)
 	end
 
 	Label:SetTitle(Title)
@@ -2602,7 +2603,7 @@ function redzlib:SetTheme(NewTheme)
 				or math.clamp(CurrentTransparency + 0.35, 0, 0.95)
 
 		elseif Val.Type == "Main" then
-
+			-- ÐÐµ ÑÑÐ¾Ð³Ð°ÐµÐ¼ Image/ImageTransparency â Ð³ÑÐ°Ð´Ð¸ÐµÐ½Ñ Ð¾Ð±Ð½Ð¾Ð²Ð»ÑÐµÑÑÑ ÑÐµÑÐµÐ· ÑÐ¸Ð¿ "Gradient"
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
 			inst.BackgroundTransparency = CurrentTransparency
 
