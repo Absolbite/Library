@@ -4001,24 +4001,46 @@ function redzlib:MakeWindow(Configs)
 				if #multiLines > 0 then isMulti = true end
 			end
 
-			local PDesc = not isMulti and (Configs.Text or Configs[2] or "") or ""
-			local Frame, LabelFunc = ButtonFrame(Container, PName, PDesc, UDim2.new(1, -20))
-
 			if isMulti and #multiLines > 0 then
-				local linesContainer = Create("Frame", Frame, {
+				local outerFrame = InsertTheme(Create("TextButton", Container, {
+					Size = UDim2.new(1, 0, 0, 25),
+					AutomaticSize = Enum.AutomaticSize.None,
+					Text = "",
+					AutoButtonColor = false,
+					BackgroundColor3 = Theme["Color Theme"],
+					BackgroundTransparency = 0.85,
+					Name = "Option"
+				}), "Theme")
+				Make("Corner", outerFrame, UDim.new(0, 6))
+
+				local innerLayout = Create("Frame", outerFrame, {
 					Size = UDim2.new(1, -20, 0, 0),
-					Position = UDim2.new(0, 10, 0, 21),
+					Position = UDim2.new(0, 10, 0, 7),
 					BackgroundTransparency = 1,
 					AutomaticSize = Enum.AutomaticSize.Y,
-					Name = "LinesContainer"
+					Name = "InnerLayout"
 				})
-				Create("UIListLayout", linesContainer, {
+				Create("UIListLayout", innerLayout, {
 					SortOrder = Enum.SortOrder.LayoutOrder,
-					Padding = UDim.new(0, 3)
+					Padding = UDim.new(0, 2)
 				})
 
+				InsertTheme(Create("TextLabel", innerLayout, {
+					Size = UDim2.new(1, 0, 0, 0),
+					BackgroundTransparency = 1,
+					Font = Enum.Font.GothamMedium,
+					TextColor3 = Theme["Color Text"],
+					TextSize = 10,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					AutomaticSize = Enum.AutomaticSize.Y,
+					RichText = true,
+					Text = PName,
+					LayoutOrder = 0,
+					Name = "Title"
+				}), "Text")
+
 				for idx, lineText in ipairs(multiLines) do
-					InsertTheme(Create("TextLabel", linesContainer, {
+					InsertTheme(Create("TextLabel", innerLayout, {
 						Size = UDim2.new(1, 0, 0, 0),
 						BackgroundTransparency = 1,
 						Font = Enum.Font.Gotham,
@@ -4034,15 +4056,27 @@ function redzlib:MakeWindow(Configs)
 					}), "Text")
 				end
 
-				linesContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-					local h = linesContainer.AbsoluteSize.Y
-					Frame.Size = UDim2.new(1, 0, 0, 21 + h + 8)
+				Create("Frame", innerLayout, {
+					Size = UDim2.new(1, 0, 0, 5),
+					BackgroundTransparency = 1,
+					LayoutOrder = 999,
+					Name = "BottomPad"
+				})
+
+				innerLayout:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+					outerFrame.Size = UDim2.new(1, 0, 0, innerLayout.AbsoluteSize.Y + 7)
 				end)
 				task.defer(function()
-					local h = linesContainer.AbsoluteSize.Y
-					Frame.Size = UDim2.new(1, 0, 0, 21 + h + 8)
+					outerFrame.Size = UDim2.new(1, 0, 0, innerLayout.AbsoluteSize.Y + 7)
 				end)
+
+				function Paragraph:Visible(...) Funcs:ToggleVisible(outerFrame, ...) end
+				function Paragraph:Destroy() outerFrame:Destroy() end
+				return Paragraph
 			end
+
+			local PDesc = Configs.Text or Configs[2] or ""
+			local Frame, LabelFunc = ButtonFrame(Container, PName, PDesc, UDim2.new(1, -20))
 
 			function Paragraph:Visible(...) Funcs:ToggleVisible(Frame, ...) end
 			function Paragraph:Destroy() Frame:Destroy() end
