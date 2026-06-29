@@ -3984,22 +3984,24 @@ function redzlib:MakeWindow(Configs)
 			local PName = Configs[1] or Configs.Title or "Paragraph"
 			local Paragraph = {}
 
-			local lines = {}
+			local PDesc
 			if type(Configs.Text) == "table" then
+				local lines = {}
 				for _, v in ipairs(Configs.Text) do
 					table.insert(lines, tostring(v))
 				end
+				PDesc = table.concat(lines, "\n")
 			elseif type(Configs.Text) == "string" then
-				table.insert(lines, Configs.Text)
+				PDesc = Configs.Text
+			else
+				local lines = {}
+				local i = 1
+				while Configs["Text"..i] do
+					table.insert(lines, tostring(Configs["Text"..i]))
+					i = i + 1
+				end
+				PDesc = #lines > 0 and table.concat(lines, "\n") or (Configs[2] or "")
 			end
-
-			local i = 1
-			while Configs["Text"..i] do
-				table.insert(lines, tostring(Configs["Text"..i]))
-				i = i + 1
-			end
-
-			local PDesc = #lines > 0 and table.concat(lines, "\n") or ""
 
 			local Frame, LabelFunc = ButtonFrame(Container, PName, PDesc, UDim2.new(1, -20))
 
