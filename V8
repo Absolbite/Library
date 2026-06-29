@@ -2474,8 +2474,8 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 	local DescL = InsertTheme(Create("TextLabel", Frame, {
 		Font = Enum.Font.Gotham,
 		TextColor3 = Theme["Color Text"],
-		Size = HolderSize,
-		Position = UDim2.new(0, 10, 0, 20),
+		Size = UDim2.new(1, -20, 0, 0),
+		Position = UDim2.new(0, 10, 0, 21),
 		AnchorPoint = Vector2.new(0, 0),
 		BackgroundTransparency = 1,
 		TextWrapped = true,
@@ -2483,6 +2483,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		LineHeight = 1.25,
 		TextXAlignment = "Left",
 		TextYAlignment = "Top",
+		AutomaticSize = Enum.AutomaticSize.Y,
 		Text = "",
 		RichText = true,
 		Visible = false
@@ -2502,19 +2503,24 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		end
 	end
 
+	local descSizeConn
+	local function updateFrameHeight()
+		local descH = DescL.AbsoluteSize.Y
+		Frame.Size = UDim2.new(1, 0, 0, 21 + descH + 8)
+	end
+
 	function Label:SetDesc(v)
+		if descSizeConn then
+			descSizeConn:Disconnect()
+			descSizeConn = nil
+		end
 		if type(v) == "string" and v:gsub(" ",""):len() > 0 then
 			DescL.Visible = true
 			DescL.Text = v
 			TitleL.Position = UDim2.new(0, 10, 0, 9)
 			TitleL.AnchorPoint = Vector2.new(0, 0)
-
-			local textWidth = (Frame.AbsoluteSize.X > 0 and Frame.AbsoluteSize.X or 620) - 20
-			local descH = TextService:GetTextSize(v, 9, Enum.Font.Gotham, Vector2.new(textWidth, 9999)).Y
-			local totalH = 9 + 12 + 4 + descH + 5
-			DescL.Size = UDim2.new(1, -20, 0, descH)
-			DescL.Position = UDim2.new(0, 10, 0, 21)
-			Frame.Size = UDim2.new(1, 0, 0, totalH)
+			descSizeConn = DescL:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateFrameHeight)
+			task.defer(updateFrameHeight)
 		else
 			DescL.Visible = false
 			DescL.Text = ""
