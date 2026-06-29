@@ -2511,14 +2511,13 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 
 			local frameWidth = Frame.AbsoluteSize.X > 0 and Frame.AbsoluteSize.X or 620
 			local textWidth = frameWidth - 20
-			local lineHeight = 9 * 1.25
+			local singleLineH = TextService:GetTextSize("A", 9, Enum.Font.Gotham, Vector2.new(textWidth, 9999)).Y
 			local descH = 0
 			for line in (v .. "\n"):gmatch("([^\n]*)\n") do
-				local lineSize = TextService:GetTextSize(line, 9, Enum.Font.Gotham, Vector2.new(textWidth, 9999))
-				local wrappedLines = math.max(1, math.ceil(lineSize.X / textWidth))
-				descH = descH + wrappedLines * lineHeight
+				local h = TextService:GetTextSize(line ~= "" and line or "A", 9, Enum.Font.Gotham, Vector2.new(textWidth, 9999)).Y
+				descH = descH + (line == "" and singleLineH or h)
 			end
-			descH = math.max(10, descH)
+			descH = math.max(singleLineH, descH)
 			local totalH = 9 + 12 + 4 + descH + 5
 			DescL.Size = UDim2.new(1, -20, 0, descH)
 			DescL.Position = UDim2.new(0, 10, 0, 21)
@@ -2741,14 +2740,14 @@ function redzlib:MakeWindow(Configs)
 		AnchorPoint = Vector2.new(0, 0.5),
 		Position = UDim2.new(0, 15 + TextService:GetTextSize(WTitle, 12, Enum.Font.GothamBold, Vector2.new(9999, 28)).X + 8, 0.5),
 		Text = WMiniText,
-		TextColor3 = Theme["Color Theme"],
+		TextColor3 = Theme["Color Dark Text"],
 		BackgroundTransparency = 1,
 		TextXAlignment = "Left",
 		TextYAlignment = "Center",
 		TextSize = 8,
 		Font = Enum.Font.Gotham,
 		Name = "SubTitle"
-	}), "Theme")
+	}), "DarkText")
 
 	local TagHolder = Create("Frame", TopBar, {
 		AnchorPoint = Vector2.new(1, 0.5),
@@ -3986,7 +3985,6 @@ function redzlib:MakeWindow(Configs)
 			local PName = Configs[1] or Configs.Title or "Paragraph"
 			local Paragraph = {}
 
-			-- ÃÂÃ¢ÂÂÃÂÃÂÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ±ÃÂÃÂÃÂÃÂ¸ÃÂÃ¢ÂÂÃÂÃ¢ÂÂ¬ÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂµÃÂÃÂÃÂÃÂ¼ ÃÂÃ¢ÂÂÃÂÃ¢ÂÂÃÂÃÂÃÂÃÂµÃÂÃÂÃÂÃÂºÃÂÃ¢ÂÂÃÂÃÂÃÂÃ¢ÂÂÃÂÃ¢ÂÂ: ÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ´ÃÂÃÂÃÂÃÂ´ÃÂÃÂÃÂÃÂµÃÂÃ¢ÂÂÃÂÃ¢ÂÂ¬ÃÂÃÂÃÂÃÂ¶ÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ° Text ÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂº ÃÂÃ¢ÂÂÃÂÃÂÃÂÃ¢ÂÂÃÂÃ¢ÂÂÃÂÃ¢ÂÂÃÂÃ¢ÂÂ¬ÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ¸, ÃÂÃÂÃÂÃÂ¼ÃÂÃÂÃÂÃÂ°ÃÂÃ¢ÂÂÃÂÃÂÃÂÃ¢ÂÂÃÂÃÂÃÂÃÂÃÂÃÂ¸ÃÂÃÂÃÂÃÂ²ÃÂÃÂÃÂÃÂ° ÃÂÃÂÃÂÃÂ¸ÃÂÃÂÃÂÃÂ»ÃÂÃÂÃÂÃÂ¸ ÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂÃÂµÃÂÃ¢ÂÂÃÂÃÂÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ»ÃÂÃ¢ÂÂÃÂÃÂÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ¸ÃÂÃ¢ÂÂÃÂÃ¢ÂÂ¦ Text[n]
 			local lines = {}
 			if type(Configs.Text) == "table" then
 				for _, v in ipairs(Configs.Text) do
@@ -3995,7 +3993,7 @@ function redzlib:MakeWindow(Configs)
 			elseif type(Configs.Text) == "string" then
 				table.insert(lines, Configs.Text)
 			end
-			-- ÃÂÃÂÃÂÃÂ¿ÃÂÃÂÃÂÃÂ¾ÃÂÃÂÃÂÃÂ´ÃÂÃÂÃÂÃÂ´ÃÂÃÂÃÂÃÂµÃÂÃ¢ÂÂÃÂÃ¢ÂÂ¬ÃÂÃÂÃÂÃÂ¶ÃÂÃÂÃÂÃÂºÃÂÃÂÃÂÃÂ° Text1, Text2, Text3 ...
+
 			local i = 1
 			while Configs["Text"..i] do
 				table.insert(lines, tostring(Configs["Text"..i]))
