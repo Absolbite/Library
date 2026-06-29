@@ -2509,15 +2509,8 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 			TitleL.Position = UDim2.new(0, 10, 0, 9)
 			TitleL.AnchorPoint = Vector2.new(0, 0)
 
-			local frameWidth = Frame.AbsoluteSize.X > 0 and Frame.AbsoluteSize.X or 620
-			local textWidth = frameWidth - 20
-			local singleLineH = TextService:GetTextSize("A", 9, Enum.Font.Gotham, Vector2.new(textWidth, 9999)).Y
-			local descH = 0
-			for line in (v .. "\n"):gmatch("([^\n]*)\n") do
-				local h = TextService:GetTextSize(line ~= "" and line or "A", 9, Enum.Font.Gotham, Vector2.new(textWidth, 9999)).Y
-				descH = descH + (line == "" and singleLineH or h)
-			end
-			descH = math.max(singleLineH, descH)
+			local textWidth = (Frame.AbsoluteSize.X > 0 and Frame.AbsoluteSize.X or 620) - 20
+			local descH = TextService:GetTextSize(v, 9, Enum.Font.Gotham, Vector2.new(textWidth, 9999)).Y
 			local totalH = 9 + 12 + 4 + descH + 5
 			DescL.Size = UDim2.new(1, -20, 0, descH)
 			DescL.Position = UDim2.new(0, 10, 0, 21)
