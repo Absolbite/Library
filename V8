@@ -2440,10 +2440,9 @@ end)
 
 local function ButtonFrame(Instance, Title, Description, HolderSize)
 	local H_SIMPLE = 25
-	local H_DESC   = 38
 
 	local hasDesc = type(Description) == "string" and Description:gsub(" ",""):len() > 0
-	local frameH = hasDesc and H_DESC or H_SIMPLE
+	local frameH = hasDesc and 38 or H_SIMPLE
 
 	local Frame = InsertTheme(Create("TextButton", Instance, {
 		Size = UDim2.new(1, 0, 0, frameH),
@@ -2483,7 +2482,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		LineHeight = 1.25,
 		TextXAlignment = "Left",
 		TextYAlignment = "Top",
-		AutomaticSize = Enum.AutomaticSize.Y,
+		AutomaticSize = Enum.AutomaticSize.None,
 		Text = "",
 		RichText = true,
 		Visible = false
@@ -2503,24 +2502,31 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		end
 	end
 
-	local descSizeConn
+	local function MeasureDescHeight()
+		local width = Frame.AbsoluteSize.X - 20
+		if width <= 0 then width = 200 end
+		return TextService:GetTextSize(DescL.Text, DescL.TextSize, DescL.Font, Vector2.new(width, math.huge)).Y
+	end
+
+	local resizeConn
 	local function updateFrameHeight()
-		local descH = DescL.AbsoluteSize.Y
+		local descH = MeasureDescHeight()
+		DescL.Size = UDim2.new(1, -20, 0, descH)
 		Frame.Size = UDim2.new(1, 0, 0, 21 + descH + 8)
 	end
 
 	function Label:SetDesc(v)
-		if descSizeConn then
-			descSizeConn:Disconnect()
-			descSizeConn = nil
+		if resizeConn then
+			resizeConn:Disconnect()
+			resizeConn = nil
 		end
 		if type(v) == "string" and v:gsub(" ",""):len() > 0 then
 			DescL.Visible = true
 			DescL.Text = v
 			TitleL.Position = UDim2.new(0, 10, 0, 9)
 			TitleL.AnchorPoint = Vector2.new(0, 0)
-			descSizeConn = DescL:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateFrameHeight)
-			task.defer(updateFrameHeight)
+			updateFrameHeight()
+			resizeConn = Frame:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateFrameHeight)
 		else
 			DescL.Visible = false
 			DescL.Text = ""
@@ -4017,7 +4023,7 @@ function redzlib:MakeWindow(Configs)
 					Size = UDim2.new(1, -20, 0, 0),
 					Position = UDim2.new(0, 10, 0, 7),
 					BackgroundTransparency = 1,
-					AutomaticSize = Enum.AutomaticSize.Y,
+					AutomaticSize = Enum.AutomaticSize.None,
 					Name = "InnerLayout"
 				})
 				Create("UIListLayout", innerLayout, {
@@ -4026,21 +4032,21 @@ function redzlib:MakeWindow(Configs)
 				})
 
 				InsertTheme(Create("TextLabel", innerLayout, {
-					Size = UDim2.new(1, 0, 0, 0),
+					Size = UDim2.new(1, 0, 0, 14),
 					BackgroundTransparency = 1,
 					Font = Enum.Font.GothamMedium,
 					TextColor3 = Theme["Color Text"],
 					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Left,
-					AutomaticSize = Enum.AutomaticSize.Y,
 					RichText = true,
 					Text = PName,
 					LayoutOrder = 0,
 					Name = "Title"
 				}), "Text")
 
+				local lineLabels = {}
 				for idx, lineText in ipairs(multiLines) do
-					InsertTheme(Create("TextLabel", innerLayout, {
+					local lbl = InsertTheme(Create("TextLabel", innerLayout, {
 						Size = UDim2.new(1, 0, 0, 0),
 						BackgroundTransparency = 1,
 						Font = Enum.Font.Gotham,
@@ -4049,26 +4055,30 @@ function redzlib:MakeWindow(Configs)
 						TextXAlignment = Enum.TextXAlignment.Left,
 						TextWrapped = true,
 						RichText = true,
-						AutomaticSize = Enum.AutomaticSize.Y,
 						Text = lineText,
 						LayoutOrder = idx,
 						Name = "Line"..idx
 					}), "Text")
+					table.insert(lineLabels, lbl)
 				end
 
-				Create("Frame", innerLayout, {
-					Size = UDim2.new(1, 0, 0, 5),
-					BackgroundTransparency = 1,
-					LayoutOrder = 999,
-					Name = "BottomPad"
-				})
+				local function RecalcParagraph()
+					local width = outerFrame.AbsoluteSize.X - 20
+					if width <= 0 then width = 200 end
 
-				innerLayout:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-					outerFrame.Size = UDim2.new(1, 0, 0, innerLayout.AbsoluteSize.Y + 7)
-				end)
-				task.defer(function()
-					outerFrame.Size = UDim2.new(1, 0, 0, innerLayout.AbsoluteSize.Y + 7)
-				end)
+					local total = 14 + 2
+					for _, lbl in ipairs(lineLabels) do
+						local size = TextService:GetTextSize(lbl.Text, lbl.TextSize, lbl.Font, Vector2.new(width, math.huge))
+						lbl.Size = UDim2.new(1, 0, 0, size.Y)
+						total = total + size.Y + 2
+					end
+
+					innerLayout.Size = UDim2.new(1, -20, 0, total)
+					outerFrame.Size = UDim2.new(1, 0, 0, total + 14)
+				end
+
+				RecalcParagraph()
+				outerFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(RecalcParagraph)
 
 				function Paragraph:Visible(...) Funcs:ToggleVisible(outerFrame, ...) end
 				function Paragraph:Destroy() outerFrame:Destroy() end
