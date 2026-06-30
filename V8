@@ -2441,21 +2441,10 @@ end)
 local function MeasureWrappedTextHeight(text, textSize, font, width, lineHeightMultiplier)
 	lineHeightMultiplier = lineHeightMultiplier or 1
 	if not width or width <= 0 then width = 200 end
-	if text == "" then
-		return TextService:GetTextSize("Mg", textSize, font, Vector2.new(10000, math.huge)).Y * lineHeightMultiplier
-	end
 	local plain = text:gsub("<[^<>]->", "")
-	local baseLineH = TextService:GetTextSize("Mg", textSize, font, Vector2.new(10000, math.huge)).Y
-	local totalLines = 0
-	for line in (plain.."\n"):gmatch("([^\n]*)\n") do
-		if line == "" then
-			totalLines = totalLines + 1
-		else
-			local h = TextService:GetTextSize(line, textSize, font, Vector2.new(width, math.huge)).Y
-			totalLines = totalLines + math.max(1, math.floor(h / baseLineH + 0.5))
-		end
-	end
-	return totalLines * baseLineH * lineHeightMultiplier
+	if plain == "" then plain = " " end
+	local size = TextService:GetTextSize(plain, textSize, font, Vector2.new(width, math.huge))
+	return size.Y * lineHeightMultiplier
 end
 
 local function ButtonFrame(Instance, Title, Description, HolderSize)
@@ -2523,7 +2512,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 	end
 
 	local function MeasureDescHeight()
-		local width = Frame.AbsoluteSize.X - 20
+		local width = (Frame.AbsoluteSize.X - 20) / UIScale
 		return MeasureWrappedTextHeight(DescL.Text, DescL.TextSize, DescL.Font, width, DescL.LineHeight)
 	end
 
@@ -2640,6 +2629,9 @@ function redzlib:SetTheme(NewTheme)
 		elseif Val.Type == "Theme" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
+		elseif Val.Type == "ThemeText" then
+			local prop = GetColor(inst)
+			if prop ~= "" then inst[prop] = BrightenColor(Theme["Color Theme"], 60) end
 		elseif Val.Type == "Text" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Text"] end
@@ -2752,11 +2744,11 @@ function redzlib:MakeWindow(Configs)
 		TextXAlignment = "Left",
 		TextYAlignment = "Center",
 		TextSize = 12,
-		TextColor3 = Theme["Color Theme"],
+		TextColor3 = BrightenColor(Theme["Color Theme"], 60),
 		BackgroundTransparency = 1,
 		Font = Enum.Font.GothamBold,
 		Name = "Title"
-	}), "Theme")
+	}), "ThemeText")
 
 	local SubTitle = InsertTheme(Create("TextLabel", TopBar, {
 		AutomaticSize = "X",
@@ -4082,7 +4074,7 @@ function redzlib:MakeWindow(Configs)
 				end
 
 				local function RecalcParagraph()
-					local width = outerFrame.AbsoluteSize.X - 20
+					local width = (outerFrame.AbsoluteSize.X - 20) / UIScale
 
 					local total = 14 + 2
 					for _, lbl in ipairs(lineLabels) do
