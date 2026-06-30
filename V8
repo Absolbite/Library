@@ -2438,6 +2438,26 @@ AddEle("Gradient", function(parent, props, ...)
 	return New
 end)
 
+local function MeasureWrappedTextHeight(text, textSize, font, width, lineHeightMultiplier)
+	lineHeightMultiplier = lineHeightMultiplier or 1
+	if not width or width <= 0 then width = 200 end
+	if text == "" then
+		return TextService:GetTextSize("Mg", textSize, font, Vector2.new(10000, math.huge)).Y * lineHeightMultiplier
+	end
+	local plain = text:gsub("<[^<>]->", "")
+	local baseLineH = TextService:GetTextSize("Mg", textSize, font, Vector2.new(10000, math.huge)).Y
+	local totalLines = 0
+	for line in (plain.."\n"):gmatch("([^\n]*)\n") do
+		if line == "" then
+			totalLines = totalLines + 1
+		else
+			local h = TextService:GetTextSize(line, textSize, font, Vector2.new(width, math.huge)).Y
+			totalLines = totalLines + math.max(1, math.floor(h / baseLineH + 0.5))
+		end
+	end
+	return totalLines * baseLineH * lineHeightMultiplier
+end
+
 local function ButtonFrame(Instance, Title, Description, HolderSize)
 	local H_SIMPLE = 25
 
@@ -2504,8 +2524,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 
 	local function MeasureDescHeight()
 		local width = Frame.AbsoluteSize.X - 20
-		if width <= 0 then width = 200 end
-		return TextService:GetTextSize(DescL.Text, DescL.TextSize, DescL.Font, Vector2.new(width, math.huge)).Y
+		return MeasureWrappedTextHeight(DescL.Text, DescL.TextSize, DescL.Font, width, DescL.LineHeight)
 	end
 
 	local resizeConn
@@ -4064,13 +4083,12 @@ function redzlib:MakeWindow(Configs)
 
 				local function RecalcParagraph()
 					local width = outerFrame.AbsoluteSize.X - 20
-					if width <= 0 then width = 200 end
 
 					local total = 14 + 2
 					for _, lbl in ipairs(lineLabels) do
-						local size = TextService:GetTextSize(lbl.Text, lbl.TextSize, lbl.Font, Vector2.new(width, math.huge))
-						lbl.Size = UDim2.new(1, 0, 0, size.Y)
-						total = total + size.Y + 2
+						local h = MeasureWrappedTextHeight(lbl.Text, lbl.TextSize, lbl.Font, width, lbl.LineHeight)
+						lbl.Size = UDim2.new(1, 0, 0, h)
+						total = total + h + 2
 					end
 
 					innerLayout.Size = UDim2.new(1, -20, 0, total)
