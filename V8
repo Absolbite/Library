@@ -1236,7 +1236,9 @@ local redzlib = {
 		TabHeight = 32,
 		Theme = "Darker",
 		Transparency = 0.03,
-		MinimizeButtons = {}
+		MinimizeButtons = {},
+		ImageTheme = "",
+		ImageThemeTransparency = 0
 	},
 	Settings = {},
 	Connection = {},
@@ -2131,6 +2133,8 @@ local SetProps, SetChildren, InsertTheme, Create do
 				if rawget(decode, "Theme") and VerifyTheme(decode["Theme"]) then redzlib.Save["Theme"] = decode["Theme"] end
 				if rawget(decode, "Transparency") then redzlib.Save["Transparency"] = decode["Transparency"] end
 				if rawget(decode, "MinimizeButtons") then redzlib.Save["MinimizeButtons"] = decode["MinimizeButtons"] end
+				if rawget(decode, "ImageTheme") then redzlib.Save["ImageTheme"] = decode["ImageTheme"] end
+				if rawget(decode, "ImageThemeTransparency") then redzlib.Save["ImageThemeTransparency"] = decode["ImageThemeTransparency"] end
 			end
 		end
 	end
@@ -2616,8 +2620,6 @@ function redzlib:SetTheme(NewTheme)
 			inst.BackgroundTransparency = Theme["Panel Transparency"] or math.clamp(CurrentTransparency + 0.35, 0, 0.95)
 		elseif Val.Type == "Main" then
 			inst.BackgroundColor3 = Theme["Color Hub 2"]
-			inst.Image = ""
-			inst.ImageTransparency = 0
 		elseif Val.Type == "Stroke" then
 			local prop = GetColor(inst)
 			if prop ~= "" then inst[prop] = Theme["Color Stroke"] end
@@ -2645,6 +2647,24 @@ function redzlib:SetTheme(NewTheme)
 			if prop ~= "" then inst[prop] = Theme["Color Theme"] end
 		end
 	end)
+end
+
+function redzlib:SetImageTheme(assetId, transparency)
+	if not _MainFrame then return end
+	assetId = tostring(assetId or "")
+	transparency = math.clamp(tonumber(transparency) or 0, 0, 1)
+	redzlib.Save.ImageTheme = assetId
+	redzlib.Save.ImageThemeTransparency = transparency
+	SaveJson("smooth library.json", redzlib.Save)
+	if assetId == "" then
+		_MainFrame.Image = ""
+		_MainFrame.ImageTransparency = 0
+		_MainFrame.ScaleType = Enum.ScaleType.Stretch
+	else
+		_MainFrame.Image = assetId
+		_MainFrame.ImageTransparency = transparency
+		_MainFrame.ScaleType = Enum.ScaleType.Crop
+	end
 end
 
 function redzlib:SetTransparency(value)
@@ -2714,6 +2734,12 @@ function redzlib:MakeWindow(Configs)
 	}), "Main")
 
 	_MainFrame = MainFrame
+
+	if redzlib.Save.ImageTheme and redzlib.Save.ImageTheme ~= "" then
+		MainFrame.Image = redzlib.Save.ImageTheme
+		MainFrame.ImageTransparency = redzlib.Save.ImageThemeTransparency or 0
+		MainFrame.ScaleType = Enum.ScaleType.Crop
+	end
 
 	Make("Gradient", MainFrame, { Rotation = 45 })
 	MakeDrag(MainFrame)
@@ -3421,6 +3447,10 @@ function redzlib:MakeWindow(Configs)
 
 	function Window:SetTheme(name)
 		redzlib:SetTheme(name)
+	end
+
+	function Window:SetImageTheme(assetId, transparency)
+		redzlib:SetImageTheme(assetId, transparency)
 	end
 
 	local ContainerList = {}
