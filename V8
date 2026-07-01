@@ -1236,9 +1236,7 @@ local redzlib = {
 		TabHeight = 32,
 		Theme = "Darker",
 		Transparency = 0.03,
-		MinimizeButtons = {},
-		ImageTheme = "",
-		ImageThemeTransparency = 0
+		MinimizeButtons = {}
 	},
 	Settings = {},
 	Connection = {},
@@ -2133,8 +2131,6 @@ local SetProps, SetChildren, InsertTheme, Create do
 				if rawget(decode, "Theme") and VerifyTheme(decode["Theme"]) then redzlib.Save["Theme"] = decode["Theme"] end
 				if rawget(decode, "Transparency") then redzlib.Save["Transparency"] = decode["Transparency"] end
 				if rawget(decode, "MinimizeButtons") then redzlib.Save["MinimizeButtons"] = decode["MinimizeButtons"] end
-				if rawget(decode, "ImageTheme") then redzlib.Save["ImageTheme"] = decode["ImageTheme"] end
-				if rawget(decode, "ImageThemeTransparency") then redzlib.Save["ImageThemeTransparency"] = decode["ImageThemeTransparency"] end
 			end
 		end
 	end
@@ -2383,7 +2379,6 @@ local Theme = redzlib.Themes[redzlib.Save.Theme]
 
 local CurrentTransparency = redzlib.Save.Transparency or 0.03
 local _MainFrame = nil
-local _ImageApplyFunc = nil
 
 local function AddEle(Name, Func)
 	redzlib.Elements[Name] = Func
@@ -2650,29 +2645,6 @@ function redzlib:SetTheme(NewTheme)
 	end)
 end
 
-function redzlib:SetImageThemeTransparency(transparency)
-	transparency = math.clamp(tonumber(transparency) or 0, 0, 1)
-	redzlib.Save.ImageThemeTransparency = transparency
-	SaveJson("smooth library.json", redzlib.Save)
-	if _MainFrame then
-		local lbl = _MainFrame:FindFirstChild("ImageThemeBG")
-		if lbl and lbl:IsA("ImageLabel") then
-			lbl.ImageTransparency = transparency
-		end
-	end
-end
-
-function redzlib:SetImageTheme(assetId, transparency)
-	assetId = tostring(assetId or "")
-	transparency = math.clamp(tonumber(transparency) or 0, 0, 1)
-	redzlib.Save.ImageTheme = assetId
-	redzlib.Save.ImageThemeTransparency = transparency
-	SaveJson("smooth library.json", redzlib.Save)
-	if _ImageApplyFunc then
-		_ImageApplyFunc(assetId, transparency)
-	end
-end
-
 function redzlib:SetTransparency(value)
 	value = math.clamp(tonumber(value) or 0, 0, 0.95)
 	CurrentTransparency = value
@@ -2740,103 +2712,6 @@ function redzlib:MakeWindow(Configs)
 	}), "Main")
 
 	_MainFrame = MainFrame
-
-	local _ImageThemeLabel = nil
-
-	local function ApplyImageTheme(assetId, transparency)
-		if _ImageThemeLabel then
-			_ImageThemeLabel:Destroy()
-			_ImageThemeLabel = nil
-		end
-		if not assetId or assetId == "" then return end
-
-		local corner = MainCorner and MainCorner.CornerRadius or UDim.new(0, 7)
-
-		local videoPath = assetId:match("^video:(.+)")
-		local httpPath  = not videoPath and assetId:match("^https?://.+")
-		local rbxPath   = not videoPath and not httpPath and assetId:match("^rbxassetid://%d+")
-
-		if videoPath then
-			if httpPath then
-				local folder = "smooth library/bg"
-				if makefolder and not isfolder("smooth library") then makefolder("smooth library") end
-				if makefolder and not isfolder(folder) then makefolder(folder) end
-				local fname = folder .. "/" .. videoPath:gsub("[^%w%.%-_]", "_") .. ".webm"
-				if not isfile or not isfile(fname) then
-					pcall(function()
-						local body = game.HttpGet and game:HttpGet(videoPath)
-							or (syn and syn.request or request)({ Url = videoPath, Method = "GET" }).Body
-						writefile(fname, body)
-					end)
-				end
-				local ok, asset = pcall(getcustomasset, fname)
-				if ok then videoPath = asset end
-			end
-
-			local vf = Create("VideoFrame", MainFrame, {
-				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				Video = videoPath,
-				Looped = true,
-				Volume = 0,
-				ZIndex = 2,
-				Name = "ImageThemeBG"
-			})
-			Create("UICorner", vf, { CornerRadius = corner })
-			pcall(function() vf:Play() end)
-			_ImageThemeLabel = vf
-
-		elseif httpPath then
-			local folder = "smooth library/bg"
-			if makefolder and not isfolder("smooth library") then makefolder("smooth library") end
-			if makefolder and not isfolder(folder) then makefolder(folder) end
-			local ext = httpPath:match("%.(%w+)%??") or "png"
-			if not table.find({ "png", "jpg", "jpeg", "webp" }, ext:lower()) then ext = "png" end
-			local fname = folder .. "/" .. httpPath:gsub("[^%w%.%-_]", "_") .. "." .. ext
-			local finalImage = httpPath
-			if isfile and not isfile(fname) then
-				pcall(function()
-					local body = game.HttpGet and game:HttpGet(httpPath)
-						or (syn and syn.request or request)({ Url = httpPath, Method = "GET" }).Body
-					writefile(fname, body)
-				end)
-			end
-			if isfile and isfile(fname) then
-				local ok, asset = pcall(getcustomasset, fname)
-				if ok then finalImage = asset end
-			end
-			local lbl = Create("ImageLabel", MainFrame, {
-				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				Image = finalImage,
-				ImageTransparency = transparency or 0,
-				ScaleType = Enum.ScaleType.Crop,
-				ZIndex = 2,
-				Name = "ImageThemeBG"
-			})
-			Create("UICorner", lbl, { CornerRadius = corner })
-			_ImageThemeLabel = lbl
-
-		elseif rbxPath then
-			local lbl = Create("ImageLabel", MainFrame, {
-				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				Image = rbxPath,
-				ImageTransparency = transparency or 0,
-				ScaleType = Enum.ScaleType.Crop,
-				ZIndex = 2,
-				Name = "ImageThemeBG"
-			})
-			Create("UICorner", lbl, { CornerRadius = corner })
-			_ImageThemeLabel = lbl
-		end
-	end
-
-	if redzlib.Save.ImageTheme and redzlib.Save.ImageTheme ~= "" then
-		ApplyImageTheme(redzlib.Save.ImageTheme, redzlib.Save.ImageThemeTransparency or 0)
-	end
-
-	_ImageApplyFunc = ApplyImageTheme
 
 	Make("Gradient", MainFrame, { Rotation = 45 })
 	MakeDrag(MainFrame)
@@ -3544,14 +3419,6 @@ function redzlib:MakeWindow(Configs)
 
 	function Window:SetTheme(name)
 		redzlib:SetTheme(name)
-	end
-
-	function Window:SetImageTheme(assetId, transparency)
-		redzlib:SetImageTheme(assetId, transparency)
-	end
-
-	function Window:SetImageThemeTransparency(transparency)
-		redzlib:SetImageThemeTransparency(transparency)
 	end
 
 	local ContainerList = {}
