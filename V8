@@ -5080,10 +5080,10 @@ function redzlib:MakeWindow(Configs)
 				Text = "Join",
 				Font = Enum.Font.GothamBold,
 				TextSize = 12,
-				TextColor3 = Theme["Color Text"],
-				BackgroundColor3 = Theme["Color Hub 2"],
+				TextColor3 = Color3.new(1, 1, 1),
+				BackgroundColor3 = Theme["Color Theme"],
 				AutoButtonColor = false
-			}), "Frame")
+			}), "TabBG")
 			Make("Corner", JoinButton, UDim.new(0, 5))
 			Make("ElementStroke", JoinButton)
 
@@ -5100,8 +5100,8 @@ function redzlib:MakeWindow(Configs)
 				task.wait(5)
 				SetProps(JoinButton, {
 					Text = "Join",
-					BackgroundColor3 = Theme["Color Hub 2"],
-					TextColor3 = Theme["Color Text"]
+					BackgroundColor3 = Theme["Color Theme"],
+					TextColor3 = Color3.new(1, 1, 1)
 				})
 				ClickDelay = false
 			end)
