@@ -3040,11 +3040,10 @@ function redzlib:MakeWindow(Configs)
 			Size = UDim2.fromOffset(baseW * 1.06, baseH * 1.06),
 			Position = UDim2.fromScale(0.5, 0.5),
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			BackgroundTransparency = 0,
-			BackgroundColor3 = Theme["Color Hub 2"],
+			BackgroundTransparency = 0.1,
+			BackgroundColor3 = Theme["Color Theme"],
 			ClipsDescendants = true
-		}), "Frame")
-		Make("Gradient", Frame, {Rotation = 270})
+		}), "Theme")
 		Make("Corner", Frame)
 
 		local iconMap = {
