@@ -3989,7 +3989,7 @@ function redzlib:MakeWindow(Configs)
 			function Section:AddTextBox(cfg)       return WithInner(Tab.AddTextBox,       25, cfg) end
 			function Section:AddParagraph(cfg)     return WithInner(Tab.AddParagraph,     38, cfg) end
 			function Section:AddDivider(cfg)       return WithInner(Tab.AddDivider,       10, cfg) end
-			function Section:AddDiscordInvite(cfg) return WithInner(Tab.AddDiscordInvite, 80, cfg) end
+			function Section:AddDiscordInvite(cfg) return WithInner(Tab.AddDiscordInvite, 38, cfg) end
 
 			return Section
 		end
@@ -5010,105 +5010,113 @@ function redzlib:MakeWindow(Configs)
 
 		function Tab:AddDiscordInvite(Configs)
 			local InvTitle = Configs[1] or Configs.Name or Configs.Title or "Discord"
-			local Desc = Configs.Desc or Configs.Description or ""
-			local Logo = Configs[2] or Configs.Logo or ""
-			local Invite = Configs[3] or Configs.Invite or ""
+			local Desc     = Configs.Desc or Configs.Description or ""
+			local Logo     = Configs[2] or Configs.Logo or ""
+			local Invite   = Configs[3] or Configs.Invite or ""
 
-			local InviteHolder = Create("Frame", Container, {
-				Size = UDim2.new(1, 0, 0, 80),
-				Name = "Option",
-				BackgroundTransparency = 1
-			})
+			local hasDesc = type(Desc) == "string" and Desc:gsub(" ", ""):len() > 0
+			local hasLogo = type(Logo) == "string" and Logo:gsub(" ", ""):len() > 0
+			local frameH  = hasDesc and 38 or 25
 
-			local InviteLabel = InsertTheme(Create("TextLabel", InviteHolder, {
-				Size = UDim2.new(1, 0, 0, 15),
-				Position = UDim2.new(0, 5),
-				TextColor3 = Theme["Color Theme"],
-				Font = Enum.Font.GothamBold,
-				TextXAlignment = "Left",
-				BackgroundTransparency = 1,
-				TextSize = 10,
-				Text = Invite
+			local Frame = InsertTheme(Create("TextButton", Container, {
+				Size = UDim2.new(1, 0, 0, frameH),
+				AutomaticSize = "None",
+				Text = "",
+				AutoButtonColor = false,
+				BackgroundColor3 = Theme["Color Theme"],
+				BackgroundTransparency = 0.85,
+				Name = "Option"
 			}), "Theme")
+			Make("Corner", Frame, UDim.new(0, 6))
 
-			local FrameHolder = InsertTheme(Create("Frame", InviteHolder, {
-				Size = UDim2.new(1, 0, 0, 65),
-				AnchorPoint = Vector2.new(0, 1),
-				Position = UDim2.new(0, 0, 1),
-				BackgroundColor3 = Theme["Color Hub 2"]
-			}), "Frame")
-			Make("Corner", FrameHolder)
-			Make("ElementStroke", FrameHolder)
+			local textOffX = 10
 
-			local ImageLabel = Create("ImageLabel", FrameHolder, {
-				Size = UDim2.new(0, 30, 0, 30),
-				Position = UDim2.new(0, 7, 0, 7),
-				Image = Logo,
-				BackgroundTransparency = 1
-			})
-			Make("Corner", ImageLabel, UDim.new(0, 4))
-			Make("ElementStroke", ImageLabel)
+			if hasLogo then
+				textOffX = 32
+				local IconImg = Create("ImageLabel", Frame, {
+					Size = UDim2.new(0, 16, 0, 16),
+					Position = UDim2.new(0, 8, 0.5, 0),
+					AnchorPoint = Vector2.new(0, 0.5),
+					BackgroundTransparency = 1,
+					Image = Logo,
+					Name = "Icon"
+				})
+				Make("Corner", IconImg, UDim.new(0, 3))
+			end
 
-			local LTitle = InsertTheme(Create("TextLabel", FrameHolder, {
-				Size = UDim2.new(1, -52, 0, 15),
-				Position = UDim2.new(0, 44, 0, 7),
-				Font = Enum.Font.GothamBold,
+			local TitleL = InsertTheme(Create("TextLabel", Frame, {
+				Font = Enum.Font.GothamMedium,
 				TextColor3 = Theme["Color Text"],
-				TextXAlignment = "Left",
+				Size = UDim2.new(1, -(textOffX + 72), 0, 14),
+				Position = UDim2.new(0, textOffX, 0.5, 0),
+				AnchorPoint = Vector2.new(0, 0.5),
 				BackgroundTransparency = 1,
+				TextTruncate = "AtEnd",
 				TextSize = 10,
-				Text = InvTitle
+				TextXAlignment = "Left",
+				TextYAlignment = "Center",
+				Text = InvTitle,
+				RichText = true
 			}), "Text")
 
-			local LDesc = InsertTheme(Create("TextLabel", FrameHolder, {
-				Size = UDim2.new(1, -52, 0, 0),
-				Position = UDim2.new(0, 44, 0, 22),
-				TextWrapped = true,
-				AutomaticSize = "Y",
-				Font = Enum.Font.Gotham,
-				TextColor3 = Theme["Color Dark Text"],
-				TextXAlignment = "Left",
-				BackgroundTransparency = 1,
-				TextSize = 8,
-				Text = Desc
-			}), "DarkText")
+			if hasDesc then
+				TitleL.Position = UDim2.new(0, textOffX, 0, 6)
+				TitleL.AnchorPoint = Vector2.new(0, 0)
 
-			local JoinButton = InsertTheme(Create("TextButton", FrameHolder, {
-				Size = UDim2.new(1, -14, 0, 16),
-				AnchorPoint = Vector2.new(0.5, 1),
-				Position = UDim2.new(0.5, 0, 1, -7),
+				InsertTheme(Create("TextLabel", Frame, {
+					Font = Enum.Font.Gotham,
+					TextColor3 = Theme["Color Dark Text"],
+					Size = UDim2.new(1, -(textOffX + 72), 0, 11),
+					Position = UDim2.new(0, textOffX, 0, 20),
+					AnchorPoint = Vector2.new(0, 0),
+					BackgroundTransparency = 1,
+					TextTruncate = "AtEnd",
+					TextSize = 9,
+					TextXAlignment = "Left",
+					TextYAlignment = "Center",
+					Text = Desc,
+					RichText = true
+				}), "DarkText")
+			end
+
+			local JoinBtn = InsertTheme(Create("TextButton", Frame, {
+				Size = UDim2.new(0, 58, 0, 17),
+				Position = UDim2.new(1, -8, 0.5, 0),
+				AnchorPoint = Vector2.new(1, 0.5),
 				Text = "Join",
 				Font = Enum.Font.GothamBold,
-				TextSize = 12,
-				TextColor3 = Color3.new(1, 1, 1),
+				TextSize = 10,
+				TextColor3 = Theme["Color Text"],
 				BackgroundColor3 = Theme["Color Theme"],
+				BackgroundTransparency = 0.65,
 				AutoButtonColor = false
-			}), "TabBG")
-			Make("Corner", JoinButton, UDim.new(0, 5))
-			Make("ElementStroke", JoinButton)
+			}), "Theme")
+			Make("Corner", JoinBtn, UDim.new(0, 5))
 
 			local ClickDelay
-			JoinButton.Activated:Connect(function()
-				setclipboard(Invite)
+			JoinBtn.Activated:Connect(function()
 				if ClickDelay then return end
+				setclipboard(Invite)
 				ClickDelay = true
-				SetProps(JoinButton, {
-					Text = "Copied to Clipboard",
-					BackgroundColor3 = Color3.fromRGB(100, 100, 100),
+				SetProps(JoinBtn, {
+					Text = "Copied!",
+					BackgroundColor3 = Color3.fromRGB(80, 80, 80),
+					BackgroundTransparency = 0,
 					TextColor3 = Color3.fromRGB(150, 150, 150)
 				})
-				task.wait(5)
-				SetProps(JoinButton, {
+				task.wait(3)
+				SetProps(JoinBtn, {
 					Text = "Join",
 					BackgroundColor3 = Theme["Color Theme"],
-					TextColor3 = Color3.new(1, 1, 1)
+					BackgroundTransparency = 0.65,
+					TextColor3 = Theme["Color Text"]
 				})
 				ClickDelay = false
 			end)
 
 			local DiscordInvite = {}
-			function DiscordInvite:Destroy() InviteHolder:Destroy() end
-			function DiscordInvite:Visible(...) Funcs:ToggleVisible(InviteHolder, ...) end
+			function DiscordInvite:Visible(...) Funcs:ToggleVisible(Frame, ...) end
+			function DiscordInvite:Destroy() Frame:Destroy() end
 			return DiscordInvite
 		end
 
