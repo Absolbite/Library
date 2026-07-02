@@ -3040,7 +3040,7 @@ function redzlib:MakeWindow(Configs)
 			Size = UDim2.fromOffset(baseW * 1.06, baseH * 1.06),
 			Position = UDim2.fromScale(0.5, 0.5),
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			BackgroundTransparency = 0.85,
+			BackgroundTransparency = 0.50,
 			BackgroundColor3 = Theme["Color Theme"],
 			ClipsDescendants = true
 		}), "Theme")
