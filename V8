@@ -3989,7 +3989,7 @@ function redzlib:MakeWindow(Configs)
 			function Section:AddTextBox(cfg)       return WithInner(Tab.AddTextBox,       25, cfg) end
 			function Section:AddParagraph(cfg)     return WithInner(Tab.AddParagraph,     38, cfg) end
 			function Section:AddDivider(cfg)       return WithInner(Tab.AddDivider,       10, cfg) end
-			function Section:AddDiscordInvite(cfg) return WithInner(Tab.AddDiscordInvite, 38, cfg) end
+			function Section:AddDiscordInvite(cfg) return WithInner(Tab.AddDiscordInvite, 80, cfg) end
 
 			return Section
 		end
@@ -5014,75 +5014,67 @@ function redzlib:MakeWindow(Configs)
 			local Logo     = Configs[2] or Configs.Logo or ""
 			local Invite   = Configs[3] or Configs.Invite or ""
 
-			local hasDesc = type(Desc) == "string" and Desc:gsub(" ", ""):len() > 0
 			local hasLogo = type(Logo) == "string" and Logo:gsub(" ", ""):len() > 0
-			local frameH  = hasDesc and 38 or 25
 
-			local Frame = InsertTheme(Create("TextButton", Container, {
-				Size = UDim2.new(1, 0, 0, frameH),
-				AutomaticSize = "None",
-				Text = "",
-				AutoButtonColor = false,
+			local Card = InsertTheme(Create("Frame", Container, {
+				Size = UDim2.new(1, 0, 0, 80),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 0.85,
 				Name = "Option"
 			}), "Theme")
-			Make("Corner", Frame, UDim.new(0, 6))
-
-			local textOffX = 10
+			Make("Corner", Card, UDim.new(0, 6))
 
 			if hasLogo then
-				textOffX = 32
-				local IconImg = Create("ImageLabel", Frame, {
-					Size = UDim2.new(0, 16, 0, 16),
-					Position = UDim2.new(0, 8, 0.5, 0),
-					AnchorPoint = Vector2.new(0, 0.5),
+				local IconFrame = InsertTheme(Create("Frame", Card, {
+					Size = UDim2.new(0, 34, 0, 34),
+					Position = UDim2.new(0, 8, 0, 8),
+					BackgroundColor3 = Theme["Color Theme"],
+					BackgroundTransparency = 0.75,
+					Name = "LogoFrame"
+				}), "Theme")
+				Make("Corner", IconFrame, UDim.new(0, 5))
+
+				Create("ImageLabel", IconFrame, {
+					Size = UDim2.new(1, -6, 1, -6),
+					Position = UDim2.new(0, 3, 0, 3),
 					BackgroundTransparency = 1,
 					Image = Logo,
-					Name = "Icon"
+					ScaleType = Enum.ScaleType.Fit
 				})
-				Make("Corner", IconImg, UDim.new(0, 3))
 			end
 
-			local TitleL = InsertTheme(Create("TextLabel", Frame, {
-				Font = Enum.Font.GothamMedium,
+			local textX = hasLogo and 50 or 10
+
+			InsertTheme(Create("TextLabel", Card, {
+				Font = Enum.Font.GothamBold,
 				TextColor3 = Theme["Color Text"],
-				Size = UDim2.new(1, -(textOffX + 72), 0, 14),
-				Position = UDim2.new(0, textOffX, 0.5, 0),
-				AnchorPoint = Vector2.new(0, 0.5),
+				Size = UDim2.new(1, -(textX + 10), 0, 14),
+				Position = UDim2.new(0, textX, 0, 9),
 				BackgroundTransparency = 1,
 				TextTruncate = "AtEnd",
-				TextSize = 10,
+				TextSize = 11,
 				TextXAlignment = "Left",
-				TextYAlignment = "Center",
-				Text = InvTitle,
-				RichText = true
+				Text = InvTitle
 			}), "Text")
 
-			if hasDesc then
-				TitleL.Position = UDim2.new(0, textOffX, 0, 6)
-				TitleL.AnchorPoint = Vector2.new(0, 0)
+			InsertTheme(Create("TextLabel", Card, {
+				Font = Enum.Font.Gotham,
+				TextColor3 = Theme["Color Dark Text"],
+				Size = UDim2.new(1, -(textX + 10), 0, 22),
+				Position = UDim2.new(0, textX, 0, 24),
+				BackgroundTransparency = 1,
+				TextWrapped = true,
+				TextTruncate = "None",
+				TextSize = 9,
+				TextXAlignment = "Left",
+				TextYAlignment = "Top",
+				Text = Desc
+			}), "DarkText")
 
-				InsertTheme(Create("TextLabel", Frame, {
-					Font = Enum.Font.Gotham,
-					TextColor3 = Theme["Color Dark Text"],
-					Size = UDim2.new(1, -(textOffX + 72), 0, 11),
-					Position = UDim2.new(0, textOffX, 0, 20),
-					AnchorPoint = Vector2.new(0, 0),
-					BackgroundTransparency = 1,
-					TextTruncate = "AtEnd",
-					TextSize = 9,
-					TextXAlignment = "Left",
-					TextYAlignment = "Center",
-					Text = Desc,
-					RichText = true
-				}), "DarkText")
-			end
-
-			local JoinBtn = InsertTheme(Create("TextButton", Frame, {
-				Size = UDim2.new(0, 58, 0, 17),
-				Position = UDim2.new(1, -8, 0.5, 0),
-				AnchorPoint = Vector2.new(1, 0.5),
+			local JoinBtn = InsertTheme(Create("TextButton", Card, {
+				Size = UDim2.new(1, -16, 0, 18),
+				Position = UDim2.new(0, 8, 1, -26),
+				AnchorPoint = Vector2.new(0, 0),
 				Text = "Join",
 				Font = Enum.Font.GothamBold,
 				TextSize = 10,
@@ -5115,8 +5107,8 @@ function redzlib:MakeWindow(Configs)
 			end)
 
 			local DiscordInvite = {}
-			function DiscordInvite:Visible(...) Funcs:ToggleVisible(Frame, ...) end
-			function DiscordInvite:Destroy() Frame:Destroy() end
+			function DiscordInvite:Visible(...) Funcs:ToggleVisible(Card, ...) end
+			function DiscordInvite:Destroy() Card:Destroy() end
 			return DiscordInvite
 		end
 
