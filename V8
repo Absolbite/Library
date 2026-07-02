@@ -3016,7 +3016,7 @@ function redzlib:MakeWindow(Configs)
 		local DText    = Configs[2] or Configs.Text or "This is a Dialog"
 		local DOptions = Configs[3] or Configs.Options or {}
 		local DIcon    = Configs.Icon or ""
-		local DType    = Configs.Type or "default" -- "default" | "theme" | "image"
+		local DType    = Configs.Type or "default"
 
 		local function NormalizeImageId(raw)
 			raw = tostring(raw or ""):gsub("^%s+",""):gsub("%s+$","")
@@ -3035,7 +3035,7 @@ function redzlib:MakeWindow(Configs)
 		}), "Stroke")
 		MainCorner:Clone().Parent = Screen
 
-		local Frame = Create("Frame", Screen, {
+		local Frame = InsertTheme(Create("Frame", Screen, {
 			Active = true,
 			Size = UDim2.fromOffset(baseW * 1.06, baseH * 1.06),
 			Position = UDim2.fromScale(0.5, 0.5),
@@ -3043,10 +3043,9 @@ function redzlib:MakeWindow(Configs)
 			BackgroundTransparency = 0,
 			BackgroundColor3 = Theme["Color Hub 2"],
 			ClipsDescendants = true
-		})
+		}), "Frame")
 		Make("Gradient", Frame, {Rotation = 270})
 		Make("Corner", Frame)
-		Make("Stroke", Frame)
 
 		local iconMap = {
 			info    = "rbxassetid://10723415903",
@@ -3065,14 +3064,14 @@ function redzlib:MakeWindow(Configs)
 			Position = UDim2.new(0, 0, 0, 0)
 		})
 
-		Create("ImageLabel", TopBar, {
+		InsertTheme(Create("ImageLabel", TopBar, {
 			Size = UDim2.fromOffset(16, 16),
 			Position = UDim2.new(0, 12, 0.5),
 			AnchorPoint = Vector2.new(0, 0.5),
 			Image = resolvedIcon,
 			ImageColor3 = Theme["Color Theme"],
 			BackgroundTransparency = 1
-		})
+		}), "Theme")
 
 		InsertTheme(Create("TextLabel", TopBar, {
 			Font = Enum.Font.GothamBold,
@@ -3099,8 +3098,9 @@ function redzlib:MakeWindow(Configs)
 		InsertTheme(Create("Frame", Frame, {
 			Size = UDim2.new(1, -24, 0, 1),
 			Position = UDim2.fromOffset(12, 36),
-			BackgroundColor3 = Theme["Color Stroke"]
-		}), "Stroke")
+			BackgroundColor3 = Theme["Color Theme"],
+			BackgroundTransparency = 0.75
+		}), "Theme")
 
 		InsertTheme(Create("TextLabel", Frame, {
 			Font = Enum.Font.GothamMedium,
@@ -3158,21 +3158,21 @@ function redzlib:MakeWindow(Configs)
 				local isActive = tname == redzlib.Save.Theme
 				local TBtn = InsertTheme(Create("TextButton", ThemeScroll, {
 					Size = UDim2.fromOffset(76, 22),
-					BackgroundColor3 = Theme["Color Hub 2"],
+					BackgroundColor3 = Theme["Color Theme"],
+					BackgroundTransparency = isActive and 0.6 or 0.85,
 					Font = Enum.Font.GothamBold,
 					Text = tname,
 					TextSize = 8,
-					TextColor3 = isActive and Theme["Color Theme"] or Theme["Color Text"],
+					TextColor3 = Theme["Color Text"],
 					AutoButtonColor = false,
 					Name = tname
-				}), "Frame")
+				}), "Theme")
 				Make("Corner", TBtn, UDim.new(0, 4))
-				if isActive then Make("Stroke", TBtn) end
 				TBtn.Activated:Connect(function()
 					redzlib:SetTheme(tname)
 					for _, ch in ipairs(ThemeScroll:GetChildren()) do
 						if ch:IsA("TextButton") then
-							ch.TextColor3 = ch.Name == tname and Theme["Color Theme"] or Theme["Color Text"]
+							ch.BackgroundTransparency = ch.Name == tname and 0.6 or 0.85
 						end
 					end
 				end)
@@ -3193,8 +3193,9 @@ function redzlib:MakeWindow(Configs)
 			local ThemeImgHolder = InsertTheme(Create("Frame", Frame, {
 				Size = UDim2.new(1, -24, 0, 24),
 				Position = UDim2.fromOffset(12, 186),
-				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke")
+				BackgroundColor3 = Theme["Color Theme"],
+				BackgroundTransparency = 0.85
+			}), "Theme")
 			Make("Corner", ThemeImgHolder, UDim.new(0, 5))
 
 			local ThemeImgInput = InsertTheme(Create("TextBox", ThemeImgHolder, {
@@ -3245,8 +3246,9 @@ function redzlib:MakeWindow(Configs)
 			local ImgHolder = InsertTheme(Create("Frame", Frame, {
 				Size = UDim2.new(1, -24, 0, 24),
 				Position = UDim2.fromOffset(12, 88),
-				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke")
+				BackgroundColor3 = Theme["Color Theme"],
+				BackgroundTransparency = 0.85
+			}), "Theme")
 			Make("Corner", ImgHolder, UDim.new(0, 5))
 
 			local ImgInput = InsertTheme(Create("TextBox", ImgHolder, {
@@ -3277,8 +3279,9 @@ function redzlib:MakeWindow(Configs)
 			local MainImgHolder = InsertTheme(Create("Frame", Frame, {
 				Size = UDim2.new(1, -24, 0, 24),
 				Position = UDim2.fromOffset(12, 136),
-				BackgroundColor3 = Theme["Color Stroke"]
-			}), "Stroke")
+				BackgroundColor3 = Theme["Color Theme"],
+				BackgroundTransparency = 0.85
+			}), "Theme")
 			Make("Corner", MainImgHolder, UDim.new(0, 5))
 
 			local MainImgInput = InsertTheme(Create("TextBox", MainImgHolder, {
@@ -3299,12 +3302,12 @@ function redzlib:MakeWindow(Configs)
 				Size = UDim2.fromOffset(40, 40),
 				Position = UDim2.new(0.5, 0, 0, 162),
 				AnchorPoint = Vector2.new(0.5, 0),
-				BackgroundColor3 = Theme["Color Stroke"],
+				BackgroundColor3 = Theme["Color Theme"],
+				BackgroundTransparency = 0.85,
 				Image = "",
 				Visible = false
 			})
 			Make("Corner", Preview, UDim.new(0, 6))
-			Make("Stroke", Preview)
 
 			ContentY = 210
 
@@ -3364,18 +3367,17 @@ function redzlib:MakeWindow(Configs)
 			local Callback = Cfg[2] or Cfg.Callback or function()end
 			local BtnColor = Cfg.Color
 			ButtonCount = ButtonCount + 1
-			local Btn = Make("Button", ButtonsHolder)
-			Make("Corner", Btn, UDim.new(0, 5))
-			SetProps(Btn, {
+			local Btn = InsertTheme(Create("TextButton", ButtonsHolder, {
+				BackgroundColor3 = BtnColor or Theme["Color Theme"],
+				BackgroundTransparency = BtnColor and 0 or 0.7,
 				Text = Name,
 				Font = Enum.Font.GothamBold,
 				TextColor3 = Theme["Color Text"],
-				TextSize = 11
-			})
-			if BtnColor then
-				Btn.BackgroundColor3 = BtnColor
-			end
-			for _,B in pairs(ButtonsHolder:GetChildren()) do
+				TextSize = 11,
+				AutoButtonColor = false
+			}), BtnColor and "Stroke" or "Theme")
+			Make("Corner", Btn, UDim.new(0, 5))
+			for _, B in pairs(ButtonsHolder:GetChildren()) do
 				if B:IsA("TextButton") then
 					B.Size = UDim2.new(1 / ButtonCount, -(((ButtonCount - 1) * 20) / ButtonCount), 0, 28)
 				end
