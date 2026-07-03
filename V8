@@ -2121,7 +2121,7 @@ local SetProps, SetChildren, InsertTheme, Create do
 		return new
 	end
 
-	local SaveRoot    = "smooth lib"
+	local SaveRoot    = "smoothlib"
 	local SaveFolder  = SaveRoot .. "/LibrarySettings"
 	local SaveFile    = SaveFolder .. "/smooth library.json"
 	local ImgCache    = SaveFolder .. "/images"
@@ -2405,7 +2405,7 @@ end
 
 local function SaveJson(save)
 	if not writefile then return end
-	local Root   = "smooth lib"
+	local Root   = "smoothlib"
 	local Folder = Root .. "/LibrarySettings"
 	if makefolder then
 		if not isfolder(Root)   then makefolder(Root)   end
