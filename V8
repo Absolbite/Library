@@ -1232,7 +1232,7 @@ local redzlib = {
 	},
 	Save = {
 		UISize = {550, 380},
-		TabSize = 145,
+		TabSize = 140,
 		TabHeight = 32,
 		Theme = "Darker",
 		Transparency = 0.03,
@@ -2121,6 +2121,40 @@ local SetProps, SetChildren, InsertTheme, Create do
 		return new
 	end
 
+	local SaveRoot    = "smooth lib"
+	local SaveFolder  = SaveRoot .. "/LibrarySettings"
+	local SaveFile    = SaveFolder .. "/smooth library.json"
+	local ImgCache    = SaveFolder .. "/images"
+
+	local function EnsureFolders()
+		if not makefolder then return end
+		if not isfolder(SaveRoot)   then makefolder(SaveRoot)   end
+		if not isfolder(SaveFolder) then makefolder(SaveFolder) end
+		if not isfolder(ImgCache)   then makefolder(ImgCache)   end
+	end
+
+	local function FetchHttpImage(url)
+		if not writefile or not makefolder then return url end
+		EnsureFolders()
+		local ext  = url:match("%.(%w+)%??[^%.]*$") or "png"
+		local safe = url:gsub("[^%w%-_]", "_"):sub(1, 60) .. "." .. ext
+		local path = ImgCache .. "/" .. safe
+		if not isfile(path) then
+			local ok, body = pcall(function()
+				return game:HttpGet(url)
+			end)
+			if not ok or not body then return url end
+			pcall(writefile, path, body)
+		end
+		if isfile(path) then
+			local ok, asset = pcall(getcustomasset, path)
+			if ok then return asset end
+		end
+		return url
+	end
+
+	redzlib.FetchHttpImage = FetchHttpImage
+
 	local function Save(file)
 		if readfile and isfile and isfile(file) then
 			local decode = HttpService:JSONDecode(readfile(file))
@@ -2135,7 +2169,8 @@ local SetProps, SetChildren, InsertTheme, Create do
 		end
 	end
 
-	pcall(Save, "smooth library.json")
+	EnsureFolders()
+	pcall(Save, SaveFile)
 end
 
 local Funcs = {} do
@@ -2368,11 +2403,16 @@ local function BrightenColor(c, amount)
 	)
 end
 
-local function SaveJson(FileName, save)
-	if writefile then
-		local json = HttpService:JSONEncode(save)
-		writefile(FileName, json)
+local function SaveJson(save)
+	if not writefile then return end
+	local Root   = "smooth lib"
+	local Folder = Root .. "/LibrarySettings"
+	if makefolder then
+		if not isfolder(Root)   then makefolder(Root)   end
+		if not isfolder(Folder) then makefolder(Folder) end
 	end
+	local json = HttpService:JSONEncode(save)
+	writefile(Folder .. "/smooth library.json", json)
 end
 
 local Theme = redzlib.Themes[redzlib.Save.Theme]
@@ -2571,7 +2611,18 @@ local function GetColor(Instance)
 end
 
 function redzlib:GetIcon(index)
-	if type(index) ~= "string" or index:find("rbxassetid://") or #index == 0 then
+	if type(index) ~= "string" or #index == 0 then
+		return index
+	end
+
+	if index:find("^https?://") then
+		if redzlib.FetchHttpImage then
+			return redzlib.FetchHttpImage(index)
+		end
+		return index
+	end
+
+	if index:find("rbxassetid://") then
 		return index
 	end
 
@@ -2597,7 +2648,7 @@ function redzlib:SetTheme(NewTheme)
 	if not VerifyTheme(NewTheme) then return end
 
 	redzlib.Save.Theme = NewTheme
-	SaveJson("smooth library.json", redzlib.Save)
+	SaveJson(redzlib.Save)
 	Theme = redzlib.Themes[NewTheme]
 
 	Connection:FireConnection("ThemeChanged", NewTheme)
@@ -2649,7 +2700,7 @@ function redzlib:SetTransparency(value)
 	value = math.clamp(tonumber(value) or 0, 0, 0.95)
 	CurrentTransparency = value
 	redzlib.Save.Transparency = value
-	SaveJson("smooth library.json", redzlib.Save)
+	SaveJson(redzlib.Save)
 	if _MainFrame then
 		_MainFrame.BackgroundTransparency = value
 	end
@@ -2856,13 +2907,13 @@ function redzlib:MakeWindow(Configs)
 	ConnectSave(ControlSize1, function()
 		if not Minimized then
 			redzlib.Save.UISize = {MainFrame.Size.X.Offset, MainFrame.Size.Y.Offset}
-			SaveJson("smooth library.json", redzlib.Save)
+			SaveJson(redzlib.Save)
 		end
 	end)
 
 	ConnectSave(ControlSize2, function()
 		redzlib.Save.TabSize = MainScroll.Size.X.Offset
-		SaveJson("smooth library.json", redzlib.Save)
+		SaveJson(redzlib.Save)
 	end)
 
 	local ButtonsFolder = Create("Folder", TopBar, { Name = "Buttons" })
@@ -2973,7 +3024,7 @@ function redzlib:MakeWindow(Configs)
 				redzlib.Save.MinimizeButtons[BtnId] = redzlib.Save.MinimizeButtons[BtnId] or {}
 				redzlib.Save.MinimizeButtons[BtnId].posX = p.X.Offset
 				redzlib.Save.MinimizeButtons[BtnId].posY = p.Y.Offset
-				SaveJson("smooth library.json", redzlib.Save)
+				SaveJson(redzlib.Save)
 			end)
 		end)
 
@@ -3040,7 +3091,7 @@ function redzlib:MakeWindow(Configs)
 			Size = UDim2.fromOffset(baseW * 1.06, baseH * 1.06),
 			Position = UDim2.fromScale(0.5, 0.5),
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			BackgroundTransparency = 0.11,
+			BackgroundTransparency = 0.08,
 			BackgroundColor3 = Theme["Color Hub 2"],
 			ClipsDescendants = true
 		}), "Frame")
@@ -3324,7 +3375,7 @@ function redzlib:MakeWindow(Configs)
 					for _, btn in pairs(redzlib.Save.MinimizeButtons) do
 						btn.image = id
 					end
-					SaveJson("smooth library.json", redzlib.Save)
+					SaveJson(redzlib.Save)
 				end
 			end
 
@@ -5017,6 +5068,7 @@ function redzlib:MakeWindow(Configs)
 			local Invite   = Configs[3] or Configs.Invite or ""
 
 			local hasLogo = type(Logo) == "string" and Logo:gsub(" ", ""):len() > 0
+			if hasLogo then Logo = redzlib:GetIcon(Logo) end
 
 			local Card = InsertTheme(Create("Frame", Container, {
 				Size = UDim2.new(1, 0, 0, 80),
