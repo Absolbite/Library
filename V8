@@ -1232,7 +1232,7 @@ local redzlib = {
 	},
 	Save = {
 		UISize = {550, 380},
-		TabSize = 140,
+		TabSize = 135,
 		TabHeight = 32,
 		Theme = "Darker",
 		Transparency = 0.03,
@@ -2815,15 +2815,15 @@ function redzlib:MakeWindow(Configs)
 	}), "DarkText")
 
 	local TagHolder = Create("Frame", TopBar, {
-		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -63, 0.5, 0),
+		AnchorPoint = Vector2.new(0, 0.5),
+		Position = UDim2.new(0, 15 + TextService:GetTextSize(WTitle, 12, Enum.Font.GothamBold, Vector2.new(9999, 28)).X + 8 + TextService:GetTextSize(WMiniText, 8, Enum.Font.Gotham, Vector2.new(9999, 28)).X + 10, 0.5),
 		Size = UDim2.new(0, 200, 0, 18),
 		BackgroundTransparency = 1,
 		Name = "TagHolder"
 	}, {
 		Create("UIListLayout", {
 			FillDirection = Enum.FillDirection.Horizontal,
-			HorizontalAlignment = Enum.HorizontalAlignment.Right,
+			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 			Padding = UDim.new(0, 7),
 			SortOrder = Enum.SortOrder.LayoutOrder
@@ -2981,9 +2981,9 @@ function redzlib:MakeWindow(Configs)
 		local BtnPos    = Cfg.Position or UDim2.fromScale(0.05, 0.5)
 		local BtnSize   = Cfg.Size or 40
 		local BtnTrans  = Cfg.Transparency ~= nil and Cfg.Transparency or 0
-		local BtnImage  = Cfg.Image or "rbxassetid://10734895698"
+		local BtnImage  = Cfg.Icon or Cfg.Image or "rbxassetid://10734895698"
 
-		BtnImage = tostring(BtnImage)
+		BtnImage = redzlib:GetIcon(tostring(BtnImage))
 
 		if not redzlib.Save.MinimizeButtons then redzlib.Save.MinimizeButtons = {} end
 		local Saved = redzlib.Save.MinimizeButtons[BtnId] or {}
