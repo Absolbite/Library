@@ -3477,79 +3477,25 @@ function redzlib:MakeWindow(Configs)
 	local ContainerList = {}
 	function Window:AddTag(Configs)
 		Configs = Configs or {}
-		local TTitle    = Configs[1] or Configs.Title or Configs.Name or ""
-		local TImage    = Configs.Image or Configs.Icon or nil
-		local TColor    = Configs.Color
-		local TOutline  = Configs.Outline
-		local TLink     = Configs.Link or nil
-		local TClickable = Configs.Clickable == true and TLink ~= nil
+		local TTitle = Configs[1] or Configs.Title or Configs.Name or ""
+		local TColor = Configs.Color or Color3.fromRGB(80, 80, 80)
 
-		if TImage then
-			TImage = redzlib:GetIcon(tostring(TImage))
-			if TImage == "" then TImage = nil end
-		end
+		local TagFrame = Create("Frame", TagHolder, {
+			Size             = UDim2.new(0, 0, 0, 17),
+			AutomaticSize    = "X",
+			BackgroundColor3 = TColor,
+			ClipsDescendants = true,
+			Name             = "Tag",
+		})
+		Make("Corner", TagFrame, UDim.new(0, 3))
 
-		local hasColor   = typeof(TColor) == "Color3"
-		local hasOutline = typeof(TOutline) == "Color3"
-		local isPlain    = not hasColor and not hasOutline
-
-		local tagH = 20
-
-		local function CalcTextColor(col)
-			if not col then return Theme["Color Dark Text"] end
-			local lum = 0.299 * col.R + 0.587 * col.G + 0.114 * col.B
-			return lum > 0.55 and Color3.fromRGB(30, 30, 30) or Color3.fromRGB(255, 255, 255)
-		end
-
-		local TextCol = hasColor and CalcTextColor(TColor)
-			or hasOutline and TOutline
-			or Theme["Color Dark Text"]
-
-		local ContainerProps = {
-			Size                   = UDim2.new(0, 0, 0, tagH),
-			AutomaticSize          = "X",
-			BackgroundTransparency = isPlain and 1 or (hasOutline and 0.9 or 0),
-			BackgroundColor3       = hasColor and TColor or (hasOutline and TOutline or Color3.new(0, 0, 0)),
-			Text                   = "",
-			AutoButtonColor        = false,
-			ClipsDescendants       = true,
-			Name                   = "Tag_" .. TTitle,
-		}
-
-		local TagFrame
-		if TClickable then
-			TagFrame = Create("TextButton", TagHolder, ContainerProps)
-		else
-			ContainerProps.AutoButtonColor = nil
-			ContainerProps.Text = nil
-			TagFrame = Create("Frame", TagHolder, ContainerProps)
-		end
-
-		if not isPlain then
-			Make("Corner", TagFrame, UDim.new(0, 6))
-		end
-
-		local Glass
-		if hasColor then
-			Glass = Create("Frame", TagFrame, {
-				Size                   = UDim2.new(1, 0, 0.5, 0),
-				BackgroundColor3       = Color3.new(1, 1, 1),
-				BackgroundTransparency = 0.82,
-				BorderSizePixel        = 0,
-				ZIndex                 = TagFrame.ZIndex + 1,
-				Name                   = "Glass",
-			})
-			Make("Corner", Glass, UDim.new(1, 0))
-		end
-
-		local Stroke
-		if hasOutline then
-			Stroke = Create("UIStroke", TagFrame, {
-				Color           = TOutline,
-				Thickness       = 1.2,
-				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-			})
-		end
+		Create("Frame", TagFrame, {
+			Size                   = UDim2.new(1, 0, 0.5, 0),
+			BackgroundColor3       = Color3.new(1, 1, 1),
+			BackgroundTransparency = 0.82,
+			BorderSizePixel        = 0,
+			ZIndex                 = TagFrame.ZIndex + 1,
+		})
 
 		local Content = Create("Frame", TagFrame, {
 			Size                   = UDim2.new(0, 0, 1, 0),
@@ -3561,85 +3507,35 @@ function redzlib:MakeWindow(Configs)
 			FillDirection       = Enum.FillDirection.Horizontal,
 			VerticalAlignment   = Enum.VerticalAlignment.Center,
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
-			Padding             = UDim.new(0, TImage and 5 or 0),
-			SortOrder           = Enum.SortOrder.LayoutOrder,
 		})
 		Create("UIPadding", Content, {
-			PaddingLeft  = UDim.new(0, isPlain and 0 or 8),
-			PaddingRight = UDim.new(0, isPlain and 0 or 8),
+			PaddingLeft  = UDim.new(0, 7),
+			PaddingRight = UDim.new(0, 7),
 		})
 
-		local ImgLabel
-		if TImage then
-			ImgLabel = Create("ImageLabel", Content, {
-				Size                   = UDim2.new(0, 13, 0, 13),
-				Image                  = TImage,
-				ImageColor3            = TextCol,
-				BackgroundTransparency = 1,
-				LayoutOrder            = 1,
-				ZIndex                 = TagFrame.ZIndex + 3,
-			})
-		end
-
-		local TextLabel = InsertTheme(Create("TextLabel", Content, {
+		local TextLabel = Create("TextLabel", Content, {
 			Size                   = UDim2.new(0, 0, 1, 0),
 			AutomaticSize          = "X",
 			BackgroundTransparency = 1,
-			Font                   = Enum.Font.GothamSemibold,
-			TextSize               = 11,
-			TextColor3             = TextCol,
+			Font                   = Enum.Font.GothamBold,
+			TextSize               = 10,
+			TextColor3             = Color3.new(1, 1, 1),
 			Text                   = TTitle,
-			LayoutOrder            = 2,
 			ZIndex                 = TagFrame.ZIndex + 3,
-		}), isPlain and "DarkText" or "")
-
-		if TClickable then
-			TagFrame.MouseEnter:Connect(function()
-				CreateTween({TextLabel, "TextColor3", Theme["Color Theme"], 0.15})
-				if ImgLabel then CreateTween({ImgLabel, "ImageColor3", Theme["Color Theme"], 0.15}) end
-				PlayerMouse.Icon = "rbxasset://SystemCursors/PointingHand"
-			end)
-			TagFrame.MouseLeave:Connect(function()
-				CreateTween({TextLabel, "TextColor3", TextCol, 0.15})
-				if ImgLabel then CreateTween({ImgLabel, "ImageColor3", TextCol, 0.15}) end
-				PlayerMouse.Icon = ""
-			end)
-			TagFrame.Activated:Connect(function()
-				if setclipboard then setclipboard(TLink) end
-			end)
-		end
+		})
 
 		local Tag = {}
 
 		function Tag:SetTitle(New)
 			if type(New) == "string" then
 				TextLabel.Text = New
-				TTitle = New
 			end
 		end
 
 		function Tag:SetColor(New)
 			if typeof(New) == "Color3" then
-				TColor = New
-				TextCol = CalcTextColor(New)
-				CreateTween({TagFrame, "BackgroundColor3", New, 0.15})
-				CreateTween({TextLabel, "TextColor3", TextCol, 0.15})
-				if ImgLabel then CreateTween({ImgLabel, "ImageColor3", TextCol, 0.15}) end
+				TagFrame.BackgroundColor3 = New
 			end
-		end
-
-		function Tag:SetOutline(New)
-			if typeof(New) == "Color3" then
-				TOutline = New
-				TextCol = New
-				if Stroke then Stroke.Color = New end
-				CreateTween({TagFrame, "BackgroundColor3", New, 0.15})
-				CreateTween({TextLabel, "TextColor3", New, 0.15})
-			end
-		end
-
-		function Tag:SetLink(New)
-			if type(New) == "string" then TLink = New end
 		end
 
 		function Tag:Visible(Bool)
