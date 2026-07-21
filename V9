@@ -3638,6 +3638,58 @@ function redzlib:MakeWindow(Configs)
 		table.insert(ContainerList, Container)
 		if not FirstTab then Container.Parent = Containers end
 
+		-- Left/Right column support for Tab:AddSection (built lazily so tabs
+		-- that never use Side keep the exact same single-column layout as before)
+		local SideRow, TabLeft, TabRight
+		local function EnsureSideColumns()
+			if SideRow then return end
+
+			SideRow = Create("Frame", Container, {
+				Size = UDim2.new(1, 0, 0, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				BackgroundTransparency = 1,
+				Name = "SideRow"
+			})
+			Create("UIListLayout", SideRow, {
+				FillDirection = Enum.FillDirection.Horizontal,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				Padding = UDim.new(0, 6)
+			})
+
+			TabLeft = Create("Frame", SideRow, {
+				Size = UDim2.new(0.5, -3, 0, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				BackgroundTransparency = 1,
+				Name = "TabLeft"
+			})
+			Create("UIListLayout", TabLeft, {
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				Padding = UDim.new(0, 5)
+			})
+
+			TabRight = Create("Frame", SideRow, {
+				Size = UDim2.new(0.5, -3, 0, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				BackgroundTransparency = 1,
+				Name = "TabRight"
+			})
+			Create("UIListLayout", TabRight, {
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				Padding = UDim.new(0, 5)
+			})
+		end
+
+		local function GetSideColumn(SideValue)
+			if SideValue == 1 or SideValue == "Left" or SideValue == "left" then
+				EnsureSideColumns()
+				return TabLeft
+			elseif SideValue == 2 or SideValue == "Right" or SideValue == "right" then
+				EnsureSideColumns()
+				return TabRight
+			end
+			return nil
+		end
+
 		local function Tabs()
 			if Container.Parent then return end
 			for _, Tab in ipairs(redzlib.Tabs) do
@@ -3751,7 +3803,9 @@ function redzlib:MakeWindow(Configs)
 			local SIcon = Configs.Icon or Configs.Image or nil
 			if SIcon then SIcon = redzlib:GetIcon(tostring(SIcon)); if SIcon == "" then SIcon = nil end end
 
-			local SectionWrapper = Create("Frame", Container, {
+			local SectionParent = GetSideColumn(Configs.Side) or Container
+
+			local SectionWrapper = Create("Frame", SectionParent, {
 				Size             = UDim2.new(1, 0, 0, 23),
 				BackgroundTransparency = 1,
 				ClipsDescendants = false,
@@ -3987,6 +4041,18 @@ function redzlib:MakeWindow(Configs)
 			function Section:AddDiscordInvite(cfg) return WithInner(Tab.AddDiscordInvite, 80, cfg) end
 
 			return Section
+		end
+
+		function Tab:AddLeftSection(Configs)
+			Configs = type(Configs) == "string" and { Name = Configs } or (Configs or {})
+			Configs.Side = "Left"
+			return Tab:AddSection(Configs)
+		end
+
+		function Tab:AddRightSection(Configs)
+			Configs = type(Configs) == "string" and { Name = Configs } or (Configs or {})
+			Configs.Side = "Right"
+			return Tab:AddSection(Configs)
 		end
 
 
