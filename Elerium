@@ -2121,7 +2121,7 @@ local SetProps, SetChildren, InsertTheme, Create do
 		return new
 	end
 
-	local SaveRoot    = "smoothlib"
+	local SaveRoot    = "Smoothlibelerium"
 	local SaveFolder  = SaveRoot .. "/LibrarySettings"
 	local SaveFile    = SaveFolder .. "/smooth library.json"
 	local ImgCache    = SaveFolder .. "/images"
@@ -2405,7 +2405,7 @@ end
 
 local function SaveJson(save)
 	if not writefile then return end
-	local Root   = "smoothlib"
+	local Root   = "Smoothlibelerium"
 	local Folder = Root .. "/LibrarySettings"
 	if makefolder then
 		if not isfolder(Root)   then makefolder(Root)   end
@@ -2730,7 +2730,7 @@ function redzlib:MakeWindow(Configs)
 		if not SaveFolder then return false end
 		if not makefolder or not isfolder or not writefile then return false end
 		local PlayerName = Player.Name
-		local Root = "smoothlib"
+		local Root = "Smoothlibelerium"
 		local GameFolder = Root .. "/" .. tostring(SaveFolder)
 		if not isfolder(Root) then makefolder(Root) end
 		if not isfolder(GameFolder) then makefolder(GameFolder) end
@@ -2831,12 +2831,12 @@ function redzlib:MakeWindow(Configs)
 	})
 
 	local MainScroll = InsertTheme(Create("ScrollingFrame", Components, {
-		Size = UDim2.new(1, 0, 0, redzlib.Save.TabSize),
+		Size = UDim2.new(1, 0, 0, math.clamp(redzlib.Save.TabSize, 28, 60)),
 		Position = UDim2.new(0, 0, 0, TopBar.Size.Y.Offset),
 		ScrollBarImageColor3 = Theme["Color Theme"],
-		ScrollBarThickness = 1.5,
+		ScrollBarThickness = 0,
 		BackgroundTransparency = 1,
-		ScrollBarImageTransparency = 0.2,
+		ScrollBarImageTransparency = 1,
 		CanvasSize = UDim2.new(),
 		AutomaticCanvasSize = "X",
 		ScrollingDirection = "X",
