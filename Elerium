@@ -2831,7 +2831,7 @@ function redzlib:MakeWindow(Configs)
 	})
 
 	local MainScroll = InsertTheme(Create("ScrollingFrame", Components, {
-		Size = UDim2.new(1, 0, 0, math.clamp(redzlib.Save.TabSize, 28, 60)),
+		Size = UDim2.new(1, 0, 0, 34),
 		Position = UDim2.new(0, 0, 0, TopBar.Size.Y.Offset),
 		ScrollBarImageColor3 = Theme["Color Theme"],
 		ScrollBarThickness = 0,
@@ -2886,39 +2886,22 @@ function redzlib:MakeWindow(Configs)
 		BackgroundTransparency = 1,
 		Name = "Control Hub Size"
 	}))
-	local ControlSize2 = MakeDrag(Create("ImageButton", MainFrame, {
-		Size = UDim2.new(1, 0, 0, 14),
-		Position = UDim2.new(0, 0, 0, TopBar.Size.Y.Offset + MainScroll.Size.Y.Offset),
-		AnchorPoint = Vector2.new(0, 0.5),
-		Active = true,
-		BackgroundTransparency = 1,
-		Name = "Control Tab Size"
-	}))
 
 	local function ControlSize()
-		local Pos1, Pos2 = ControlSize1.Position, ControlSize2.Position
+		local Pos1 = ControlSize1.Position
 		ControlSize1.Position = UDim2.fromOffset(math.clamp(Pos1.X.Offset, 430, 1000), math.clamp(Pos1.Y.Offset, 200, 500))
-		local TabBarHeight = math.clamp(Pos2.Y.Offset - TopBar.Size.Y.Offset, 28, 60)
-		ControlSize2.Position = UDim2.new(0, 0, 0, TopBar.Size.Y.Offset + TabBarHeight)
-		MainScroll.Size = UDim2.new(1, 0, 0, TabBarHeight)
 		Containers.Size = UDim2.new(1, 0, 1, -TopBar.Size.Y.Offset - MainScroll.Size.Y.Offset)
 		MainFrame.Size = ControlSize1.Position
 		SideDivider.Position = UDim2.new(0, 0, 0, TopBar.Size.Y.Offset + MainScroll.Size.Y.Offset)
 	end
 
 	ControlSize1:GetPropertyChangedSignal("Position"):Connect(ControlSize)
-	ControlSize2:GetPropertyChangedSignal("Position"):Connect(ControlSize)
 
 	ConnectSave(ControlSize1, function()
 		if not Minimized then
 			redzlib.Save.UISize = {MainFrame.Size.X.Offset, MainFrame.Size.Y.Offset}
 			SaveJson(redzlib.Save)
 		end
-	end)
-
-	ConnectSave(ControlSize2, function()
-		redzlib.Save.TabSize = MainScroll.Size.Y.Offset
-		SaveJson(redzlib.Save)
 	end)
 
 	local ButtonsFolder = Create("Folder", TopBar, { Name = "Buttons" })
@@ -2962,14 +2945,12 @@ function redzlib:MakeWindow(Configs)
 			MinimizeButton.Image = MinimizeBtnCustomImage or "rbxassetid://10734896206"
 			CreateTween({MainFrame, "Size", SaveSize, 0.25, true})
 			ControlSize1.Visible = true
-			ControlSize2.Visible = true
 			TopBarDivider.Visible = true
 			Minimized = false
 		else
 			MinimizeButton.Image = MinimizeBtnCustomImage or "rbxassetid://10734924532"
 			SaveSize = MainFrame.Size
 			ControlSize1.Visible = false
-			ControlSize2.Visible = false
 			TopBarDivider.Visible = false
 			CreateTween({MainFrame, "Size", UDim2.fromOffset(MainFrame.Size.X.Offset, 28), 0.25, true})
 			Minimized = true
@@ -3607,17 +3588,6 @@ function redzlib:MakeWindow(Configs)
 			ImageTransparency = 0
 		}), "Text")
 
-		local Selected = InsertTheme(Create("Frame", TabSelect, {
-			Size = FirstTab and UDim2.new(0, 0, 0, 3) or UDim2.new(0.7, 0, 0, 3),
-			Position = UDim2.new(0.5, 0, 1, -2),
-			AnchorPoint = Vector2.new(0.5, 1),
-			BackgroundColor3 = Theme["Color Theme"],
-			BackgroundTransparency = FirstTab and 1 or 0
-		}), "Theme")
-		Make("Corner", Selected, UDim.new(0, 4))
-
-
-
 		local Container = InsertTheme(Create("ScrollingFrame", {
 			Size = UDim2.new(1, 0, 1, 0),
 			Position = UDim2.new(0, 0, 1),
@@ -3662,8 +3632,6 @@ function redzlib:MakeWindow(Configs)
 			TabSelect.BackgroundColor3 = Theme["Color Theme"]
 			CreateTween({LabelTitle, "TextTransparency", 0, 0.25})
 			CreateTween({LabelIcon, "ImageTransparency", 0, 0.25})
-			CreateTween({Selected, "Size", UDim2.new(0.7, 0, 0, 3), 0.25})
-			CreateTween({Selected, "BackgroundTransparency", 0, 0.25})
 		end
 		TabSelect.Activated:Connect(Tabs)
 
@@ -3684,8 +3652,6 @@ function redzlib:MakeWindow(Configs)
 			TabSelect.BackgroundTransparency = 1
 			CreateTween({LabelTitle, "TextTransparency", 0, 0.35})
 			CreateTween({LabelIcon, "ImageTransparency", 0, 0.35})
-			CreateTween({Selected, "Size", UDim2.new(0, 0, 0, 3), 0.35})
-			CreateTween({Selected, "BackgroundTransparency", 1, 0.35})
 		end
 		function Tab:Enable() Tabs() end
 		function Tab:Visible(Bool)
