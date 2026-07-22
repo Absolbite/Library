@@ -5081,6 +5081,67 @@ function redzlib:MakeWindow(Configs)
 			return DiscordInvite
 		end
 
+		local ColumnsWrapper = Create("Frame", Container, {
+			Size = UDim2.new(1, 0, 0, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			BackgroundTransparency = 1,
+			Name = "Columns"
+		}, {
+			Create("UIListLayout", {
+				FillDirection = Enum.FillDirection.Horizontal,
+				HorizontalAlignment = Enum.HorizontalAlignment.Left,
+				VerticalAlignment = Enum.VerticalAlignment.Top,
+				Padding = UDim.new(0, 8),
+				SortOrder = Enum.SortOrder.LayoutOrder
+			})
+		})
+
+		local function MakeColumnFrame(ColumnName)
+			return Create("Frame", ColumnsWrapper, {
+				Size = UDim2.new(0.5, -4, 0, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				BackgroundTransparency = 1,
+				Name = ColumnName
+			}, {
+				Create("UIListLayout", { Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder })
+			})
+		end
+
+		local LeftColumn, RightColumn, LeftGroup, RightGroup
+
+		local function MakeColumn(ColumnFrame)
+			local Column = {}
+			local function WithColumn(method, cfg)
+				local prev = Container
+				Container = ColumnFrame
+				local result = method(Tab, cfg)
+				Container = prev
+				return result
+			end
+			function Column:AddSection(cfg)       return WithColumn(Tab.AddSection,       cfg) end
+			function Column:AddDivider(cfg)        return WithColumn(Tab.AddDivider,        cfg) end
+			function Column:AddParagraph(cfg)      return WithColumn(Tab.AddParagraph,      cfg) end
+			function Column:AddButton(cfg)         return WithColumn(Tab.AddButton,         cfg) end
+			function Column:AddToggle(cfg)         return WithColumn(Tab.AddToggle,         cfg) end
+			function Column:AddDropdown(cfg)       return WithColumn(Tab.AddDropdown,       cfg) end
+			function Column:AddSlider(cfg)         return WithColumn(Tab.AddSlider,         cfg) end
+			function Column:AddTextBox(cfg)        return WithColumn(Tab.AddTextBox,        cfg) end
+			function Column:AddDiscordInvite(cfg)  return WithColumn(Tab.AddDiscordInvite,  cfg) end
+			return Column
+		end
+
+		function Tab:Left()
+			LeftColumn = LeftColumn or MakeColumnFrame("LeftColumn")
+			LeftGroup = LeftGroup or MakeColumn(LeftColumn)
+			return LeftGroup
+		end
+
+		function Tab:Right()
+			RightColumn = RightColumn or MakeColumnFrame("RightColumn")
+			RightGroup = RightGroup or MakeColumn(RightColumn)
+			return RightGroup
+		end
+
 		return Tab
 	end
 
