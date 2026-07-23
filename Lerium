@@ -2487,11 +2487,13 @@ local function MeasureWrappedTextHeight(text, textSize, font, width, lineHeightM
 	return size.Y * lineHeightMultiplier
 end
 
-local function ButtonFrame(Instance, Title, Description, HolderSize)
+local function ButtonFrame(Instance, Title, Description, HolderSize, ExtraHeight)
+	ExtraHeight = ExtraHeight or 0
+	local ForceTop = ExtraHeight > 0
 	local H_SIMPLE = 25
 
 	local hasDesc = type(Description) == "string" and Description:gsub(" ",""):len() > 0
-	local frameH = hasDesc and 38 or H_SIMPLE
+	local frameH = (hasDesc and 38 or H_SIMPLE) + ExtraHeight
 
 	local Frame = InsertTheme(Create("TextButton", Instance, {
 		Size = UDim2.new(1, 0, 0, frameH),
@@ -2538,9 +2540,15 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 	}), "Text")
 
 	if not hasDesc then
-		TitleL.Position = UDim2.new(0, 10, 0.5, 0)
-		TitleL.AnchorPoint = Vector2.new(0, 0.5)
-		TitleL.TextYAlignment = Enum.TextYAlignment.Center
+		if ForceTop then
+			TitleL.Position = UDim2.new(0, 10, 0, 7)
+			TitleL.AnchorPoint = Vector2.new(0, 0)
+			TitleL.TextYAlignment = Enum.TextYAlignment.Center
+		else
+			TitleL.Position = UDim2.new(0, 10, 0.5, 0)
+			TitleL.AnchorPoint = Vector2.new(0, 0.5)
+			TitleL.TextYAlignment = Enum.TextYAlignment.Center
+		end
 	end
 
 	local Label = {}
@@ -2560,7 +2568,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 	local function updateFrameHeight()
 		local descH = MeasureDescHeight()
 		DescL.Size = UDim2.new(1, -20, 0, descH)
-		Frame.Size = UDim2.new(1, 0, 0, 21 + descH + 8)
+		Frame.Size = UDim2.new(1, 0, 0, 21 + descH + 8 + ExtraHeight)
 	end
 
 	function Label:SetDesc(v)
@@ -2578,9 +2586,14 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		else
 			DescL.Visible = false
 			DescL.Text = ""
-			TitleL.Position = UDim2.new(0, 10, 0.5, 0)
-			TitleL.AnchorPoint = Vector2.new(0, 0.5)
-			Frame.Size = UDim2.new(1, 0, 0, H_SIMPLE)
+			if ForceTop then
+				TitleL.Position = UDim2.new(0, 10, 0, 7)
+				TitleL.AnchorPoint = Vector2.new(0, 0)
+			else
+				TitleL.Position = UDim2.new(0, 10, 0.5, 0)
+				TitleL.AnchorPoint = Vector2.new(0, 0.5)
+			end
+			Frame.Size = UDim2.new(1, 0, 0, H_SIMPLE + ExtraHeight)
 		end
 	end
 
@@ -3615,6 +3628,8 @@ function redzlib:MakeWindow(Configs)
 		table.insert(ContainerList, Container)
 		if not FirstTab then Container.Parent = Containers end
 
+		local LeftColumn, RightColumn
+
 		local function Tabs()
 			if Container.Parent then return end
 			for _, Tab in ipairs(redzlib.Tabs) do
@@ -3623,12 +3638,14 @@ function redzlib:MakeWindow(Configs)
 				end
 			end
 			for _, Frame in ipairs(ContainerList) do
-				if Frame:IsA("ScrollingFrame") and Frame ~= Container then
+				if Frame:IsA("ScrollingFrame") and Frame ~= Container and Frame ~= LeftColumn and Frame ~= RightColumn then
 					Frame.Parent = nil
 				end
 			end
 			Container.Size = UDim2.new(1, 0, 1, 0)
 			Container.Parent = Containers
+			if LeftColumn then LeftColumn.Parent = Containers end
+			if RightColumn then RightColumn.Parent = Containers end
 			TabSelect.BackgroundTransparency = 0.85
 			TabSelect.BackgroundColor3 = Theme["Color Theme"]
 			CreateTween({LabelTitle, "TextTransparency", 0, 0.25})
@@ -3650,6 +3667,8 @@ function redzlib:MakeWindow(Configs)
 
 		function Tab:Disable()
 			Container.Parent = nil
+			if LeftColumn then LeftColumn.Parent = nil end
+			if RightColumn then RightColumn.Parent = nil end
 			TabSelect.BackgroundTransparency = 1
 			CreateTween({LabelTitle, "TextTransparency", 0, 0.35})
 			CreateTween({LabelIcon, "ImageTransparency", 0, 0.35})
@@ -3658,8 +3677,15 @@ function redzlib:MakeWindow(Configs)
 		function Tab:Visible(Bool)
 			Funcs:ToggleVisible(TabSelect, Bool)
 			Funcs:ToggleParent(Container, Bool, Containers)
+			if LeftColumn then Funcs:ToggleParent(LeftColumn, Bool, Containers) end
+			if RightColumn then Funcs:ToggleParent(RightColumn, Bool, Containers) end
 		end
-		function Tab:Destroy() TabSelect:Destroy(); Container:Destroy() end
+		function Tab:Destroy()
+			TabSelect:Destroy()
+			Container:Destroy()
+			if LeftColumn then LeftColumn:Destroy() end
+			if RightColumn then RightColumn:Destroy() end
+		end
 
 		function Tab:AddDivider(Configs)
 			local DText = type(Configs) == "string" and Configs
@@ -4201,24 +4227,25 @@ function redzlib:MakeWindow(Configs)
 			local DMultiSelect = Configs.MultiSelect or false
 			local Callback = Funcs:GetCallback(Configs, 4)
 
-			local Button, LabelFunc = ButtonFrame(Container, DName, DDesc, UDim2.new(1, -180))
+			local Button, LabelFunc = ButtonFrame(Container, DName, DDesc, UDim2.new(1, -20), 34)
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
-				Size = UDim2.new(0, 150, 0, 18),
-				Position = UDim2.new(1, -10, 0.5),
-				AnchorPoint = Vector2.new(1, 0.5),
+				Size = UDim2.new(1, -20, 0, 22),
+				Position = UDim2.new(0, 10, 1, -8),
+				AnchorPoint = Vector2.new(0, 1),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 0.85,
 			}), "Theme")
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
 
 			local ActiveLabel = InsertTheme(Create("TextLabel", SelectedFrame, {
-				Size = UDim2.new(0.85, 0, 0.85, 0),
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.new(0.5, 0, 0.5, 0),
+				Size = UDim2.new(1, -34, 0.85, 0),
+				AnchorPoint = Vector2.new(0, 0.5),
+				Position = UDim2.new(0, 10, 0.5, 0),
 				BackgroundTransparency = 1,
 				Font = Enum.Font.GothamBold,
 				TextScaled = true,
+				TextXAlignment = Enum.TextXAlignment.Left,
 				TextColor3 = Theme["Color Text"],
 				Text = "..."
 			}), "Text")
@@ -4721,12 +4748,35 @@ function redzlib:MakeWindow(Configs)
 			if CheckFlag(Flag) then Default = GetFlag(Flag) end
 			Default = math.clamp(tonumber(Default) or Min, Min, Max)
 
-			local Button, LabelFunc = ButtonFrame(Container, SName, SDesc, UDim2.new(1, -180))
+			local Button, LabelFunc = ButtonFrame(Container, SName, SDesc, UDim2.new(1, -20), 32)
+			local OwnContainer = Container
+
+			local InputHolder = InsertTheme(Create("Frame", Button, {
+				Size = UDim2.new(0, 42, 0, 20),
+				Position = UDim2.new(0, 10, 1, -8),
+				AnchorPoint = Vector2.new(0, 1),
+				BackgroundColor3 = Theme["Color Theme"],
+				BackgroundTransparency = 0.85,
+			}), "Theme")
+			Make("Corner", InputHolder, UDim.new(0, 4))
+
+			local ValueInput = InsertTheme(Create("TextBox", InputHolder, {
+				Size = UDim2.new(1, -6, 0.85, 0),
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.new(0.5, 0, 0.5, 0),
+				BackgroundTransparency = 1,
+				Font = Enum.Font.FredokaOne,
+				TextScaled = true,
+				TextColor3 = Theme["Color Text"],
+				Text = tostring(Default),
+				ClearTextOnFocus = true,
+				TextXAlignment = "Center"
+			}), "Text")
 
 			local SliderHolder = Create("TextButton", Button, {
-				Size = UDim2.new(0, 110, 1, 0),
-				Position = UDim2.new(1, -10, 0, 0),
-				AnchorPoint = Vector2.new(1, 0),
+				Size = UDim2.new(1, -70, 0, 20),
+				Position = UDim2.new(0, 60, 1, -8),
+				AnchorPoint = Vector2.new(0, 1),
 				AutoButtonColor = false,
 				Text = "",
 				BackgroundTransparency = 1
@@ -4755,28 +4805,6 @@ function redzlib:MakeWindow(Configs)
 				BackgroundTransparency = 0.2
 			})
 			Make("Corner", SliderIcon)
-
-			local InputHolder = InsertTheme(Create("Frame", Button, {
-				Size = UDim2.new(0, 38, 0, 18),
-				Position = UDim2.new(1, -125, 0.5),
-				AnchorPoint = Vector2.new(1, 0.5),
-				BackgroundColor3 = Theme["Color Theme"],
-				BackgroundTransparency = 0.85,
-			}), "Theme")
-			Make("Corner", InputHolder, UDim.new(0, 4))
-
-			local ValueInput = InsertTheme(Create("TextBox", InputHolder, {
-				Size = UDim2.new(1, -6, 0.85, 0),
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.new(0.5, 0, 0.5, 0),
-				BackgroundTransparency = 1,
-				Font = Enum.Font.FredokaOne,
-				TextScaled = true,
-				TextColor3 = Theme["Color Text"],
-				Text = tostring(Default),
-				ClearTextOnFocus = true,
-				TextXAlignment = "Center"
-			}), "Text")
 
 			local currentValue = Default
 			local isFocused = false
@@ -4847,12 +4875,12 @@ function redzlib:MakeWindow(Configs)
 			end
 
 			SliderHolder.MouseButton1Down:Connect(function()
-				Container.ScrollingEnabled = false
+				OwnContainer.ScrollingEnabled = false
 				while UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
 					task.wait()
 					ControlPos()
 				end
-				Container.ScrollingEnabled = true
+				OwnContainer.ScrollingEnabled = true
 			end)
 
 			ValueInput:GetPropertyChangedSignal("Text"):Connect(function()
@@ -4864,12 +4892,12 @@ function redzlib:MakeWindow(Configs)
 
 			ValueInput.Focused:Connect(function()
 				isFocused = true
-				Container.ScrollingEnabled = false
+				OwnContainer.ScrollingEnabled = false
 			end)
 
 			ValueInput.FocusLost:Connect(function()
 				isFocused = false
-				Container.ScrollingEnabled = true
+				OwnContainer.ScrollingEnabled = true
 				local num = tonumber(ValueInput.Text)
 				if num then
 					SetSlider(num)
@@ -4917,24 +4945,25 @@ function redzlib:MakeWindow(Configs)
 
 			if type(TDefault) ~= "string" then TDefault = "" end
 
-			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -38))
+			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -20), 34)
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
-				Size = UDim2.new(0, 150, 0, 18),
-				Position = UDim2.new(1, -10, 0.5),
-				AnchorPoint = Vector2.new(1, 0.5),
+				Size = UDim2.new(1, -20, 0, 22),
+				Position = UDim2.new(0, 10, 1, -8),
+				AnchorPoint = Vector2.new(0, 1),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 0.85,
 			}), "Theme")
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
 
 			local TextBoxInput = InsertTheme(Create("TextBox", SelectedFrame, {
-				Size = UDim2.new(0.85, 0, 0.85, 0),
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.new(0.5, 0, 0.5, 0),
+				Size = UDim2.new(1, -20, 0.85, 0),
+				AnchorPoint = Vector2.new(0, 0.5),
+				Position = UDim2.new(0, 10, 0.5, 0),
 				BackgroundTransparency = 1,
 				Font = Enum.Font.GothamBold,
 				TextScaled = true,
+				TextXAlignment = Enum.TextXAlignment.Left,
 				TextColor3 = Theme["Color Text"],
 				ClearTextOnFocus = TClearText,
 				PlaceholderText = TPlaceholderText,
@@ -5081,33 +5110,36 @@ function redzlib:MakeWindow(Configs)
 			return DiscordInvite
 		end
 
-		local ColumnsWrapper = Create("Frame", Container, {
-			Size = UDim2.new(1, 0, 0, 0),
-			AutomaticSize = Enum.AutomaticSize.Y,
-			BackgroundTransparency = 1,
-			Name = "Columns"
-		}, {
-			Create("UIListLayout", {
-				FillDirection = Enum.FillDirection.Horizontal,
-				HorizontalAlignment = Enum.HorizontalAlignment.Left,
-				VerticalAlignment = Enum.VerticalAlignment.Top,
-				Padding = UDim.new(0, 8),
-				SortOrder = Enum.SortOrder.LayoutOrder
-			})
-		})
+		local LeftGroup, RightGroup
 
-		local function MakeColumnFrame(ColumnName)
-			return Create("Frame", ColumnsWrapper, {
-				Size = UDim2.new(0.5, -4, 0, 0),
-				AutomaticSize = Enum.AutomaticSize.Y,
+		local function MakeSideScroll(ColumnName, AnchorRight)
+			local Side = InsertTheme(Create("ScrollingFrame", Containers, {
+				AnchorPoint = AnchorRight and Vector2.new(1, 0) or Vector2.new(0, 0),
+				Position = AnchorRight and UDim2.new(1, 0, 0, 0) or UDim2.new(0, 0, 0, 0),
+				Size = UDim2.new(0.5, -4, 1, 0),
 				BackgroundTransparency = 1,
+				ScrollBarThickness = 0,
+				ScrollBarImageTransparency = 1,
+				ScrollBarImageColor3 = Theme["Color Theme"],
+				AutomaticCanvasSize = "Y",
+				ScrollingDirection = "Y",
+				BorderSizePixel = 0,
+				CanvasSize = UDim2.new(),
 				Name = ColumnName
 			}, {
-				Create("UIListLayout", { Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder })
-			})
-		end
+				Create("UIPadding", {
+					PaddingLeft = UDim.new(0, 6),
+					PaddingRight = UDim.new(0, 6),
+					PaddingTop = UDim.new(0, 6),
+					PaddingBottom = UDim.new(0, 6)
+				}),
+				Create("UIListLayout", { Padding = UDim.new(0, 5) })
+			}), "ScrollBar")
 
-		local LeftColumn, RightColumn, LeftGroup, RightGroup
+			table.insert(ContainerList, Side)
+			if Container.Parent then Side.Parent = Containers end
+			return Side
+		end
 
 		local function MakeColumn(ColumnFrame)
 			local Column = {}
@@ -5131,18 +5163,18 @@ function redzlib:MakeWindow(Configs)
 		end
 
 		function Tab:Left()
-			LeftColumn = LeftColumn or MakeColumnFrame("LeftColumn")
+			LeftColumn = LeftColumn or MakeSideScroll("LeftColumn", false)
 			LeftGroup = LeftGroup or MakeColumn(LeftColumn)
 			return LeftGroup
 		end
 
 		function Tab:Right()
-			RightColumn = RightColumn or MakeColumnFrame("RightColumn")
+			RightColumn = RightColumn or MakeSideScroll("RightColumn", true)
 			RightGroup = RightGroup or MakeColumn(RightColumn)
 			return RightGroup
 		end
 
-		return Tab
+		return Tab, Tab:Left(), Tab:Right()
 	end
 
 
