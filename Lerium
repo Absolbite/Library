@@ -4227,12 +4227,11 @@ function redzlib:MakeWindow(Configs)
 			local DMultiSelect = Configs.MultiSelect or false
 			local Callback = Funcs:GetCallback(Configs, 4)
 
-			local Button, LabelFunc = ButtonFrame(Container, DName, DDesc, UDim2.new(1, -20), 20)
+			local Button, LabelFunc = ButtonFrame(Container, DName, DDesc, UDim2.new(1, -20), 9)
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(1, -20, 0, 12),
-				Position = UDim2.new(0, 10, 1, -4),
-				AnchorPoint = Vector2.new(0, 1),
+				Position = UDim2.new(0, 10, 0, 20),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 0.85,
 			}), "Theme")
@@ -4748,13 +4747,12 @@ function redzlib:MakeWindow(Configs)
 			if CheckFlag(Flag) then Default = GetFlag(Flag) end
 			Default = math.clamp(tonumber(Default) or Min, Min, Max)
 
-			local Button, LabelFunc = ButtonFrame(Container, SName, SDesc, UDim2.new(1, -20), 20)
+			local Button, LabelFunc = ButtonFrame(Container, SName, SDesc, UDim2.new(1, -20), 9)
 			local OwnContainer = Container
 
 			local InputHolder = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(0, 36, 0, 12),
-				Position = UDim2.new(0, 10, 1, -4),
-				AnchorPoint = Vector2.new(0, 1),
+				Position = UDim2.new(0, 10, 0, 20),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 0.85,
 			}), "Theme")
@@ -4775,8 +4773,7 @@ function redzlib:MakeWindow(Configs)
 
 			local SliderHolder = Create("TextButton", Button, {
 				Size = UDim2.new(1, -56, 0, 12),
-				Position = UDim2.new(0, 48, 1, -4),
-				AnchorPoint = Vector2.new(0, 1),
+				Position = UDim2.new(0, 48, 0, 20),
 				AutoButtonColor = false,
 				Text = "",
 				BackgroundTransparency = 1
@@ -4946,12 +4943,11 @@ function redzlib:MakeWindow(Configs)
 
 			if type(TDefault) ~= "string" then TDefault = "" end
 
-			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -20), 20)
+			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -20), 9)
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
 				Size = UDim2.new(1, -20, 0, 12),
-				Position = UDim2.new(0, 10, 1, -4),
-				AnchorPoint = Vector2.new(0, 1),
+				Position = UDim2.new(0, 10, 0, 20),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 0.85,
 			}), "Theme")
