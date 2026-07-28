@@ -4227,11 +4227,11 @@ function redzlib:MakeWindow(Configs)
 			local DMultiSelect = Configs.MultiSelect or false
 			local Callback = Funcs:GetCallback(Configs, 4)
 
-			local Button, LabelFunc = ButtonFrame(Container, DName, DDesc, UDim2.new(1, -20), 27)
+			local Button, LabelFunc = ButtonFrame(Container, DName, DDesc, UDim2.new(1, -20), 20)
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
-				Size = UDim2.new(1, -20, 0, 20),
-				Position = UDim2.new(0, 10, 1, -6),
+				Size = UDim2.new(1, -20, 0, 12),
+				Position = UDim2.new(0, 10, 1, -4),
 				AnchorPoint = Vector2.new(0, 1),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 0.85,
@@ -4239,20 +4239,20 @@ function redzlib:MakeWindow(Configs)
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
 
 			local ActiveLabel = InsertTheme(Create("TextLabel", SelectedFrame, {
-				Size = UDim2.new(1, -32, 0.8, 0),
+				Size = UDim2.new(1, -26, 1, 0),
 				AnchorPoint = Vector2.new(0, 0.5),
 				Position = UDim2.new(0, 10, 0.5, 0),
 				BackgroundTransparency = 1,
 				Font = Enum.Font.GothamBold,
-				TextScaled = true,
+				TextSize = 10,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextColor3 = Theme["Color Text"],
 				Text = "..."
 			}), "Text")
 
 			local Arrow = Create("ImageLabel", SelectedFrame, {
-				Size = UDim2.new(0, 13, 0, 13),
-				Position = UDim2.new(0, -6, 0.5),
+				Size = UDim2.new(0, 10, 0, 10),
+				Position = UDim2.new(1, -8, 0.5, 0),
 				AnchorPoint = Vector2.new(1, 0.5),
 				Image = "rbxassetid://10709791523",
 				BackgroundTransparency = 1
@@ -4748,12 +4748,12 @@ function redzlib:MakeWindow(Configs)
 			if CheckFlag(Flag) then Default = GetFlag(Flag) end
 			Default = math.clamp(tonumber(Default) or Min, Min, Max)
 
-			local Button, LabelFunc = ButtonFrame(Container, SName, SDesc, UDim2.new(1, -20), 25)
+			local Button, LabelFunc = ButtonFrame(Container, SName, SDesc, UDim2.new(1, -20), 20)
 			local OwnContainer = Container
 
 			local InputHolder = InsertTheme(Create("Frame", Button, {
-				Size = UDim2.new(0, 40, 0, 18),
-				Position = UDim2.new(0, 10, 1, -6),
+				Size = UDim2.new(0, 36, 0, 12),
+				Position = UDim2.new(0, 10, 1, -4),
 				AnchorPoint = Vector2.new(0, 1),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 0.85,
@@ -4761,12 +4761,12 @@ function redzlib:MakeWindow(Configs)
 			Make("Corner", InputHolder, UDim.new(0, 4))
 
 			local ValueInput = InsertTheme(Create("TextBox", InputHolder, {
-				Size = UDim2.new(1, -6, 0.8, 0),
+				Size = UDim2.new(1, -6, 1, 0),
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = UDim2.new(0.5, 0, 0.5, 0),
 				BackgroundTransparency = 1,
 				Font = Enum.Font.FredokaOne,
-				TextScaled = true,
+				TextSize = 10,
 				TextColor3 = Theme["Color Text"],
 				Text = tostring(Default),
 				ClearTextOnFocus = true,
@@ -4774,8 +4774,8 @@ function redzlib:MakeWindow(Configs)
 			}), "Text")
 
 			local SliderHolder = Create("TextButton", Button, {
-				Size = UDim2.new(1, -64, 0, 18),
-				Position = UDim2.new(0, 56, 1, -6),
+				Size = UDim2.new(1, -56, 0, 12),
+				Position = UDim2.new(0, 48, 1, -4),
 				AnchorPoint = Vector2.new(0, 1),
 				AutoButtonColor = false,
 				Text = "",
@@ -4784,9 +4784,9 @@ function redzlib:MakeWindow(Configs)
 
 			local SliderBar = InsertTheme(Create("Frame", SliderHolder, {
 				BackgroundColor3 = Theme["Color Stroke"],
-				Size = UDim2.new(1, 0, 1, 0),
-				Position = UDim2.new(0, 0, 0.5, 0),
-				AnchorPoint = Vector2.new(0, 0.5)
+				Size = UDim2.new(1, -20, 0, 6),
+				Position = UDim2.new(0.5, 0, 0.5),
+				AnchorPoint = Vector2.new(0.5, 0.5)
 			}), "Stroke")
 			Make("Corner", SliderBar)
 
@@ -4796,6 +4796,15 @@ function redzlib:MakeWindow(Configs)
 				BorderSizePixel = 0
 			}), "Theme")
 			Make("Corner", Indicator)
+
+			local SliderIcon = Create("Frame", SliderBar, {
+				Size = UDim2.new(0, 6, 0, 12),
+				BackgroundColor3 = Color3.fromRGB(220, 220, 220),
+				Position = UDim2.fromScale(0, 0.5),
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				BackgroundTransparency = 0.2
+			})
+			Make("Corner", SliderIcon)
 
 
 			local currentValue = Default
@@ -4836,6 +4845,7 @@ function redzlib:MakeWindow(Configs)
 
 			local function ApplyVisual(scale)
 				local c = math.clamp(scale, 0, 1)
+				SliderIcon.Position = UDim2.new(c, 0, 0.5, 0)
 				Indicator.Size = UDim2.fromScale(c, 1)
 			end
 
@@ -4936,11 +4946,11 @@ function redzlib:MakeWindow(Configs)
 
 			if type(TDefault) ~= "string" then TDefault = "" end
 
-			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -20), 27)
+			local Button, LabelFunc = ButtonFrame(Container, TName, TDesc, UDim2.new(1, -20), 20)
 
 			local SelectedFrame = InsertTheme(Create("Frame", Button, {
-				Size = UDim2.new(1, -20, 0, 20),
-				Position = UDim2.new(0, 10, 1, -6),
+				Size = UDim2.new(1, -20, 0, 12),
+				Position = UDim2.new(0, 10, 1, -4),
 				AnchorPoint = Vector2.new(0, 1),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 0.85,
@@ -4948,12 +4958,12 @@ function redzlib:MakeWindow(Configs)
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
 
 			local TextBoxInput = InsertTheme(Create("TextBox", SelectedFrame, {
-				Size = UDim2.new(1, -20, 0.8, 0),
+				Size = UDim2.new(1, -16, 1, 0),
 				AnchorPoint = Vector2.new(0, 0.5),
-				Position = UDim2.new(0, 10, 0.5, 0),
+				Position = UDim2.new(0, 8, 0.5, 0),
 				BackgroundTransparency = 1,
 				Font = Enum.Font.GothamBold,
-				TextScaled = true,
+				TextSize = 10,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextColor3 = Theme["Color Text"],
 				ClearTextOnFocus = TClearText,
