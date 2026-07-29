@@ -4066,18 +4066,25 @@ function redzlib:MakeWindow(Configs)
 					table.insert(lineLabels, lbl)
 				end
 
+				local LINE_PADDING = 2
+				local TOP_PADDING = 7
+				local BOTTOM_PADDING = 7
+
 				local function RecalcParagraph()
 					local width = (outerFrame.AbsoluteSize.X - 20) / UIScale
 
-					local total = 14 + 2
+					-- Content height = Title height + (padding before each line + that line's height).
+					-- UIListLayout only inserts a gap BETWEEN elements, so with N lines that's
+					-- exactly N gaps (one after the title, N-1 between lines) â never N+1.
+					local total = 14
 					for _, lbl in ipairs(lineLabels) do
 						local h = MeasureWrappedTextHeight(lbl.Text, lbl.TextSize, lbl.Font, width, lbl.LineHeight)
 						lbl.Size = UDim2.new(1, 0, 0, h)
-						total = total + h + 2
+						total = total + LINE_PADDING + h
 					end
 
 					innerLayout.Size = UDim2.new(1, -20, 0, total)
-					outerFrame.Size = UDim2.new(1, 0, 0, total + 14)
+					outerFrame.Size = UDim2.new(1, 0, 0, TOP_PADDING + total + BOTTOM_PADDING)
 				end
 
 				RecalcParagraph()
