@@ -2487,6 +2487,15 @@ local function MeasureWrappedTextHeight(text, textSize, font, width, lineHeightM
 	return size.Y * lineHeightMultiplier
 end
 
+-- RichText forces TextLabels through Roblox's rich-text layout pass, which (unlike the
+-- plain-text renderer) doesn't shape glyphs smoothly under a fractional UIScale â small
+-- Bold/Medium fonts end up with visibly uneven per-letter baselines ("wobbly" text).
+-- Only enable RichText when the string actually contains markup; everything else renders
+-- through the stable plain-text path.
+local function NeedsRichText(text)
+	return type(text) == "string" and text:find("<[^<>]->") ~= nil
+end
+
 local function ButtonFrame(Instance, Title, Description, HolderSize)
 	local H_SIMPLE = 25
 
@@ -2516,7 +2525,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		TextXAlignment = "Left",
 		TextYAlignment = "Center",
 		Text = "",
-		RichText = true
+		RichText = false
 	}), "Text")
 
 	local DescL = InsertTheme(Create("TextLabel", Frame, {
@@ -2533,7 +2542,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		TextYAlignment = "Top",
 		AutomaticSize = Enum.AutomaticSize.None,
 		Text = "",
-		RichText = true,
+		RichText = false,
 		Visible = false
 	}), "Text")
 
@@ -2547,6 +2556,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 
 	function Label:SetTitle(v)
 		if type(v) == "string" and v:gsub(" ",""):len() > 0 then
+			TitleL.RichText = NeedsRichText(v)
 			TitleL.Text = v
 		end
 	end
@@ -2570,6 +2580,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		end
 		if type(v) == "string" and v:gsub(" ",""):len() > 0 then
 			DescL.Visible = true
+			DescL.RichText = NeedsRichText(v)
 			DescL.Text = v
 			TitleL.Position = UDim2.new(0, 10, 0, 9)
 			TitleL.AnchorPoint = Vector2.new(0, 0)
@@ -3164,7 +3175,7 @@ function redzlib:MakeWindow(Configs)
 			Position = UDim2.fromOffset(12, 44),
 			BackgroundTransparency = 1,
 			TextWrapped = true,
-			RichText = true
+			RichText = NeedsRichText(DText)
 		}), "DarkText")
 
 		local ContentY = 44
@@ -4042,7 +4053,7 @@ function redzlib:MakeWindow(Configs)
 					TextColor3 = Theme["Color Text"],
 					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Left,
-					RichText = true,
+					RichText = NeedsRichText(PName),
 					Text = PName,
 					LayoutOrder = 0,
 					Name = "Title"
@@ -4058,7 +4069,7 @@ function redzlib:MakeWindow(Configs)
 						TextSize = 9,
 						TextXAlignment = Enum.TextXAlignment.Left,
 						TextWrapped = true,
-						RichText = true,
+						RichText = NeedsRichText(lineText),
 						Text = lineText,
 						LayoutOrder = idx,
 						Name = "Line"..idx
