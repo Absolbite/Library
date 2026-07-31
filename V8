@@ -2491,9 +2491,10 @@ end
 -- plain-text renderer) doesn't shape glyphs smoothly under a fractional UIScale â small
 -- Bold/Medium fonts end up with visibly uneven per-letter baselines ("wobbly" text).
 -- Only enable RichText when the string actually contains markup; everything else renders
--- through the stable plain-text path.
+-- through the stable plain-text path. Plain (non-pattern) find is used since we're only
+-- checking for tag delimiters, not extracting them â no need for the pattern engine.
 local function NeedsRichText(text)
-	return type(text) == "string" and text:find("<[^<>]->") ~= nil
+	return type(text) == "string" and text:find("<", 1, true) ~= nil and text:find(">", 1, true) ~= nil
 end
 
 local function ButtonFrame(Instance, Title, Description, HolderSize)
@@ -4768,9 +4769,15 @@ function redzlib:MakeWindow(Configs)
 
 			local Button, LabelFunc = ButtonFrame(Container, SName, SDesc, UDim2.new(1, -180))
 
+			local CONTROL_WIDTH = 150
+			local RIGHT_MARGIN = 10
+			local INPUT_WIDTH = 38
+			local GAP = 8
+			local SLIDER_WIDTH = CONTROL_WIDTH - INPUT_WIDTH - GAP
+
 			local SliderHolder = Create("TextButton", Button, {
-				Size = UDim2.new(0, 110, 1, 0),
-				Position = UDim2.new(1, -10, 0, 0),
+				Size = UDim2.new(0, SLIDER_WIDTH, 1, 0),
+				Position = UDim2.new(1, -RIGHT_MARGIN, 0, 0),
 				AnchorPoint = Vector2.new(1, 0),
 				AutoButtonColor = false,
 				Text = "",
@@ -4778,11 +4785,12 @@ function redzlib:MakeWindow(Configs)
 			})
 
 			local SliderBar = InsertTheme(Create("Frame", SliderHolder, {
-				BackgroundColor3 = Theme["Color Stroke"],
-				Size = UDim2.new(1, -20, 0, 6),
+				BackgroundColor3 = Theme["Color Theme"],
+				BackgroundTransparency = 0.85,
+				Size = UDim2.new(1, -8, 0, 6),
 				Position = UDim2.new(0.5, 0, 0.5),
 				AnchorPoint = Vector2.new(0.5, 0.5)
-			}), "Stroke")
+			}), "Theme")
 			Make("Corner", SliderBar)
 
 			local Indicator = InsertTheme(Create("Frame", SliderBar, {
@@ -4802,8 +4810,8 @@ function redzlib:MakeWindow(Configs)
 			Make("Corner", SliderIcon)
 
 			local InputHolder = InsertTheme(Create("Frame", Button, {
-				Size = UDim2.new(0, 38, 0, 18),
-				Position = UDim2.new(1, -125, 0.5),
+				Size = UDim2.new(0, INPUT_WIDTH, 0, 18),
+				Position = UDim2.new(1, -(RIGHT_MARGIN + SLIDER_WIDTH + GAP), 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 0.85,
