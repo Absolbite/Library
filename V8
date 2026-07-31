@@ -2487,12 +2487,6 @@ local function MeasureWrappedTextHeight(text, textSize, font, width, lineHeightM
 	return size.Y * lineHeightMultiplier
 end
 
--- RichText forces TextLabels through Roblox's rich-text layout pass, which (unlike the
--- plain-text renderer) doesn't shape glyphs smoothly under a fractional UIScale â small
--- Bold/Medium fonts end up with visibly uneven per-letter baselines ("wobbly" text).
--- Only enable RichText when the string actually contains markup; everything else renders
--- through the stable plain-text path. Plain (non-pattern) find is used since we're only
--- checking for tag delimiters, not extracting them â no need for the pattern engine.
 local function NeedsRichText(text)
 	return type(text) == "string" and text:find("<", 1, true) ~= nil and text:find(">", 1, true) ~= nil
 end
@@ -2715,6 +2709,7 @@ function redzlib:SetTransparency(value)
 	SaveJson(redzlib.Save)
 	if _MainFrame then
 		_MainFrame.BackgroundTransparency = value
+		_MainFrame.ImageTransparency = value
 	end
 	table.foreach(redzlib.Instances, function(_,Val)
 		if not Val or not Val.Instance or not Val.Instance.Parent then return end
@@ -2770,7 +2765,9 @@ function redzlib:MakeWindow(Configs)
 		Size = UDim2.fromOffset(UISizeX, UISizeY),
 		Position = UDim2.new(0.5, -UISizeX/2, 0.5, -UISizeY/2),
 		BackgroundTransparency = CurrentTransparency,
-		ScaleType = Enum.ScaleType.Stretch,
+		ScaleType = Enum.ScaleType.Crop,
+		Image = redzlib.Save.MainImage or "",
+		ImageTransparency = CurrentTransparency,
 		Name = "Hub"
 	}), "Main")
 
@@ -3392,14 +3389,16 @@ function redzlib:MakeWindow(Configs)
 			end
 
 			local function ApplyMain(raw)
-				local id = NormalizeImageId(raw)
+				local id = redzlib:GetIcon(NormalizeImageId(raw))
 				if id == "" then return end
 				Preview.Image = id
 				Preview.Visible = true
-				if MainFrame then
-					MainFrame.Image = id
-					MainFrame.ImageTransparency = 0.05
+				if _MainFrame then
+					_MainFrame.Image = id
+					_MainFrame.ImageTransparency = CurrentTransparency
 				end
+				redzlib.Save.MainImage = id
+				SaveJson(redzlib.Save)
 			end
 
 			ImgInput.FocusLost:Connect(function() ApplyBtn(ImgInput.Text) end)
@@ -4085,9 +4084,6 @@ function redzlib:MakeWindow(Configs)
 				local function RecalcParagraph()
 					local width = (outerFrame.AbsoluteSize.X - 20) / UIScale
 
-					-- Content height = Title height + (padding before each line + that line's height).
-					-- UIListLayout only inserts a gap BETWEEN elements, so with N lines that's
-					-- exactly N gaps (one after the title, N-1 between lines) â never N+1.
 					local total = 14
 					for _, lbl in ipairs(lineLabels) do
 						local h = MeasureWrappedTextHeight(lbl.Text, lbl.TextSize, lbl.Font, width, lbl.LineHeight)
@@ -4787,9 +4783,9 @@ function redzlib:MakeWindow(Configs)
 			local SliderBar = InsertTheme(Create("Frame", SliderHolder, {
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 0.85,
-				Size = UDim2.new(1, -8, 0, 6),
-				Position = UDim2.new(0.5, 0, 0.5),
-				AnchorPoint = Vector2.new(0.5, 0.5)
+				Size = UDim2.new(1, 0, 0, 6),
+				Position = UDim2.new(1, 0, 0.5, 0),
+				AnchorPoint = Vector2.new(1, 0.5)
 			}), "Theme")
 			Make("Corner", SliderBar)
 
