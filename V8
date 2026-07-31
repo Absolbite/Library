@@ -1236,7 +1236,8 @@ local redzlib = {
 		TabHeight = 32,
 		Theme = "Darker",
 		Transparency = 0.03,
-		MinimizeButtons = {}
+		MinimizeButtons = {},
+		MainImage = ""
 	},
 	Settings = {},
 	Connection = {},
@@ -2171,6 +2172,7 @@ local SetProps, SetChildren, InsertTheme, Create do
 				if rawget(decode, "Theme") and VerifyTheme(decode["Theme"]) then redzlib.Save["Theme"] = decode["Theme"] end
 				if rawget(decode, "Transparency") then redzlib.Save["Transparency"] = decode["Transparency"] end
 				if rawget(decode, "MinimizeButtons") then redzlib.Save["MinimizeButtons"] = decode["MinimizeButtons"] end
+				if rawget(decode, "MainImage") then redzlib.Save["MainImage"] = decode["MainImage"] end
 			end
 		end
 	end
