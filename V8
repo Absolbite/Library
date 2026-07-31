@@ -2133,7 +2133,10 @@ local SetProps, SetChildren, InsertTheme, Create do
 		if not isfolder(ImgCache)   then makefolder(ImgCache)   end
 	end
 
+	local ImageAssetCache = {}
+
 	local function FetchHttpImage(url)
+		if ImageAssetCache[url] then return ImageAssetCache[url] end
 		if not writefile or not makefolder then return url end
 		EnsureFolders()
 		local ext  = url:match("%.(%w+)%??[^%.]*$") or "png"
@@ -2148,7 +2151,10 @@ local SetProps, SetChildren, InsertTheme, Create do
 		end
 		if isfile(path) then
 			local ok, asset = pcall(getcustomasset, path)
-			if ok then return asset end
+			if ok then
+				ImageAssetCache[url] = asset
+				return asset
+			end
 		end
 		return url
 	end
@@ -2725,6 +2731,19 @@ end
 function redzlib:SetScale(NewScale)
 	NewScale = ViewportSize.Y / math.clamp(NewScale, 300, 2000)
 	UIScale, ScreenGui.Scale.Scale = NewScale, NewScale
+end
+
+function redzlib:SetBackgroundImage(raw)
+	local id = tostring(raw or ""):gsub("^%s+", ""):gsub("%s+$", "")
+	if id ~= "" then
+		id = redzlib:GetIcon(id)
+	end
+	if _MainFrame then
+		_MainFrame.Image = id
+		_MainFrame.ImageTransparency = CurrentTransparency
+	end
+	redzlib.Save.MainImage = id
+	SaveJson(redzlib.Save)
 end
 
 function redzlib:MakeWindow(Configs)
@@ -3393,12 +3412,7 @@ function redzlib:MakeWindow(Configs)
 				if id == "" then return end
 				Preview.Image = id
 				Preview.Visible = true
-				if _MainFrame then
-					_MainFrame.Image = id
-					_MainFrame.ImageTransparency = CurrentTransparency
-				end
-				redzlib.Save.MainImage = id
-				SaveJson(redzlib.Save)
+				redzlib:SetBackgroundImage(id)
 			end
 
 			ImgInput.FocusLost:Connect(function() ApplyBtn(ImgInput.Text) end)
@@ -3483,6 +3497,10 @@ function redzlib:MakeWindow(Configs)
 
 	function Window:SetTheme(name)
 		redzlib:SetTheme(name)
+	end
+
+	function Window:SetBackgroundImage(value)
+		redzlib:SetBackgroundImage(value)
 	end
 
 	local ContainerList = {}
