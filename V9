@@ -9,7 +9,7 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local PlayerMouse = Player:GetMouse()
 
-local redzlib = {
+local veltrolib = {
 	Themes = {
 		Darker = {
 			["Color Hub 1"] = ColorSequence.new({
@@ -1236,7 +1236,8 @@ local redzlib = {
 		TabHeight = 32,
 		Theme = "Darker",
 		Transparency = 0.03,
-		MinimizeButtons = {}
+		MinimizeButtons = {},
+		MainImage = ""
 	},
 	Settings = {},
 	Connection = {},
@@ -2072,12 +2073,12 @@ local redzlib = {
 local ViewportSize = workspace.CurrentCamera.ViewportSize
 local UIScale = ViewportSize.Y / 450
 
-local Settings = redzlib.Settings
-local Flags = redzlib.Flags
+local Settings = veltrolib.Settings
+local Flags = veltrolib.Flags
 
 local SetProps, SetChildren, InsertTheme, Create do
 	InsertTheme = function(Instance, Type)
-		table.insert(redzlib.Instances, {
+		table.insert(veltrolib.Instances, {
 			Instance = Instance,
 			Type = Type
 		})
@@ -2121,9 +2122,9 @@ local SetProps, SetChildren, InsertTheme, Create do
 		return new
 	end
 
-	local SaveRoot    = "smoothlib"
-	local SaveFolder  = SaveRoot .. "/LibrarySettings"
-	local SaveFile    = SaveFolder .. "/smooth library.json"
+	local SaveRoot    = "Veltro-Lib"
+	local SaveFolder  = SaveRoot .. "/Ui-Settings"
+	local SaveFile    = SaveFolder .. "/Veltro-Lib-Ui.json"
 	local ImgCache    = SaveFolder .. "/images"
 
 	local function EnsureFolders()
@@ -2133,7 +2134,10 @@ local SetProps, SetChildren, InsertTheme, Create do
 		if not isfolder(ImgCache)   then makefolder(ImgCache)   end
 	end
 
+	local ImageAssetCache = {}
+
 	local function FetchHttpImage(url)
+		if ImageAssetCache[url] then return ImageAssetCache[url] end
 		if not writefile or not makefolder then return url end
 		EnsureFolders()
 		local ext  = url:match("%.(%w+)%??[^%.]*$") or "png"
@@ -2148,23 +2152,26 @@ local SetProps, SetChildren, InsertTheme, Create do
 		end
 		if isfile(path) then
 			local ok, asset = pcall(getcustomasset, path)
-			if ok then return asset end
+			if ok then
+				ImageAssetCache[url] = asset
+				return asset
+			end
 		end
 		return url
 	end
 
-	redzlib.FetchHttpImage = FetchHttpImage
+	veltrolib.FetchHttpImage = FetchHttpImage
 
 	local function Save(file)
 		if readfile and isfile and isfile(file) then
 			local decode = HttpService:JSONDecode(readfile(file))
 			if type(decode) == "table" then
-				if rawget(decode, "UISize") then redzlib.Save["UISize"] = decode["UISize"] end
-				if rawget(decode, "TabSize") then redzlib.Save["TabSize"] = decode["TabSize"] end
-				if rawget(decode, "TabHeight") then redzlib.Save["TabHeight"] = decode["TabHeight"] end
-				if rawget(decode, "Theme") and VerifyTheme(decode["Theme"]) then redzlib.Save["Theme"] = decode["Theme"] end
-				if rawget(decode, "Transparency") then redzlib.Save["Transparency"] = decode["Transparency"] end
-				if rawget(decode, "MinimizeButtons") then redzlib.Save["MinimizeButtons"] = decode["MinimizeButtons"] end
+				if rawget(decode, "UISize") then veltrolib.Save["UISize"] = decode["UISize"] end
+				if rawget(decode, "TabHeight") then veltrolib.Save["TabHeight"] = decode["TabHeight"] end
+				if rawget(decode, "Theme") and VerifyTheme(decode["Theme"]) then veltrolib.Save["Theme"] = decode["Theme"] end
+				if rawget(decode, "Transparency") then veltrolib.Save["Transparency"] = decode["Transparency"] end
+				if rawget(decode, "MinimizeButtons") then veltrolib.Save["MinimizeButtons"] = decode["MinimizeButtons"] end
+				if rawget(decode, "MainImage") then veltrolib.Save["MainImage"] = decode["MainImage"] end
 			end
 		end
 	end
@@ -2230,7 +2237,7 @@ local Funcs = {} do
 	end
 end
 
-local Connections, Connection = {}, redzlib.Connection do
+local Connections, Connection = {}, veltrolib.Connection do
 	local function NewConnectionList(List)
 		if type(List) ~= "table" then return end
 
@@ -2387,7 +2394,7 @@ local function MakeDrag(Instance)
 end
 
 local function VerifyTheme(Theme)
-	for name,_ in pairs(redzlib.Themes) do
+	for name,_ in pairs(veltrolib.Themes) do
 		if name == Theme then
 			return true
 		end
@@ -2405,27 +2412,27 @@ end
 
 local function SaveJson(save)
 	if not writefile then return end
-	local Root   = "smoothlib"
-	local Folder = Root .. "/LibrarySettings"
+	local Root   = "Veltro-Lib"
+	local Folder = Root .. "/Ui-Settings"
 	if makefolder then
 		if not isfolder(Root)   then makefolder(Root)   end
 		if not isfolder(Folder) then makefolder(Folder) end
 	end
 	local json = HttpService:JSONEncode(save)
-	writefile(Folder .. "/smooth library.json", json)
+	writefile(Folder .. "/Veltro-Lib-Ui.json", json)
 end
 
-local Theme = redzlib.Themes[redzlib.Save.Theme]
+local Theme = veltrolib.Themes[veltrolib.Save.Theme]
 
-local CurrentTransparency = redzlib.Save.Transparency or 0.03
+local CurrentTransparency = veltrolib.Save.Transparency or 0.03
 local _MainFrame = nil
 
 local function AddEle(Name, Func)
-	redzlib.Elements[Name] = Func
+	veltrolib.Elements[Name] = Func
 end
 
 local function Make(Ele, Instance, props, ...)
-	local Element = redzlib.Elements[Ele](Instance, props, ...)
+	local Element = veltrolib.Elements[Ele](Instance, props, ...)
 	return Element
 end
 
@@ -2487,6 +2494,10 @@ local function MeasureWrappedTextHeight(text, textSize, font, width, lineHeightM
 	return size.Y * lineHeightMultiplier
 end
 
+local function NeedsRichText(text)
+	return type(text) == "string" and text:find("<", 1, true) ~= nil and text:find(">", 1, true) ~= nil
+end
+
 local function ButtonFrame(Instance, Title, Description, HolderSize)
 	local H_SIMPLE = 25
 
@@ -2516,7 +2527,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		TextXAlignment = "Left",
 		TextYAlignment = "Center",
 		Text = "",
-		RichText = true
+		RichText = false
 	}), "Text")
 
 	local DescL = InsertTheme(Create("TextLabel", Frame, {
@@ -2533,7 +2544,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		TextYAlignment = "Top",
 		AutomaticSize = Enum.AutomaticSize.None,
 		Text = "",
-		RichText = true,
+		RichText = false,
 		Visible = false
 	}), "Text")
 
@@ -2547,6 +2558,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 
 	function Label:SetTitle(v)
 		if type(v) == "string" and v:gsub(" ",""):len() > 0 then
+			TitleL.RichText = NeedsRichText(v)
 			TitleL.Text = v
 		end
 	end
@@ -2570,6 +2582,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		end
 		if type(v) == "string" and v:gsub(" ",""):len() > 0 then
 			DescL.Visible = true
+			DescL.RichText = NeedsRichText(v)
 			DescL.Text = v
 			TitleL.Position = UDim2.new(0, 10, 0, 9)
 			TitleL.AnchorPoint = Vector2.new(0, 0)
@@ -2610,14 +2623,14 @@ local function GetColor(Instance)
 	return ""
 end
 
-function redzlib:GetIcon(index)
+function veltrolib:GetIcon(index)
 	if type(index) ~= "string" or #index == 0 then
 		return index
 	end
 
 	if index:find("^https?://") then
-		if redzlib.FetchHttpImage then
-			return redzlib.FetchHttpImage(index)
+		if veltrolib.FetchHttpImage then
+			return veltrolib.FetchHttpImage(index)
 		end
 		return index
 	end
@@ -2644,15 +2657,15 @@ function redzlib:GetIcon(index)
 	return firstMatch or index
 end
 
-function redzlib:SetTheme(NewTheme)
+function veltrolib:SetTheme(NewTheme)
 	if not VerifyTheme(NewTheme) then return end
 
-	redzlib.Save.Theme = NewTheme
-	SaveJson(redzlib.Save)
-	Theme = redzlib.Themes[NewTheme]
+	veltrolib.Save.Theme = NewTheme
+	SaveJson(veltrolib.Save)
+	Theme = veltrolib.Themes[NewTheme]
 
 	Connection:FireConnection("ThemeChanged", NewTheme)
-	table.foreach(redzlib.Instances, function(_,Val)
+	table.foreach(veltrolib.Instances, function(_,Val)
 		if not Val or not Val.Instance or not Val.Instance.Parent then return end
 		local inst = Val.Instance
 		if Val.Type == "Gradient" then
@@ -2696,31 +2709,35 @@ function redzlib:SetTheme(NewTheme)
 	end)
 end
 
-function redzlib:SetTransparency(value)
+function veltrolib:SetTransparency(value)
 	value = math.clamp(tonumber(value) or 0, 0, 0.95)
 	CurrentTransparency = value
-	redzlib.Save.Transparency = value
-	SaveJson(redzlib.Save)
+	veltrolib.Save.Transparency = value
+	SaveJson(veltrolib.Save)
 	if _MainFrame then
-		_MainFrame.BackgroundTransparency = value
+		_MainFrame.Transparency = value
 	end
-	table.foreach(redzlib.Instances, function(_,Val)
-		if not Val or not Val.Instance or not Val.Instance.Parent then return end
-		if Val.Type == "SectionFrame" then
-			Val.Instance.BackgroundTransparency = math.clamp(value + 0.35, 0, 0.95)
-		elseif Val.Type == "Frame" then
-			Val.Instance.BackgroundTransparency = math.clamp(value + 0.55, 0, 0.95)
-		end
-	end)
 end
 
 
-function redzlib:SetScale(NewScale)
+function veltrolib:SetScale(NewScale)
 	NewScale = ViewportSize.Y / math.clamp(NewScale, 300, 2000)
 	UIScale, ScreenGui.Scale.Scale = NewScale, NewScale
 end
 
-function redzlib:MakeWindow(Configs)
+function veltrolib:SetBackgroundImage(raw)
+	local id = tostring(raw or ""):gsub("^%s+", ""):gsub("%s+$", "")
+	if id ~= "" then
+		id = veltrolib:GetIcon(id)
+	end
+	if _MainFrame then
+		_MainFrame.Image = id
+	end
+	veltrolib.Save.MainImage = id
+	SaveJson(veltrolib.Save)
+end
+
+function veltrolib:MakeWindow(Configs)
 	local WTitle = Configs[1] or Configs.Name or Configs.Title or "smooth library"
 	local WMiniText = Configs[2] or Configs.SubTitle or "modified - ChDrago"
 
@@ -2730,7 +2747,7 @@ function redzlib:MakeWindow(Configs)
 		if not SaveFolder then return false end
 		if not makefolder or not isfolder or not writefile then return false end
 		local PlayerName = Player.Name
-		local Root = "smoothlib"
+		local Root = "Veltro-Lib"
 		local GameFolder = Root .. "/" .. tostring(SaveFolder)
 		if not isfolder(Root) then makefolder(Root) end
 		if not isfolder(GameFolder) then makefolder(GameFolder) end
@@ -2753,12 +2770,13 @@ function redzlib:MakeWindow(Configs)
 		end
 	end;LoadFile()
 
-	local UISizeX, UISizeY = unpack(redzlib.Save.UISize)
+	local UISizeX, UISizeY = unpack(veltrolib.Save.UISize)
 	local MainFrame = InsertTheme(Create("ImageButton", ScreenGui, {
 		Size = UDim2.fromOffset(UISizeX, UISizeY),
 		Position = UDim2.new(0.5, -UISizeX/2, 0.5, -UISizeY/2),
-		BackgroundTransparency = CurrentTransparency,
-		ScaleType = Enum.ScaleType.Stretch,
+		Transparency = CurrentTransparency,
+		ScaleType = Enum.ScaleType.Crop,
+		Image = veltrolib.Save.MainImage or "",
 		Name = "Hub"
 	}), "Main")
 
@@ -2831,7 +2849,7 @@ function redzlib:MakeWindow(Configs)
 	})
 
 	local MainScroll = InsertTheme(Create("ScrollingFrame", Components, {
-		Size = UDim2.new(0, redzlib.Save.TabSize, 1, -TopBar.Size.Y.Offset),
+		Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset),
 		ScrollBarImageColor3 = Theme["Color Theme"],
 		Position = UDim2.new(0, 0, 1, 0),
 		AnchorPoint = Vector2.new(0, 1),
@@ -2906,14 +2924,9 @@ function redzlib:MakeWindow(Configs)
 
 	ConnectSave(ControlSize1, function()
 		if not Minimized then
-			redzlib.Save.UISize = {MainFrame.Size.X.Offset, MainFrame.Size.Y.Offset}
-			SaveJson(redzlib.Save)
+			veltrolib.Save.UISize = {MainFrame.Size.X.Offset, MainFrame.Size.Y.Offset}
+			SaveJson(veltrolib.Save)
 		end
-	end)
-
-	ConnectSave(ControlSize2, function()
-		redzlib.Save.TabSize = MainScroll.Size.X.Offset
-		SaveJson(redzlib.Save)
 	end)
 
 	local ButtonsFolder = Create("Folder", TopBar, { Name = "Buttons" })
@@ -2983,10 +2996,10 @@ function redzlib:MakeWindow(Configs)
 		local BtnTrans  = Cfg.Transparency ~= nil and Cfg.Transparency or 0
 		local BtnImage  = Cfg.Icon or Cfg.Image or "rbxassetid://10734895698"
 
-		BtnImage = redzlib:GetIcon(tostring(BtnImage))
+		BtnImage = veltrolib:GetIcon(tostring(BtnImage))
 
-		if not redzlib.Save.MinimizeButtons then redzlib.Save.MinimizeButtons = {} end
-		local Saved = redzlib.Save.MinimizeButtons[BtnId] or {}
+		if not veltrolib.Save.MinimizeButtons then veltrolib.Save.MinimizeButtons = {} end
+		local Saved = veltrolib.Save.MinimizeButtons[BtnId] or {}
 		if Saved.posX and Saved.posY then
 			BtnPos = UDim2.fromOffset(Saved.posX, Saved.posY)
 		end
@@ -3021,10 +3034,10 @@ function redzlib:MakeWindow(Configs)
 			task.delay(0.3, function()
 				savePosDebounce = false
 				local p = Button.Position
-				redzlib.Save.MinimizeButtons[BtnId] = redzlib.Save.MinimizeButtons[BtnId] or {}
-				redzlib.Save.MinimizeButtons[BtnId].posX = p.X.Offset
-				redzlib.Save.MinimizeButtons[BtnId].posY = p.Y.Offset
-				SaveJson(redzlib.Save)
+				veltrolib.Save.MinimizeButtons[BtnId] = veltrolib.Save.MinimizeButtons[BtnId] or {}
+				veltrolib.Save.MinimizeButtons[BtnId].posX = p.X.Offset
+				veltrolib.Save.MinimizeButtons[BtnId].posY = p.Y.Offset
+				SaveJson(veltrolib.Save)
 			end)
 		end)
 
@@ -3164,7 +3177,7 @@ function redzlib:MakeWindow(Configs)
 			Position = UDim2.fromOffset(12, 44),
 			BackgroundTransparency = 1,
 			TextWrapped = true,
-			RichText = true
+			RichText = NeedsRichText(DText)
 		}), "DarkText")
 
 		local ContentY = 44
@@ -3172,7 +3185,7 @@ function redzlib:MakeWindow(Configs)
 		if DType == "theme" then
 			ContentY = 95
 			local themeNames = {}
-			for k in pairs(redzlib.Themes) do table.insert(themeNames, k) end
+			for k in pairs(veltrolib.Themes) do table.insert(themeNames, k) end
 			table.sort(themeNames)
 
 			InsertTheme(Create("TextLabel", Frame, {
@@ -3206,7 +3219,7 @@ function redzlib:MakeWindow(Configs)
 			}), "ScrollBar")
 
 			for _, tname in ipairs(themeNames) do
-				local isActive = tname == redzlib.Save.Theme
+				local isActive = tname == veltrolib.Save.Theme
 				local TBtn = InsertTheme(Create("TextButton", ThemeScroll, {
 					Size = UDim2.fromOffset(76, 22),
 					BackgroundColor3 = Theme["Color Theme"],
@@ -3220,7 +3233,7 @@ function redzlib:MakeWindow(Configs)
 				}), "Theme")
 				Make("Corner", TBtn, UDim.new(0, 4))
 				TBtn.Activated:Connect(function()
-					redzlib:SetTheme(tname)
+					veltrolib:SetTheme(tname)
 					for _, ch in ipairs(ThemeScroll:GetChildren()) do
 						if ch:IsA("TextButton") then
 							ch.BackgroundTransparency = ch.Name == tname and 0.6 or 0.85
@@ -3371,23 +3384,20 @@ function redzlib:MakeWindow(Configs)
 				if MinimizeButton then
 					MinimizeButton.Image = id
 				end
-				if redzlib.Save.MinimizeButtons then
-					for _, btn in pairs(redzlib.Save.MinimizeButtons) do
+				if veltrolib.Save.MinimizeButtons then
+					for _, btn in pairs(veltrolib.Save.MinimizeButtons) do
 						btn.image = id
 					end
-					SaveJson(redzlib.Save)
+					SaveJson(veltrolib.Save)
 				end
 			end
 
 			local function ApplyMain(raw)
-				local id = NormalizeImageId(raw)
+				local id = veltrolib:GetIcon(NormalizeImageId(raw))
 				if id == "" then return end
 				Preview.Image = id
 				Preview.Visible = true
-				if MainFrame then
-					MainFrame.Image = id
-					MainFrame.ImageTransparency = 0.05
-				end
+				veltrolib:SetBackgroundImage(id)
 			end
 
 			ImgInput.FocusLost:Connect(function() ApplyBtn(ImgInput.Text) end)
@@ -3456,9 +3466,9 @@ function redzlib:MakeWindow(Configs)
 	end
 	function Window:SelectTab(TabSelect)
 		if type(TabSelect) == "number" then
-			redzlib.Tabs[TabSelect].func:Enable()
+			veltrolib.Tabs[TabSelect].func:Enable()
 		else
-			for _,Tab in pairs(redzlib.Tabs) do
+			for _,Tab in pairs(veltrolib.Tabs) do
 				if Tab.Cont == TabSelect.Cont then
 					Tab.func:Enable()
 				end
@@ -3467,11 +3477,15 @@ function redzlib:MakeWindow(Configs)
 	end
 
 	function Window:SetTransparency(value)
-		redzlib:SetTransparency(value)
+		veltrolib:SetTransparency(value)
 	end
 
 	function Window:SetTheme(name)
-		redzlib:SetTheme(name)
+		veltrolib:SetTheme(name)
+	end
+
+	function Window:SetBackgroundImage(value)
+		veltrolib:SetBackgroundImage(value)
 	end
 
 	local ContainerList = {}
@@ -3564,7 +3578,7 @@ function redzlib:MakeWindow(Configs)
 		if type(paste) == "table" then Configs = paste end
 		local TName = Configs[1] or Configs.Title or "Tab!"
 		local TIcon = Configs[2] or Configs.Icon or Configs.Image or ""
-		TIcon = redzlib:GetIcon(tostring(TIcon))
+		TIcon = veltrolib:GetIcon(tostring(TIcon))
 		if TIcon == "" then TIcon = false end
 
 		local TabHeight = 23
@@ -3638,61 +3652,9 @@ function redzlib:MakeWindow(Configs)
 		table.insert(ContainerList, Container)
 		if not FirstTab then Container.Parent = Containers end
 
-		-- Left/Right column support for Tab:AddSection (built lazily so tabs
-		-- that never use Side keep the exact same single-column layout as before)
-		local SideRow, TabLeft, TabRight
-		local function EnsureSideColumns()
-			if SideRow then return end
-
-			SideRow = Create("Frame", Container, {
-				Size = UDim2.new(1, 0, 0, 0),
-				AutomaticSize = Enum.AutomaticSize.Y,
-				BackgroundTransparency = 1,
-				Name = "SideRow"
-			})
-			Create("UIListLayout", SideRow, {
-				FillDirection = Enum.FillDirection.Horizontal,
-				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding = UDim.new(0, 6)
-			})
-
-			TabLeft = Create("Frame", SideRow, {
-				Size = UDim2.new(0.5, -3, 0, 0),
-				AutomaticSize = Enum.AutomaticSize.Y,
-				BackgroundTransparency = 1,
-				Name = "TabLeft"
-			})
-			Create("UIListLayout", TabLeft, {
-				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding = UDim.new(0, 5)
-			})
-
-			TabRight = Create("Frame", SideRow, {
-				Size = UDim2.new(0.5, -3, 0, 0),
-				AutomaticSize = Enum.AutomaticSize.Y,
-				BackgroundTransparency = 1,
-				Name = "TabRight"
-			})
-			Create("UIListLayout", TabRight, {
-				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding = UDim.new(0, 5)
-			})
-		end
-
-		local function GetSideColumn(SideValue)
-			if SideValue == 1 or SideValue == "Left" or SideValue == "left" then
-				EnsureSideColumns()
-				return TabLeft
-			elseif SideValue == 2 or SideValue == "Right" or SideValue == "right" then
-				EnsureSideColumns()
-				return TabRight
-			end
-			return nil
-		end
-
 		local function Tabs()
 			if Container.Parent then return end
-			for _, Tab in ipairs(redzlib.Tabs) do
+			for _, Tab in ipairs(veltrolib.Tabs) do
 				if Tab.Cont ~= Container then
 					Tab.func:Disable()
 				end
@@ -3722,7 +3684,7 @@ function redzlib:MakeWindow(Configs)
 
 		FirstTab = true
 		local Tab = {}
-		table.insert(redzlib.Tabs, {TabInfo = {Name = TName, Icon = TIcon}, func = Tab, Cont = Container})
+		table.insert(veltrolib.Tabs, {TabInfo = {Name = TName, Icon = TIcon}, func = Tab, Cont = Container})
 		Tab.Cont = Container
 
 		function Tab:Disable()
@@ -3745,7 +3707,7 @@ function redzlib:MakeWindow(Configs)
 				or (type(Configs) == "table" and (Configs[1] or Configs.Text or Configs.Title or Configs.Name))
 				or nil
 			local DIcon = type(Configs) == "table" and (Configs.Icon or Configs.Image) or nil
-			if DIcon then DIcon = redzlib:GetIcon(tostring(DIcon)); if DIcon == "" then DIcon = nil end end
+			if DIcon then DIcon = veltrolib:GetIcon(tostring(DIcon)); if DIcon == "" then DIcon = nil end end
 
 			local DividerFrame = Create("Frame", Container, {
 				Size = UDim2.new(1, 0, 0, DText and 20 or 10),
@@ -3801,11 +3763,9 @@ function redzlib:MakeWindow(Configs)
 			local SectionName = Configs[1] or Configs.Name or Configs.Title or Configs.Section or "Section"
 			local StartOpen   = Configs[2] or Configs.Open or Configs.Default or false
 			local SIcon = Configs.Icon or Configs.Image or nil
-			if SIcon then SIcon = redzlib:GetIcon(tostring(SIcon)); if SIcon == "" then SIcon = nil end end
+			if SIcon then SIcon = veltrolib:GetIcon(tostring(SIcon)); if SIcon == "" then SIcon = nil end end
 
-			local SectionParent = GetSideColumn(Configs.Side) or Container
-
-			local SectionWrapper = Create("Frame", SectionParent, {
+			local SectionWrapper = Create("Frame", Container, {
 				Size             = UDim2.new(1, 0, 0, 23),
 				BackgroundTransparency = 1,
 				ClipsDescendants = false,
@@ -3976,7 +3936,7 @@ function redzlib:MakeWindow(Configs)
 			end
 
 			local Section = {}
-			table.insert(redzlib.Options, { type = "Section", Name = SectionName, func = Section })
+			table.insert(veltrolib.Options, { type = "Section", Name = SectionName, func = Section })
 
 			function Section:Set(New)
 				if New then HeaderLabel.Text = GetStr(New) end
@@ -4043,18 +4003,6 @@ function redzlib:MakeWindow(Configs)
 			return Section
 		end
 
-		function Tab:AddLeftSection(Configs)
-			Configs = type(Configs) == "string" and { Name = Configs } or (Configs or {})
-			Configs.Side = "Left"
-			return Tab:AddSection(Configs)
-		end
-
-		function Tab:AddRightSection(Configs)
-			Configs = type(Configs) == "string" and { Name = Configs } or (Configs or {})
-			Configs.Side = "Right"
-			return Tab:AddSection(Configs)
-		end
-
 
 		function Tab:AddParagraph(Configs)
 			local PName = Configs[1] or Configs.Title or "Paragraph"
@@ -4108,7 +4056,7 @@ function redzlib:MakeWindow(Configs)
 					TextColor3 = Theme["Color Text"],
 					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Left,
-					RichText = true,
+					RichText = NeedsRichText(PName),
 					Text = PName,
 					LayoutOrder = 0,
 					Name = "Title"
@@ -4124,7 +4072,7 @@ function redzlib:MakeWindow(Configs)
 						TextSize = 9,
 						TextXAlignment = Enum.TextXAlignment.Left,
 						TextWrapped = true,
-						RichText = true,
+						RichText = NeedsRichText(lineText),
 						Text = lineText,
 						LayoutOrder = idx,
 						Name = "Line"..idx
@@ -4132,18 +4080,22 @@ function redzlib:MakeWindow(Configs)
 					table.insert(lineLabels, lbl)
 				end
 
+				local LINE_PADDING = 2
+				local TOP_PADDING = 7
+				local BOTTOM_PADDING = 7
+
 				local function RecalcParagraph()
 					local width = (outerFrame.AbsoluteSize.X - 20) / UIScale
 
-					local total = 14 + 2
+					local total = 14
 					for _, lbl in ipairs(lineLabels) do
 						local h = MeasureWrappedTextHeight(lbl.Text, lbl.TextSize, lbl.Font, width, lbl.LineHeight)
 						lbl.Size = UDim2.new(1, 0, 0, h)
-						total = total + h + 2
+						total = total + LINE_PADDING + h
 					end
 
 					innerLayout.Size = UDim2.new(1, -20, 0, total)
-					outerFrame.Size = UDim2.new(1, 0, 0, total + 14)
+					outerFrame.Size = UDim2.new(1, 0, 0, TOP_PADDING + total + BOTTOM_PADDING)
 				end
 
 				RecalcParagraph()
@@ -4241,12 +4193,9 @@ function redzlib:MakeWindow(Configs)
 			}), "Theme")
 			Make("Corner", ToggleKnob, UDim.new(0.5, 0))
 
-			local WaitToggle, PendingToggle
+			local WaitToggle
 			local function SetToggle(Val)
-				if WaitToggle then
-					PendingToggle = Val
-					return
-				end
+				if WaitToggle then return end
 				WaitToggle, Default = true, Val
 				SetFlag(Flag, Default)
 				Funcs:FireCallback(Callback, Default)
@@ -4260,11 +4209,6 @@ function redzlib:MakeWindow(Configs)
 					CreateTween({ToggleKnob, "AnchorPoint", Vector2.new(0, 0.5), 0.25})
 				end
 				WaitToggle = false
-				if PendingToggle ~= nil then
-					local Next = PendingToggle
-					PendingToggle = nil
-					SetToggle(Next)
-				end
 			end
 			task.spawn(SetToggle, Default)
 
@@ -4824,9 +4768,15 @@ function redzlib:MakeWindow(Configs)
 
 			local Button, LabelFunc = ButtonFrame(Container, SName, SDesc, UDim2.new(1, -180))
 
+			local CONTROL_WIDTH = 150
+			local RIGHT_MARGIN = 10
+			local INPUT_WIDTH = 38
+			local GAP = 8
+			local SLIDER_WIDTH = CONTROL_WIDTH - INPUT_WIDTH - GAP
+
 			local SliderHolder = Create("TextButton", Button, {
-				Size = UDim2.new(0, 110, 1, 0),
-				Position = UDim2.new(1, -10, 0, 0),
+				Size = UDim2.new(0, SLIDER_WIDTH, 1, 0),
+				Position = UDim2.new(1, -RIGHT_MARGIN, 0, 0),
 				AnchorPoint = Vector2.new(1, 0),
 				AutoButtonColor = false,
 				Text = "",
@@ -4834,11 +4784,12 @@ function redzlib:MakeWindow(Configs)
 			})
 
 			local SliderBar = InsertTheme(Create("Frame", SliderHolder, {
-				BackgroundColor3 = Theme["Color Stroke"],
-				Size = UDim2.new(1, -20, 0, 6),
-				Position = UDim2.new(0.5, 0, 0.5),
-				AnchorPoint = Vector2.new(0.5, 0.5)
-			}), "Stroke")
+				BackgroundColor3 = Theme["Color Theme"],
+				BackgroundTransparency = 0.85,
+				Size = UDim2.new(1, 0, 0, 6),
+				Position = UDim2.new(1, 0, 0.5, 0),
+				AnchorPoint = Vector2.new(1, 0.5)
+			}), "Theme")
 			Make("Corner", SliderBar)
 
 			local Indicator = InsertTheme(Create("Frame", SliderBar, {
@@ -4858,8 +4809,8 @@ function redzlib:MakeWindow(Configs)
 			Make("Corner", SliderIcon)
 
 			local InputHolder = InsertTheme(Create("Frame", Button, {
-				Size = UDim2.new(0, 38, 0, 18),
-				Position = UDim2.new(1, -125, 0.5),
+				Size = UDim2.new(0, INPUT_WIDTH, 0, 18),
+				Position = UDim2.new(1, -(RIGHT_MARGIN + SLIDER_WIDTH + GAP), 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Theme["Color Theme"],
 				BackgroundTransparency = 0.85,
@@ -4968,15 +4919,26 @@ function redzlib:MakeWindow(Configs)
 				Container.ScrollingEnabled = false
 			end)
 
+			local function CommitTypedValue(rawText)
+				local num = tonumber(rawText)
+				if not num then
+					ValueInput.Text = FormatValue(currentValue)
+					return
+				end
+				local clamped = math.clamp(num, Min, Max)
+				currentValue = clamped
+				ApplyVisual(ValueToScale(clamped))
+				if clamped ~= num then
+					ValueInput.Text = FormatValue(clamped)
+				end
+				SetFlag(Flag, clamped)
+				Funcs:FireCallback(Callback, clamped)
+			end
+
 			ValueInput.FocusLost:Connect(function()
 				isFocused = false
 				Container.ScrollingEnabled = true
-				local num = tonumber(ValueInput.Text)
-				if num then
-					SetSlider(num)
-				else
-					ValueInput.Text = FormatValue(currentValue)
-				end
+				CommitTypedValue(ValueInput.Text)
 			end)
 
 			local loadedFromFlag = CheckFlag(Flag)
@@ -5084,7 +5046,7 @@ function redzlib:MakeWindow(Configs)
 			local Invite   = Configs[3] or Configs.Invite or ""
 
 			local hasLogo = type(Logo) == "string" and Logo:gsub(" ", ""):len() > 0
-			if hasLogo then Logo = redzlib:GetIcon(Logo) end
+			if hasLogo then Logo = veltrolib:GetIcon(Logo) end
 
 			local Card = InsertTheme(Create("Frame", Container, {
 				Size = UDim2.new(1, 0, 0, 80),
@@ -5191,4 +5153,4 @@ function redzlib:MakeWindow(Configs)
 	return Window
 end
 
-return redzlib
+return veltrolib
