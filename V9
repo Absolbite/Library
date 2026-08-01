@@ -3741,12 +3741,14 @@ function veltrolib:MakeWindow(Configs)
 					Name             = "DividerLabel"
 				}), "Text")
 			else
-				InsertTheme(Create("Frame", DividerFrame, {
-					Size             = UDim2.new(1, 0, 0, 1),
+				local DividerLine = InsertTheme(Create("Frame", DividerFrame, {
+					Size             = UDim2.new(1, 0, 0, 6),
 					Position         = UDim2.new(0, 0, 0.5, 0),
 					AnchorPoint      = Vector2.new(0, 0.5),
-					BackgroundColor3 = Theme["Color Stroke"]
-				}), "Stroke")
+					BackgroundColor3 = Theme["Color Theme"],
+					BackgroundTransparency = 0.85
+				}), "Theme")
+				Make("Corner", DividerLine)
 			end
 
 			local Divider = {}
@@ -4008,119 +4010,105 @@ function veltrolib:MakeWindow(Configs)
 			local PName = Configs[1] or Configs.Title or "Paragraph"
 			local Paragraph = {}
 
-			local isMulti = false
 			local multiLines = {}
-
-			if type(Configs.Text) == "table" then
-				isMulti = true
-				for _, v in ipairs(Configs.Text) do
-					table.insert(multiLines, tostring(v))
-				end
-			elseif type(Configs.Text) ~= "string" then
-				local i = 1
-				while Configs["Text"..i] do
-					table.insert(multiLines, tostring(Configs["Text"..i]))
-					i = i + 1
-				end
-				if #multiLines > 0 then isMulti = true end
+			local i = 1
+			while Configs["Text"..i] do
+				table.insert(multiLines, tostring(Configs["Text"..i]))
+				i = i + 1
 			end
 
-			if isMulti and #multiLines > 0 then
-				local outerFrame = InsertTheme(Create("TextButton", Container, {
-					Size = UDim2.new(1, 0, 0, 25),
-					AutomaticSize = Enum.AutomaticSize.None,
-					Text = "",
-					AutoButtonColor = false,
-					BackgroundColor3 = Theme["Color Theme"],
-					BackgroundTransparency = 0.85,
-					Name = "Option"
-				}), "Theme")
-				Make("Corner", outerFrame, UDim.new(0, 6))
+			local outerFrame = InsertTheme(Create("TextButton", Container, {
+				Size = UDim2.new(1, 0, 0, 25),
+				AutomaticSize = Enum.AutomaticSize.None,
+				Text = "",
+				AutoButtonColor = false,
+				BackgroundColor3 = Theme["Color Theme"],
+				BackgroundTransparency = 0.85,
+				Name = "Option"
+			}), "Theme")
+			Make("Corner", outerFrame, UDim.new(0, 6))
 
-				local innerLayout = Create("Frame", outerFrame, {
-					Size = UDim2.new(1, -20, 0, 0),
-					Position = UDim2.new(0, 10, 0, 7),
-					BackgroundTransparency = 1,
-					AutomaticSize = Enum.AutomaticSize.None,
-					Name = "InnerLayout"
-				})
-				Create("UIListLayout", innerLayout, {
-					SortOrder = Enum.SortOrder.LayoutOrder,
-					Padding = UDim.new(0, 2)
-				})
+			local innerLayout = Create("Frame", outerFrame, {
+				Size = UDim2.new(1, -20, 0, 0),
+				Position = UDim2.new(0, 10, 0, 7),
+				BackgroundTransparency = 1,
+				AutomaticSize = Enum.AutomaticSize.None,
+				Name = "InnerLayout"
+			})
+			Create("UIListLayout", innerLayout, {
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				Padding = UDim.new(0, 2)
+			})
 
-				InsertTheme(Create("TextLabel", innerLayout, {
-					Size = UDim2.new(1, 0, 0, 14),
+			local TitleLabel = InsertTheme(Create("TextLabel", innerLayout, {
+				Size = UDim2.new(1, 0, 0, 14),
+				BackgroundTransparency = 1,
+				Font = Enum.Font.GothamMedium,
+				TextColor3 = Theme["Color Text"],
+				TextSize = 10,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				RichText = NeedsRichText(PName),
+				Text = PName,
+				LayoutOrder = 0,
+				Name = "Title"
+			}), "Text")
+
+			local lineLabels = {}
+			for idx, lineText in ipairs(multiLines) do
+				local lbl = InsertTheme(Create("TextLabel", innerLayout, {
+					Size = UDim2.new(1, 0, 0, 0),
 					BackgroundTransparency = 1,
-					Font = Enum.Font.GothamMedium,
+					Font = Enum.Font.Gotham,
 					TextColor3 = Theme["Color Text"],
-					TextSize = 10,
+					TextSize = 9,
 					TextXAlignment = Enum.TextXAlignment.Left,
-					RichText = NeedsRichText(PName),
-					Text = PName,
-					LayoutOrder = 0,
-					Name = "Title"
+					TextWrapped = true,
+					RichText = NeedsRichText(lineText),
+					Text = lineText,
+					LayoutOrder = idx,
+					Name = "Line"..idx
 				}), "Text")
+				table.insert(lineLabels, lbl)
+			end
 
-				local lineLabels = {}
-				for idx, lineText in ipairs(multiLines) do
-					local lbl = InsertTheme(Create("TextLabel", innerLayout, {
-						Size = UDim2.new(1, 0, 0, 0),
-						BackgroundTransparency = 1,
-						Font = Enum.Font.Gotham,
-						TextColor3 = Theme["Color Text"],
-						TextSize = 9,
-						TextXAlignment = Enum.TextXAlignment.Left,
-						TextWrapped = true,
-						RichText = NeedsRichText(lineText),
-						Text = lineText,
-						LayoutOrder = idx,
-						Name = "Line"..idx
-					}), "Text")
-					table.insert(lineLabels, lbl)
+			local LINE_PADDING = 2
+			local TOP_PADDING = 7
+			local BOTTOM_PADDING = 7
+
+			local function RecalcParagraph()
+				local width = (outerFrame.AbsoluteSize.X - 20) / UIScale
+
+				local total = 14
+				for _, lbl in ipairs(lineLabels) do
+					local h = MeasureWrappedTextHeight(lbl.Text, lbl.TextSize, lbl.Font, width, lbl.LineHeight)
+					lbl.Size = UDim2.new(1, 0, 0, h)
+					total = total + LINE_PADDING + h
 				end
 
-				local LINE_PADDING = 2
-				local TOP_PADDING = 7
-				local BOTTOM_PADDING = 7
+				innerLayout.Size = UDim2.new(1, -20, 0, total)
+				outerFrame.Size = UDim2.new(1, 0, 0, TOP_PADDING + total + BOTTOM_PADDING)
+			end
 
-				local function RecalcParagraph()
-					local width = (outerFrame.AbsoluteSize.X - 20) / UIScale
+			RecalcParagraph()
+			outerFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(RecalcParagraph)
 
-					local total = 14
-					for _, lbl in ipairs(lineLabels) do
-						local h = MeasureWrappedTextHeight(lbl.Text, lbl.TextSize, lbl.Font, width, lbl.LineHeight)
-						lbl.Size = UDim2.new(1, 0, 0, h)
-						total = total + LINE_PADDING + h
-					end
+			function Paragraph:SetTitle(Val)
+				Val = GetStr(Val)
+				TitleLabel.RichText = NeedsRichText(Val)
+				TitleLabel.Text = Val
+			end
 
-					innerLayout.Size = UDim2.new(1, -20, 0, total)
-					outerFrame.Size = UDim2.new(1, 0, 0, TOP_PADDING + total + BOTTOM_PADDING)
-				end
-
+			function Paragraph:SetLine(Index, Val)
+				local lbl = lineLabels[Index]
+				if not lbl then return end
+				Val = GetStr(Val)
+				lbl.RichText = NeedsRichText(Val)
+				lbl.Text = Val
 				RecalcParagraph()
-				outerFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(RecalcParagraph)
-
-				function Paragraph:Visible(...) Funcs:ToggleVisible(outerFrame, ...) end
-				function Paragraph:Destroy() outerFrame:Destroy() end
-				return Paragraph
 			end
 
-			local PDesc = Configs.Text or Configs[2] or ""
-			local Frame, LabelFunc = ButtonFrame(Container, PName, PDesc, UDim2.new(1, -20))
-
-			function Paragraph:Visible(...) Funcs:ToggleVisible(Frame, ...) end
-			function Paragraph:Destroy() Frame:Destroy() end
-			function Paragraph:SetTitle(Val) LabelFunc:SetTitle(GetStr(Val)) end
-			function Paragraph:SetDesc(Val) LabelFunc:SetDesc(GetStr(Val)) end
-			function Paragraph:Set(Val1, Val2)
-				if Val1 and Val2 then
-					LabelFunc:SetTitle(GetStr(Val1))
-					LabelFunc:SetDesc(GetStr(Val2))
-				elseif Val1 then
-					LabelFunc:SetDesc(GetStr(Val1))
-				end
-			end
+			function Paragraph:Visible(...) Funcs:ToggleVisible(outerFrame, ...) end
+			function Paragraph:Destroy() outerFrame:Destroy() end
 			return Paragraph
 		end
 
