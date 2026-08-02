@@ -2782,7 +2782,7 @@ function veltrolib:MakeWindow(Configs)
 
 	_MainFrame = MainFrame
 
-	local NotificationHolder = Create("Frame", MainFrame, {
+	local NotificationHolder = Create("Frame", ScreenGui, {
 		Size = UDim2.new(0, 140, 1, -20),
 		Position = UDim2.new(1, -12, 1, -12),
 		AnchorPoint = Vector2.new(1, 1),
@@ -3503,6 +3503,137 @@ function veltrolib:MakeWindow(Configs)
 		veltrolib:SetBackgroundImage(value)
 	end
 
+	function Window:Notification(Configs)
+		Configs = Configs or {}
+		local NTitle = Configs.Title or Configs[1] or "Notification"
+		local NText  = Configs.Text or Configs.Desc or Configs[2] or ""
+		local NImage = Configs.Image or Configs.Icon
+		if NImage then NImage = veltrolib:GetIcon(tostring(NImage)); if NImage == "" then NImage = nil end end
+
+		local Duration = tonumber(Configs.Duration)
+		local ButtonText = Configs.Button
+		if not Duration and not ButtonText then Duration = 5 end
+		local Callback = Funcs:GetCallback(Configs, 3)
+
+		NotificationCount = NotificationCount + 1
+		local Notification = {}
+		local Dismissed = false
+
+		local Card = InsertTheme(Create("Frame", NotificationHolder, {
+			Size = UDim2.new(1, 0, 0, 40),
+			BackgroundColor3 = Theme["Color Hub 2"],
+			BackgroundTransparency = 1,
+			LayoutOrder = NotificationCount,
+			Name = "Notification"
+		}), "Main")
+		Make("Gradient", Card, { Rotation = 45 })
+		Make("Corner", Card, UDim.new(0, 3))
+		Make("ElementStroke", Card)
+
+		local hasImage = NImage ~= nil
+		local textX = hasImage and 25 or 5
+
+		local IconLabel = nil
+		if hasImage then
+			IconLabel = Create("ImageLabel", Card, {
+				Size = UDim2.new(0, 17, 0, 17),
+				Position = UDim2.new(0, 4, 0, 4),
+				BackgroundTransparency = 1,
+				ImageTransparency = 1,
+				Image = NImage,
+				ScaleType = Enum.ScaleType.Fit,
+				Name = "Icon"
+			})
+			Make("Corner", IconLabel, UDim.new(0, 3))
+		end
+
+		local TitleLabel = InsertTheme(Create("TextLabel", Card, {
+			Font = Enum.Font.GothamBold,
+			TextColor3 = Theme["Color Text"],
+			Size = UDim2.new(1, -(textX + 5), 0, 7),
+			Position = UDim2.new(0, textX, 0, 5),
+			BackgroundTransparency = 1,
+			TextTransparency = 1,
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			TextSize = 6,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			RichText = NeedsRichText(NTitle),
+			Text = NTitle,
+			Name = "Title"
+		}), "Text")
+
+		local BodyLabel = nil
+		if NText ~= "" then
+			BodyLabel = InsertTheme(Create("TextLabel", Card, {
+				Font = Enum.Font.Gotham,
+				TextColor3 = Theme["Color Dark Text"],
+				Size = UDim2.new(1, -(textX + 5), 0, 11),
+				Position = UDim2.new(0, textX, 0, 12),
+				BackgroundTransparency = 1,
+				TextTransparency = 1,
+				TextWrapped = true,
+				TextTruncate = Enum.TextTruncate.None,
+				TextSize = 5,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Top,
+				RichText = NeedsRichText(NText),
+				Text = NText,
+				Name = "Body"
+			}), "DarkText")
+		end
+
+		local AckButton = nil
+		local function Dismiss()
+			if Dismissed then return end
+			Dismissed = true
+			CreateTween({Card, "BackgroundTransparency", 1, 0.25})
+			CreateTween({TitleLabel, "TextTransparency", 1, 0.25})
+			if IconLabel then CreateTween({IconLabel, "ImageTransparency", 1, 0.25}) end
+			if BodyLabel then CreateTween({BodyLabel, "TextTransparency", 1, 0.25}) end
+			if AckButton then
+				CreateTween({AckButton, "BackgroundTransparency", 1, 0.25})
+				CreateTween({AckButton, "TextTransparency", 1, 0.25})
+			end
+			task.wait(0.25)
+			Card:Destroy()
+			Funcs:FireCallback(Callback)
+		end
+
+		if ButtonText then
+			AckButton = InsertTheme(Create("TextButton", Card, {
+				Size = UDim2.new(1, -8, 0, 9),
+				Position = UDim2.new(0, 4, 1, -13),
+				Text = tostring(ButtonText),
+				Font = Enum.Font.GothamBold,
+				TextSize = 5,
+				TextColor3 = Theme["Color Text"],
+				BackgroundColor3 = Theme["Color Theme"],
+				BackgroundTransparency = 1,
+				TextTransparency = 1,
+				AutoButtonColor = false,
+				Name = "AckButton"
+			}), "Theme")
+			Make("Corner", AckButton, UDim.new(0, 3))
+			AckButton.Activated:Connect(Dismiss)
+		end
+
+		CreateTween({Card, "BackgroundTransparency", CurrentTransparency, 0.25})
+		CreateTween({TitleLabel, "TextTransparency", 0, 0.25})
+		if IconLabel then CreateTween({IconLabel, "ImageTransparency", 0, 0.25}) end
+		if BodyLabel then CreateTween({BodyLabel, "TextTransparency", 0, 0.25}) end
+		if AckButton then
+			CreateTween({AckButton, "BackgroundTransparency", 0.65, 0.25})
+			CreateTween({AckButton, "TextTransparency", 0, 0.25})
+		end
+
+		if Duration then
+			task.delay(Duration, Dismiss)
+		end
+
+		function Notification:Dismiss() Dismiss() end
+		return Notification
+	end
+
 	local ContainerList = {}
 	function Window:AddTag(Configs)
 		Configs = Configs or {}
@@ -3775,128 +3906,6 @@ function veltrolib:MakeWindow(Configs)
 			return Divider
 		end
 
-		function Tab:AddNotification(Configs)
-			Configs = Configs or {}
-			local NTitle = Configs.Title or Configs[1] or "Notification"
-			local NText  = Configs.Text or Configs.Desc or Configs[2] or ""
-			local NImage = Configs.Image or Configs.Icon
-			if NImage then NImage = veltrolib:GetIcon(tostring(NImage)); if NImage == "" then NImage = nil end end
-
-			local Duration = tonumber(Configs.Duration)
-			local ButtonText = Configs.Button
-			if not Duration and not ButtonText then Duration = 5 end
-			local Callback = Funcs:GetCallback(Configs, 3)
-
-			NotificationCount = NotificationCount + 1
-			local Notification = {}
-			local Dismissed = false
-
-			local Card = InsertTheme(Create("Frame", NotificationHolder, {
-				Size = UDim2.new(1, 0, 0, 40),
-				BackgroundColor3 = Theme["Color Theme"],
-				BackgroundTransparency = 1,
-				LayoutOrder = NotificationCount,
-				Name = "Notification"
-			}), "Theme")
-			Make("Corner", Card, UDim.new(0, 3))
-
-			local hasImage = NImage ~= nil
-			local textX = hasImage and 25 or 5
-
-			local IconLabel = nil
-			if hasImage then
-				IconLabel = Create("ImageLabel", Card, {
-					Size = UDim2.new(0, 17, 0, 17),
-					Position = UDim2.new(0, 4, 0, 4),
-					BackgroundTransparency = 1,
-					ImageTransparency = 1,
-					Image = NImage,
-					ScaleType = Enum.ScaleType.Fit,
-					Name = "Icon"
-				})
-				Make("Corner", IconLabel, UDim.new(0, 3))
-			end
-
-			local TitleLabel = InsertTheme(Create("TextLabel", Card, {
-				Font = Enum.Font.GothamBold,
-				TextColor3 = Theme["Color Text"],
-				Size = UDim2.new(1, -(textX + 5), 0, 7),
-				Position = UDim2.new(0, textX, 0, 5),
-				BackgroundTransparency = 1,
-				TextTransparency = 1,
-				TextTruncate = Enum.TextTruncate.AtEnd,
-				TextSize = 6,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				RichText = NeedsRichText(NTitle),
-				Text = NTitle,
-				Name = "Title"
-			}), "Text")
-
-			local BodyLabel = nil
-			if NText ~= "" then
-				BodyLabel = InsertTheme(Create("TextLabel", Card, {
-					Font = Enum.Font.Gotham,
-					TextColor3 = Theme["Color Dark Text"],
-					Size = UDim2.new(1, -(textX + 5), 0, 11),
-					Position = UDim2.new(0, textX, 0, 12),
-					BackgroundTransparency = 1,
-					TextTransparency = 1,
-					TextWrapped = true,
-					TextTruncate = Enum.TextTruncate.None,
-					TextSize = 5,
-					TextXAlignment = Enum.TextXAlignment.Left,
-					TextYAlignment = Enum.TextYAlignment.Top,
-					RichText = NeedsRichText(NText),
-					Text = NText,
-					Name = "Body"
-				}), "DarkText")
-			end
-
-			local AckButton = nil
-			local function Dismiss()
-				if Dismissed then return end
-				Dismissed = true
-				CreateTween({Card, "BackgroundTransparency", 1, 0.25})
-				CreateTween({TitleLabel, "TextTransparency", 1, 0.25})
-				if IconLabel then CreateTween({IconLabel, "ImageTransparency", 1, 0.25}) end
-				if BodyLabel then CreateTween({BodyLabel, "TextTransparency", 1, 0.25}) end
-				if AckButton then CreateTween({AckButton, "BackgroundTransparency", 1, 0.25}) end
-				task.wait(0.25)
-				Card:Destroy()
-				Funcs:FireCallback(Callback)
-			end
-
-			if ButtonText then
-				AckButton = InsertTheme(Create("TextButton", Card, {
-					Size = UDim2.new(1, -8, 0, 9),
-					Position = UDim2.new(0, 4, 1, -13),
-					Text = tostring(ButtonText),
-					Font = Enum.Font.GothamBold,
-					TextSize = 5,
-					TextColor3 = Theme["Color Text"],
-					BackgroundColor3 = Theme["Color Theme"],
-					BackgroundTransparency = 1,
-					AutoButtonColor = false,
-					Name = "AckButton"
-				}), "Theme")
-				Make("Corner", AckButton, UDim.new(0, 3))
-				AckButton.Activated:Connect(Dismiss)
-			end
-
-			CreateTween({Card, "BackgroundTransparency", 0.85, 0.25})
-			CreateTween({TitleLabel, "TextTransparency", 0, 0.25})
-			if IconLabel then CreateTween({IconLabel, "ImageTransparency", 0, 0.25}) end
-			if BodyLabel then CreateTween({BodyLabel, "TextTransparency", 0, 0.25}) end
-			if AckButton then CreateTween({AckButton, "BackgroundTransparency", 0.65, 0.25}) end
-
-			if Duration then
-				task.delay(Duration, Dismiss)
-			end
-
-			function Notification:Dismiss() Dismiss() end
-			return Notification
-		end
-
 		function Tab:AddSection(Configs)
 			Configs = type(Configs) == "string" and { Name = Configs } or (Configs or {})
 			local SectionName = Configs[1] or Configs.Name or Configs.Title or Configs.Section or "Section"
@@ -4138,7 +4147,6 @@ function veltrolib:MakeWindow(Configs)
 			function Section:AddParagraph(cfg)     return WithInner(Tab.AddParagraph,     38, cfg) end
 			function Section:AddDivider(cfg)       return WithInner(Tab.AddDivider,       10, cfg) end
 			function Section:AddDiscordInvite(cfg) return WithInner(Tab.AddDiscordInvite, 80, cfg) end
-			function Section:AddNotification(cfg) return WithInner(Tab.AddNotification, 0, cfg) end
 
 			return Section
 		end
