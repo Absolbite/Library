@@ -2783,7 +2783,7 @@ function veltrolib:MakeWindow(Configs)
 	_MainFrame = MainFrame
 
 	local NotificationHolder = Create("Frame", ScreenGui, {
-		Size = UDim2.new(0, 220, 1, -20),
+		Size = UDim2.new(0, 300, 1, -20),
 		Position = UDim2.new(1, -12, 1, -12),
 		AnchorPoint = Vector2.new(1, 1),
 		BackgroundTransparency = 1,
@@ -3519,17 +3519,26 @@ function veltrolib:MakeWindow(Configs)
 		local Notification = {}
 		local Dismissed = false
 
-		local PAD = 8
-		local CARD_HEIGHT = ButtonText and 96 or 74
+		local PAD = 14
+		local CARD_WIDTH = 300
+		local CARD_HEIGHT = ButtonText and 96 or 70
+		local ICON_SIZE = 36
 		local hasImage = NImage ~= nil
-		local ICON_SIZE = CARD_HEIGHT - PAD * 2
-		local textX = hasImage and (PAD + ICON_SIZE + 10) or PAD
+		local textX = hasImage and 56 or PAD
+		local SlideOffset = UDim2.new(0, 60, 0, 0)
 
-		local Card = InsertTheme(Create("Frame", NotificationHolder, {
-			Size = UDim2.new(1, 0, 0, CARD_HEIGHT),
-			BackgroundColor3 = Theme["Color Hub 2"],
+		local Slot = Create("Frame", NotificationHolder, {
+			Size = UDim2.new(0, CARD_WIDTH, 0, CARD_HEIGHT),
 			BackgroundTransparency = 1,
 			LayoutOrder = NotificationCount,
+			Name = "NotificationSlot"
+		})
+
+		local Card = InsertTheme(Create("Frame", Slot, {
+			Size = UDim2.new(1, 0, 1, 0),
+			Position = SlideOffset,
+			BackgroundColor3 = Theme["Color Hub 2"],
+			BackgroundTransparency = 1,
 			Name = "Notification"
 		}), "Main")
 		Make("Gradient", Card, { Rotation = 45 })
@@ -3540,7 +3549,7 @@ function veltrolib:MakeWindow(Configs)
 		if hasImage then
 			IconLabel = Create("ImageLabel", Card, {
 				Size = UDim2.new(0, ICON_SIZE, 0, ICON_SIZE),
-				Position = UDim2.new(0, PAD, 0, PAD),
+				Position = UDim2.new(0, PAD, 0, 17),
 				BackgroundTransparency = 1,
 				ImageTransparency = 1,
 				Image = NImage,
@@ -3553,12 +3562,12 @@ function veltrolib:MakeWindow(Configs)
 		local TitleLabel = InsertTheme(Create("TextLabel", Card, {
 			Font = Enum.Font.GothamBold,
 			TextColor3 = Theme["Color Text"],
-			Size = UDim2.new(1, -(textX + PAD + 32), 0, 18),
-			Position = UDim2.new(0, textX, 0, 16),
+			Size = UDim2.new(1, -(textX + 32), 0, 18),
+			Position = UDim2.new(0, textX, 0, 12),
 			BackgroundTransparency = 1,
 			TextTransparency = 1,
 			TextTruncate = Enum.TextTruncate.AtEnd,
-			TextSize = 15,
+			TextSize = 14,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			RichText = NeedsRichText(NTitle),
 			Text = NTitle,
@@ -3570,13 +3579,15 @@ function veltrolib:MakeWindow(Configs)
 			BodyLabel = InsertTheme(Create("TextLabel", Card, {
 				Font = Enum.Font.Gotham,
 				TextColor3 = Theme["Color Dark Text"],
-				Size = UDim2.new(1, -(textX + PAD), 0, 16),
-				Position = UDim2.new(0, textX, 0, 38),
+				Size = UDim2.new(1, -(textX + PAD), 0, 32),
+				Position = UDim2.new(0, textX, 0, 32),
 				BackgroundTransparency = 1,
 				TextTransparency = 1,
+				TextWrapped = true,
 				TextTruncate = Enum.TextTruncate.AtEnd,
 				TextSize = 12,
 				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Top,
 				RichText = NeedsRichText(NText),
 				Text = NText,
 				Name = "Body"
@@ -3585,7 +3596,7 @@ function veltrolib:MakeWindow(Configs)
 
 		local CloseBadge = InsertTheme(Create("Frame", Card, {
 			Size = UDim2.new(0, 22, 0, 22),
-			Position = UDim2.new(1, -PAD, 0, PAD),
+			Position = UDim2.new(1, -PAD, 0, 8),
 			AnchorPoint = Vector2.new(1, 0),
 			BackgroundColor3 = Theme["Color Theme"],
 			BackgroundTransparency = 1,
@@ -3617,6 +3628,7 @@ function veltrolib:MakeWindow(Configs)
 		local function Dismiss()
 			if Dismissed then return end
 			Dismissed = true
+			CreateTween({Card, "Position", SlideOffset, 0.3})
 			CreateTween({Card, "BackgroundTransparency", 1, 0.25})
 			CreateTween({TitleLabel, "TextTransparency", 1, 0.25})
 			CreateTween({CloseBadge, "BackgroundTransparency", 1, 0.25})
@@ -3627,8 +3639,8 @@ function veltrolib:MakeWindow(Configs)
 				CreateTween({AckButton, "BackgroundTransparency", 1, 0.25})
 				CreateTween({AckButton, "TextTransparency", 1, 0.25})
 			end
-			task.wait(0.25)
-			Card:Destroy()
+			task.wait(0.3)
+			Slot:Destroy()
 			Funcs:FireCallback(Callback)
 		end
 
@@ -3636,8 +3648,8 @@ function veltrolib:MakeWindow(Configs)
 
 		if ButtonText then
 			AckButton = InsertTheme(Create("TextButton", Card, {
-				Size = UDim2.new(1, -PAD * 2, 0, 22),
-				Position = UDim2.new(0, PAD, 1, -PAD - 22),
+				Size = UDim2.new(1, -(textX + PAD), 0, 22),
+				Position = UDim2.new(0, textX, 1, -PAD - 22),
 				Text = tostring(ButtonText),
 				Font = Enum.Font.GothamBold,
 				TextSize = 12,
@@ -3652,6 +3664,7 @@ function veltrolib:MakeWindow(Configs)
 			AckButton.Activated:Connect(Dismiss)
 		end
 
+		CreateTween({Card, "Position", UDim2.new(0, 0, 0, 0), 0.3})
 		CreateTween({Card, "BackgroundTransparency", CurrentTransparency, 0.25})
 		CreateTween({TitleLabel, "TextTransparency", 0, 0.25})
 		CreateTween({CloseBadge, "BackgroundTransparency", 0.65, 0.25})
