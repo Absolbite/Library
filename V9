@@ -2783,7 +2783,7 @@ function veltrolib:MakeWindow(Configs)
 	_MainFrame = MainFrame
 
 	local NotificationHolder = Create("Frame", ScreenGui, {
-		Size = UDim2.new(0, 250, 1, -20),
+		Size = UDim2.new(0, 200, 1, -20),
 		Position = UDim2.new(1, -12, 1, -12),
 		AnchorPoint = Vector2.new(1, 1),
 		BackgroundTransparency = 1,
@@ -3510,20 +3510,19 @@ function veltrolib:MakeWindow(Configs)
 		local NImage = Configs.Image or Configs.Icon
 		if NImage then NImage = veltrolib:GetIcon(tostring(NImage)); if NImage == "" then NImage = nil end end
 
+		local ButtonConfigs = Configs.Buttons or (Configs.Button and {{Configs.Button}}) or {}
 		local Duration = tonumber(Configs.Duration)
-		local ButtonText = Configs.Button
-		if not Duration and not ButtonText then Duration = 5 end
+		if not Duration and #ButtonConfigs == 0 then Duration = 5 end
 		local Callback = Funcs:GetCallback(Configs, 3)
 
 		NotificationCount = NotificationCount + 1
 		local Notification = {}
 		local Dismissed = false
 
-		local PAD = 10
-		local CARD_WIDTH = 250
-		local HEADER_HEIGHT = 58
-		local CARD_HEIGHT = ButtonText and (HEADER_HEIGHT + PAD + 18) or HEADER_HEIGHT
-		local ICON_SIZE = HEADER_HEIGHT - PAD * 2
+		local PAD = 6
+		local CARD_WIDTH = 200
+		local CARD_HEIGHT = 48
+		local ICON_SIZE = CARD_HEIGHT - PAD * 2
 		local hasImage = NImage ~= nil
 		local textX = hasImage and (PAD + ICON_SIZE + PAD) or PAD
 		local SlideOffset = UDim2.new(0, CARD_WIDTH, 0, 0)
@@ -3562,11 +3561,11 @@ function veltrolib:MakeWindow(Configs)
 		local TitleLabel = InsertTheme(Create("TextLabel", Card, {
 			Font = Enum.Font.GothamBold,
 			TextColor3 = Theme["Color Text"],
-			Size = UDim2.new(1, -(textX + 28), 0, 16),
-			Position = UDim2.new(0, textX, 0, 10),
+			Size = UDim2.new(1, -(textX + PAD), 0, 12),
+			Position = UDim2.new(0, textX, 0, 4),
 			BackgroundTransparency = 1,
 			TextTruncate = Enum.TextTruncate.AtEnd,
-			TextSize = 12,
+			TextSize = 10,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			RichText = NeedsRichText(NTitle),
 			Text = NTitle,
@@ -3578,50 +3577,32 @@ function veltrolib:MakeWindow(Configs)
 			BodyLabel = InsertTheme(Create("TextLabel", Card, {
 				Font = Enum.Font.Gotham,
 				TextColor3 = Theme["Color Dark Text"],
-				Size = UDim2.new(1, -(textX + PAD), 0, 20),
-				Position = UDim2.new(0, textX, 0, 27),
+				Size = UDim2.new(1, -(textX + PAD), 0, 11),
+				Position = UDim2.new(0, textX, 0, 17),
 				BackgroundTransparency = 1,
-				TextWrapped = true,
 				TextTruncate = Enum.TextTruncate.AtEnd,
-				TextSize = 10,
+				TextSize = 8,
 				TextXAlignment = Enum.TextXAlignment.Left,
-				TextYAlignment = Enum.TextYAlignment.Top,
 				RichText = NeedsRichText(NText),
 				Text = NText,
 				Name = "Body"
 			}), "DarkText")
 		end
 
-		local CloseBadge = InsertTheme(Create("Frame", Card, {
-			Size = UDim2.new(0, 18, 0, 18),
-			Position = UDim2.new(1, -PAD, 0, PAD),
-			AnchorPoint = Vector2.new(1, 0),
-			BackgroundColor3 = Theme["Color Theme"],
-			BackgroundTransparency = 0.65,
-			Name = "CloseBadge"
-		}), "Theme")
-		Make("Corner", CloseBadge, UDim.new(0, 5))
-
-		local CloseButton = Create("TextButton", CloseBadge, {
-			Size = UDim2.new(1, 0, 1, 0),
-			Text = "",
-			AutoButtonColor = false,
+		local ButtonsHolder = Create("Frame", Card, {
+			Size = UDim2.new(1, -(textX + PAD), 0, 14),
+			Position = UDim2.new(0, textX, 0, 30),
 			BackgroundTransparency = 1,
-			Name = "CloseButton"
+			Name = "ButtonsHolder"
+		}, {
+			Create("UIListLayout", {
+				Padding = UDim.new(0, 4),
+				FillDirection = Enum.FillDirection.Horizontal,
+				HorizontalAlignment = Enum.HorizontalAlignment.Left,
+				VerticalAlignment = Enum.VerticalAlignment.Center
+			})
 		})
 
-		local CloseArrow = InsertTheme(Create("ImageLabel", CloseBadge, {
-			Image = "rbxassetid://10709791437",
-			ImageColor3 = Theme["Color Text"],
-			Size = UDim2.new(0, 10, 0, 10),
-			Position = UDim2.new(0.5, 0, 0.5, 0),
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Rotation = -90,
-			BackgroundTransparency = 1,
-			Name = "CloseArrow"
-		}), "Text")
-
-		local AckButton = nil
 		local function Dismiss()
 			if Dismissed then return end
 			Dismissed = true
@@ -3631,24 +3612,33 @@ function veltrolib:MakeWindow(Configs)
 			Funcs:FireCallback(Callback)
 		end
 
-		CloseButton.Activated:Connect(Dismiss)
-
-		if ButtonText then
-			AckButton = InsertTheme(Create("TextButton", Card, {
-				Size = UDim2.new(1, -(textX + PAD), 0, 18),
-				Position = UDim2.new(0, textX, 1, -PAD - 18),
-				Text = tostring(ButtonText),
+		local ButtonCount = 0
+		function Notification:Button(Cfg)
+			Cfg = Cfg or {}
+			local Name = Cfg[1] or Cfg.Name or Cfg.Title or ""
+			local BtnCallback = Cfg[2] or Cfg.Callback or function() end
+			local BtnColor = Cfg.Color
+			ButtonCount = ButtonCount + 1
+			local Btn = InsertTheme(Create("TextButton", ButtonsHolder, {
+				BackgroundColor3 = BtnColor or Theme["Color Theme"],
+				BackgroundTransparency = BtnColor and 0 or 0.65,
+				Text = Name,
 				Font = Enum.Font.GothamBold,
-				TextSize = 12,
 				TextColor3 = Theme["Color Text"],
-				BackgroundColor3 = Theme["Color Theme"],
-				BackgroundTransparency = 0.65,
-				AutoButtonColor = false,
-				Name = "AckButton"
-			}), "Theme")
-			Make("Corner", AckButton, UDim.new(0, 5))
-			AckButton.Activated:Connect(Dismiss)
+				TextSize = 9,
+				AutoButtonColor = false
+			}), BtnColor and "Stroke" or "Theme")
+			Make("Corner", Btn, UDim.new(0, 4))
+			for _, B in pairs(ButtonsHolder:GetChildren()) do
+				if B:IsA("TextButton") then
+					B.Size = UDim2.new(1 / ButtonCount, -(((ButtonCount - 1) * 4) / ButtonCount), 1, 0)
+				end
+			end
+			Btn.Activated:Connect(Dismiss)
+			Btn.Activated:Connect(BtnCallback)
 		end
+
+		table.foreach(ButtonConfigs, function(_, B) Notification:Button(B) end)
 
 		CreateTween({Card, "Position", UDim2.new(0, 0, 0, 0), 0.3})
 		CreateTween({Card, "Transparency", CurrentTransparency, 0.3})
@@ -4419,19 +4409,20 @@ function veltrolib:MakeWindow(Configs)
 			Make("Corner", SelectedFrame, UDim.new(0, 4))
 
 			local ActiveLabel = InsertTheme(Create("TextLabel", SelectedFrame, {
-				Size = UDim2.new(0.85, 0, 0.85, 0),
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.new(0.5, 0, 0.5, 0),
+				Size = UDim2.new(1, -28, 0.85, 0),
+				AnchorPoint = Vector2.new(0, 0.5),
+				Position = UDim2.new(0, 8, 0.5, 0),
 				BackgroundTransparency = 1,
 				Font = Enum.Font.GothamBold,
 				TextScaled = true,
+				TextXAlignment = Enum.TextXAlignment.Left,
 				TextColor3 = Theme["Color Text"],
 				Text = "..."
 			}), "Text")
 
 			local Arrow = Create("ImageLabel", SelectedFrame, {
-				Size = UDim2.new(0, 15, 0, 15),
-				Position = UDim2.new(0, -5, 0.5),
+				Size = UDim2.new(0, 14, 0, 14),
+				Position = UDim2.new(1, -8, 0.5, 0),
 				AnchorPoint = Vector2.new(1, 0.5),
 				Image = "rbxassetid://10709791523",
 				BackgroundTransparency = 1
