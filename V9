@@ -3976,14 +3976,14 @@ function veltrolib:MakeWindow(Configs)
 
 			local ArrowLabel = InsertTheme(Create("ImageLabel", HeaderBtn, {
 				Image            = "rbxassetid://10709791437",
-				ImageColor3      = Theme["Color Dark Text"],
+				ImageColor3      = Theme["Color Text"],
 				Size             = UDim2.new(0, 16, 0, 16),
 				Position         = UDim2.new(1, -5, 0.5, 0),
 				AnchorPoint      = Vector2.new(1, 0.5),
 				BackgroundTransparency = 1,
 				Rotation         = 0,
 				Name             = "ArrowLabel"
-			}), "DarkText")
+			}), "Text")
 
 			local BottomLine = InsertTheme(Create("Frame", SectionWrapper, {
 				Size             = UDim2.new(1, 0, 0, 2),
@@ -4414,7 +4414,7 @@ function veltrolib:MakeWindow(Configs)
 				Position = UDim2.new(0, 8, 0.5, 0),
 				BackgroundTransparency = 1,
 				Font = Enum.Font.GothamBold,
-				TextScaled = true,
+				TextSize = 10,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextColor3 = Theme["Color Text"],
 				Text = "..."
