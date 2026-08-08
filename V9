@@ -4191,11 +4191,14 @@ function veltrolib:MakeWindow(Configs)
 			}), "Theme")
 			Make("Corner", outerFrame, UDim.new(0, 6))
 
+			local TOP_PADDING = 7
+			local BOTTOM_PADDING = 7
+
 			local innerLayout = Create("Frame", outerFrame, {
 				Size = UDim2.new(1, -20, 0, 0),
-				Position = UDim2.new(0, 10, 0, 7),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				Position = UDim2.new(0, 10, 0, TOP_PADDING),
 				BackgroundTransparency = 1,
-				AutomaticSize = Enum.AutomaticSize.None,
 				Name = "InnerLayout"
 			})
 			Create("UIListLayout", innerLayout, {
@@ -4220,6 +4223,7 @@ function veltrolib:MakeWindow(Configs)
 			for idx, lineText in ipairs(multiLines) do
 				local lbl = InsertTheme(Create("TextLabel", innerLayout, {
 					Size = UDim2.new(1, 0, 0, 0),
+					AutomaticSize = Enum.AutomaticSize.Y,
 					BackgroundTransparency = 1,
 					Font = Enum.Font.Gotham,
 					TextColor3 = Theme["Color Text"],
@@ -4234,26 +4238,12 @@ function veltrolib:MakeWindow(Configs)
 				table.insert(lineLabels, lbl)
 			end
 
-			local LINE_PADDING = 2
-			local TOP_PADDING = 7
-			local BOTTOM_PADDING = 7
-
-			local function RecalcParagraph()
-				local width = (outerFrame.AbsoluteSize.X - 20) / UIScale
-
-				local total = 14
-				for _, lbl in ipairs(lineLabels) do
-					local h = MeasureWrappedTextHeight(lbl.Text, lbl.TextSize, lbl.Font, width, lbl.LineHeight)
-					lbl.Size = UDim2.new(1, 0, 0, h)
-					total = total + LINE_PADDING + h
-				end
-
-				innerLayout.Size = UDim2.new(1, -20, 0, total)
-				outerFrame.Size = UDim2.new(1, 0, 0, TOP_PADDING + total + BOTTOM_PADDING)
+			local function SyncHeight()
+				outerFrame.Size = UDim2.new(1, 0, 0, TOP_PADDING + innerLayout.AbsoluteSize.Y + BOTTOM_PADDING)
 			end
 
-			RecalcParagraph()
-			outerFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(RecalcParagraph)
+			SyncHeight()
+			innerLayout:GetPropertyChangedSignal("AbsoluteSize"):Connect(SyncHeight)
 
 			function Paragraph:SetTitle(Val)
 				Val = GetStr(Val)
@@ -4267,7 +4257,6 @@ function veltrolib:MakeWindow(Configs)
 				Val = GetStr(Val)
 				lbl.RichText = NeedsRichText(Val)
 				lbl.Text = Val
-				RecalcParagraph()
 			end
 
 			function Paragraph:Visible(...) Funcs:ToggleVisible(outerFrame, ...) end
