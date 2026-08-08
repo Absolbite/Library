@@ -4191,28 +4191,32 @@ function veltrolib:MakeWindow(Configs)
 			}), "Theme")
 			Make("Corner", outerFrame, UDim.new(0, 6))
 
+			local TITLE_HEIGHT = 14
+			local LINE_HEIGHT = 14
+			local LINE_PADDING = 2
 			local TOP_PADDING = 7
 			local BOTTOM_PADDING = 7
 
 			local innerLayout = Create("Frame", outerFrame, {
 				Size = UDim2.new(1, -20, 0, 0),
-				AutomaticSize = Enum.AutomaticSize.Y,
+				AutomaticSize = Enum.AutomaticSize.None,
 				Position = UDim2.new(0, 10, 0, TOP_PADDING),
 				BackgroundTransparency = 1,
 				Name = "InnerLayout"
 			})
 			Create("UIListLayout", innerLayout, {
 				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding = UDim.new(0, 2)
+				Padding = UDim.new(0, LINE_PADDING)
 			})
 
 			local TitleLabel = InsertTheme(Create("TextLabel", innerLayout, {
-				Size = UDim2.new(1, 0, 0, 14),
+				Size = UDim2.new(1, 0, 0, TITLE_HEIGHT),
 				BackgroundTransparency = 1,
 				Font = Enum.Font.GothamMedium,
 				TextColor3 = Theme["Color Text"],
 				TextSize = 10,
 				TextXAlignment = Enum.TextXAlignment.Left,
+				TextTruncate = Enum.TextTruncate.AtEnd,
 				RichText = NeedsRichText(PName),
 				Text = PName,
 				LayoutOrder = 0,
@@ -4222,14 +4226,13 @@ function veltrolib:MakeWindow(Configs)
 			local lineLabels = {}
 			for idx, lineText in ipairs(multiLines) do
 				local lbl = InsertTheme(Create("TextLabel", innerLayout, {
-					Size = UDim2.new(1, 0, 0, 0),
-					AutomaticSize = Enum.AutomaticSize.Y,
+					Size = UDim2.new(1, 0, 0, LINE_HEIGHT),
 					BackgroundTransparency = 1,
-					Font = Enum.Font.Gotham,
+					Font = Enum.Font.GothamMedium,
 					TextColor3 = Theme["Color Text"],
-					TextSize = 9,
+					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Left,
-					TextWrapped = true,
+					TextTruncate = Enum.TextTruncate.AtEnd,
 					RichText = NeedsRichText(lineText),
 					Text = lineText,
 					LayoutOrder = idx,
@@ -4238,12 +4241,9 @@ function veltrolib:MakeWindow(Configs)
 				table.insert(lineLabels, lbl)
 			end
 
-			local function SyncHeight()
-				outerFrame.Size = UDim2.new(1, 0, 0, TOP_PADDING + innerLayout.AbsoluteSize.Y + BOTTOM_PADDING)
-			end
-
-			SyncHeight()
-			innerLayout:GetPropertyChangedSignal("AbsoluteSize"):Connect(SyncHeight)
+			local total = TITLE_HEIGHT + #lineLabels * (LINE_PADDING + LINE_HEIGHT)
+			innerLayout.Size = UDim2.new(1, -20, 0, total)
+			outerFrame.Size = UDim2.new(1, 0, 0, TOP_PADDING + total + BOTTOM_PADDING)
 
 			function Paragraph:SetTitle(Val)
 				Val = GetStr(Val)
