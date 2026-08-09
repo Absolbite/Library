@@ -2800,7 +2800,7 @@ function veltrolib:MakeWindow(Configs)
 	Make("Gradient", MainFrame, { Rotation = 45 })
 	MakeDrag(MainFrame)
 
-	local MainCorner = Make("Corner", MainFrame, UDim.new(0, 3))
+	local MainCorner = Make("Corner", MainFrame, UDim.new(0, 7))
 
 	local MainStroke = InsertTheme(Create("UIStroke", MainFrame, {
 		Color = BrightenColor(Theme["Color Stroke"], 55),
@@ -3911,7 +3911,7 @@ function veltrolib:MakeWindow(Configs)
 					BackgroundColor3 = Theme["Color Theme"],
 					BackgroundTransparency = 0.85
 				}), "Theme")
-				Make("Corner", DividerLine, UDim.new(0, 3))
+				Make("Corner", DividerLine, UDim.new(0, 2))
 			end
 
 			local Divider = {}
