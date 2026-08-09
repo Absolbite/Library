@@ -2513,7 +2513,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		BackgroundTransparency = 0.85,
 		Name = "Option"
 	}), "Theme")
-	Make("Corner", Frame, UDim.new(0, 6))
+	Make("Corner", Frame, UDim.new(0, 3))
 
 	local TitleL = InsertTheme(Create("TextLabel", Frame, {
 		Font = Enum.Font.GothamMedium,
@@ -2800,7 +2800,7 @@ function veltrolib:MakeWindow(Configs)
 	Make("Gradient", MainFrame, { Rotation = 45 })
 	MakeDrag(MainFrame)
 
-	local MainCorner = Make("Corner", MainFrame)
+	local MainCorner = Make("Corner", MainFrame, UDim.new(0, 3))
 
 	local MainStroke = InsertTheme(Create("UIStroke", MainFrame, {
 		Color = BrightenColor(Theme["Color Stroke"], 55),
@@ -3911,7 +3911,7 @@ function veltrolib:MakeWindow(Configs)
 					BackgroundColor3 = Theme["Color Theme"],
 					BackgroundTransparency = 0.85
 				}), "Theme")
-				Make("Corner", DividerLine)
+				Make("Corner", DividerLine, UDim.new(0, 3))
 			end
 
 			local Divider = {}
@@ -4189,7 +4189,7 @@ function veltrolib:MakeWindow(Configs)
 				BackgroundTransparency = 0.85,
 				Name = "Option"
 			}), "Theme")
-			Make("Corner", outerFrame, UDim.new(0, 6))
+			Make("Corner", outerFrame, UDim.new(0, 3))
 
 			local TITLE_HEIGHT = 14
 			local LINE_HEIGHT = 14
