@@ -4214,7 +4214,7 @@ function veltrolib:MakeWindow(Configs)
 				BackgroundTransparency = 1,
 				Font = Enum.Font.GothamMedium,
 				TextColor3 = Theme["Color Text"],
-				TextSize = 10,
+				TextSize = 9,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextTruncate = Enum.TextTruncate.AtEnd,
 				RichText = NeedsRichText(PName),
@@ -4230,7 +4230,7 @@ function veltrolib:MakeWindow(Configs)
 					BackgroundTransparency = 1,
 					Font = Enum.Font.GothamMedium,
 					TextColor3 = Theme["Color Text"],
-					TextSize = 10,
+					TextSize = 9,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextTruncate = Enum.TextTruncate.AtEnd,
 					RichText = NeedsRichText(lineText),
@@ -4259,8 +4259,16 @@ function veltrolib:MakeWindow(Configs)
 				lbl.Text = Val
 			end
 
-			function Paragraph:Set(Cfg)
-				Cfg = Cfg or {}
+			function Paragraph:Set(Val1, Val2)
+				local Cfg
+				if type(Val1) == "table" then
+					Cfg = Val1
+				else
+					Cfg = { Title = Val1 }
+					if type(Val2) == "string" and Val2 ~= "" then
+						Cfg.Text1 = Val2
+					end
+				end
 				if Cfg.Title or Cfg[1] then
 					self:SetTitle(Cfg.Title or Cfg[1])
 				end
@@ -4279,7 +4287,7 @@ function veltrolib:MakeWindow(Configs)
 							BackgroundTransparency = 1,
 							Font = Enum.Font.GothamMedium,
 							TextColor3 = Theme["Color Text"],
-							TextSize = 10,
+							TextSize = 9,
 							TextXAlignment = Enum.TextXAlignment.Left,
 							TextTruncate = Enum.TextTruncate.AtEnd,
 							RichText = NeedsRichText(text),
