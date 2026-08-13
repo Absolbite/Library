@@ -1237,7 +1237,8 @@ local veltrolib = {
 		Theme = "Darker",
 		Transparency = 0.03,
 		MinimizeButtons = {},
-		MainImage = ""
+		MainImage = "",
+		DpiScale = "Normal"
 	},
 	Settings = {},
 	Connection = {},
@@ -2071,7 +2072,16 @@ local veltrolib = {
 }
 
 local ViewportSize = workspace.CurrentCamera.ViewportSize
-local UIScale = ViewportSize.Y / 450
+local BaseScale = ViewportSize.Y / 450
+local DpiPresets = {
+	Small   = 1 / 1.5,
+	Smaller = 1 / 2,
+	Normal  = 1,
+	Large   = 1.5,
+	Larger  = 2
+}
+local DpiMultiplier = 1
+local UIScale = BaseScale * DpiMultiplier
 
 local Settings = veltrolib.Settings
 local Flags = veltrolib.Flags
@@ -2172,12 +2182,16 @@ local SetProps, SetChildren, InsertTheme, Create do
 				if rawget(decode, "Transparency") then veltrolib.Save["Transparency"] = decode["Transparency"] end
 				if rawget(decode, "MinimizeButtons") then veltrolib.Save["MinimizeButtons"] = decode["MinimizeButtons"] end
 				if rawget(decode, "MainImage") then veltrolib.Save["MainImage"] = decode["MainImage"] end
+				if rawget(decode, "DpiScale") then veltrolib.Save["DpiScale"] = decode["DpiScale"] end
 			end
 		end
 	end
 
 	EnsureFolders()
 	pcall(Save, SaveFile)
+
+	DpiMultiplier = DpiPresets[veltrolib.Save.DpiScale] or 1
+	UIScale = BaseScale * DpiMultiplier
 end
 
 local Funcs = {} do
@@ -2721,8 +2735,19 @@ end
 
 
 function veltrolib:SetScale(NewScale)
-	NewScale = ViewportSize.Y / math.clamp(NewScale, 300, 2000)
-	UIScale, ScreenGui.Scale.Scale = NewScale, NewScale
+	BaseScale = ViewportSize.Y / math.clamp(NewScale, 300, 2000)
+	UIScale = BaseScale * DpiMultiplier
+	ScreenGui.Scale.Scale = UIScale
+end
+
+function veltrolib:SetDpiScale(name)
+	local mult = DpiPresets[name]
+	if not mult then return end
+	DpiMultiplier = mult
+	UIScale = BaseScale * DpiMultiplier
+	ScreenGui.Scale.Scale = UIScale
+	veltrolib.Save.DpiScale = name
+	SaveJson(veltrolib.Save)
 end
 
 function veltrolib:SetBackgroundImage(raw)
@@ -3501,6 +3526,10 @@ function veltrolib:MakeWindow(Configs)
 
 	function Window:SetBackgroundImage(value)
 		veltrolib:SetBackgroundImage(value)
+	end
+
+	function Window:SetDpiScale(name)
+		veltrolib:SetDpiScale(name)
 	end
 
 	function Window:Notification(Configs)
