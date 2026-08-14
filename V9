@@ -1238,7 +1238,7 @@ local veltrolib = {
 		Transparency = 0.03,
 		MinimizeButtons = {},
 		MainImage = "",
-		Scale = 450
+		Scale = 470
 	},
 	Settings = {},
 	Connection = {},
