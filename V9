@@ -1228,7 +1228,7 @@ local veltrolib = {
 
 	},
 	Info = {
-		Version = "8.0.0"
+		Version = "9.0.0"
 	},
 	Save = {
 		UISize = {550, 380},
@@ -1238,7 +1238,7 @@ local veltrolib = {
 		Transparency = 0.03,
 		MinimizeButtons = {},
 		MainImage = "",
-		Scale = 470
+		Scale = 460
 	},
 	Settings = {},
 	Connection = {},
