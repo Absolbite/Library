@@ -5262,11 +5262,13 @@ function veltrolib:MakeWindow(Configs)
 				Make("Corner", IconFrame, UDim.new(0, 5))
 
 				Create("ImageLabel", IconFrame, {
-					Size = UDim2.new(1, -6, 1, -6),
-					Position = UDim2.new(0, 3, 0, 3),
+					Size = UDim2.new(1, 0, 1, 0),
+					Position = UDim2.new(0, 0, 0, 0),
 					BackgroundTransparency = 1,
 					Image = Logo,
-					ScaleType = Enum.ScaleType.Fit
+					ScaleType = Enum.ScaleType.Crop
+				}, {
+					Create("UICorner", { CornerRadius = UDim.new(0, 5) })
 				})
 			end
 
