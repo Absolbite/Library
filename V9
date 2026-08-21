@@ -3506,6 +3506,64 @@ function veltrolib:MakeWindow(Configs)
 		veltrolib:SetBackgroundImage(value)
 	end
 
+	local SearchBarHolder = nil
+
+	local function FilterTabs(query)
+		query = query:lower()
+		for _, T in ipairs(veltrolib.Tabs) do
+			if T.Button then
+				T.Button.Visible = query == "" or T.TabInfo.Name:lower():find(query, 1, true) ~= nil
+			end
+		end
+	end
+
+	function Window:AddSearchbar(Bool)
+		if Bool == false then
+			if SearchBarHolder then
+				SearchBarHolder:Destroy()
+				SearchBarHolder = nil
+				FilterTabs("")
+			end
+			return
+		end
+
+		if SearchBarHolder then return end
+
+		SearchBarHolder = InsertTheme(Create("Frame", MainScroll, {
+			Size = UDim2.new(1, 0, 0, 23),
+			BackgroundTransparency = 1,
+			BackgroundColor3 = Theme["Color Theme"],
+			LayoutOrder = -1,
+			Name = "SearchBar"
+		}), "TabBG")
+		Make("Corner", SearchBarHolder, UDim.new(0, 3))
+
+		InsertTheme(Create("ImageLabel", SearchBarHolder, {
+			Position = UDim2.new(0, 10, 0.5),
+			Size = UDim2.new(0, 14, 0, 14),
+			AnchorPoint = Vector2.new(0, 0.5),
+			Image = "rbxassetid://10734943674",
+			BackgroundTransparency = 1
+		}), "Text")
+
+		local SearchInput = InsertTheme(Create("TextBox", SearchBarHolder, {
+			Size = UDim2.new(1, -39, 1, 0),
+			Position = UDim2.fromOffset(31, 0),
+			BackgroundTransparency = 1,
+			Font = Enum.Font.GothamBold,
+			PlaceholderText = "Search",
+			Text = "",
+			ClearTextOnFocus = false,
+			TextColor3 = Theme["Color Text"],
+			TextSize = 10,
+			TextXAlignment = Enum.TextXAlignment.Left
+		}), "Text")
+
+		SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
+			FilterTabs(SearchInput.Text)
+		end)
+	end
+
 	function Window:Notification(Configs)
 		Configs = Configs or {}
 		local NTitle = Configs.Title or Configs[1] or "Notification"
@@ -3850,7 +3908,7 @@ function veltrolib:MakeWindow(Configs)
 
 		FirstTab = true
 		local Tab = {}
-		table.insert(veltrolib.Tabs, {TabInfo = {Name = TName, Icon = TIcon}, func = Tab, Cont = Container})
+		table.insert(veltrolib.Tabs, {TabInfo = {Name = TName, Icon = TIcon}, func = Tab, Cont = Container, Button = TabSelect})
 		Tab.Cont = Container
 
 		function Tab:Disable()
@@ -5249,7 +5307,7 @@ function veltrolib:MakeWindow(Configs)
 				BackgroundTransparency = 0.85,
 				Name = "Option"
 			}), "Theme")
-			Make("Corner", Card, UDim.new(0, 6))
+			Make("Corner", Card, UDim.new(0, 3))
 
 			if hasLogo then
 				local IconFrame = InsertTheme(Create("Frame", Card, {
