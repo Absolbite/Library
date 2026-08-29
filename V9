@@ -1228,7 +1228,7 @@ local veltrolib = {
 
 	},
 	Info = {
-		Version = "9.0.0"
+		Version = "8.0.0"
 	},
 	Save = {
 		UISize = {550, 380},
@@ -1238,7 +1238,7 @@ local veltrolib = {
 		Transparency = 0.03,
 		MinimizeButtons = {},
 		MainImage = "",
-		Scale = 460
+		Scale = 450
 	},
 	Settings = {},
 	Connection = {},
@@ -1247,6 +1247,7 @@ local veltrolib = {
 	Options = {},
 	Flags = {},
 	Tabs = {},
+	SearchIndex = {},
 	Icons = (function()
 		return {
 			["accessibility"] = "rbxassetid://10709751939",
@@ -2516,6 +2517,7 @@ local function ButtonFrame(Instance, Title, Description, HolderSize)
 		Name = "Option"
 	}), "Theme")
 	Make("Corner", Frame, UDim.new(0, 3))
+	table.insert(veltrolib.SearchIndex, {Instance = Frame, Title = Title, Container = Instance})
 
 	local TitleL = InsertTheme(Create("TextLabel", Frame, {
 		Font = Enum.Font.GothamMedium,
@@ -2743,6 +2745,10 @@ end
 function veltrolib:MakeWindow(Configs)
 	local WTitle = Configs[1] or Configs.Name or Configs.Title or "smooth library"
 	local WMiniText = Configs[2] or Configs.SubTitle or "modified - ChDrago"
+	local WIcon = Configs.Icon or Configs.Image or ""
+	WIcon = veltrolib:GetIcon(tostring(WIcon))
+	if WIcon == "" then WIcon = false end
+	local titleStartX = WIcon and 39 or 15
 
 	local SaveFolder = Configs[3] or Configs.SaveFolder or false
 
@@ -2821,7 +2827,7 @@ function veltrolib:MakeWindow(Configs)
 	})
 
 	local Title = InsertTheme(Create("TextLabel", TopBar, {
-		Position = UDim2.new(0, 15, 0.5),
+		Position = UDim2.new(0, titleStartX, 0.5),
 		AnchorPoint = Vector2.new(0, 0.5),
 		AutomaticSize = "X",
 		Size = UDim2.new(0, 0, 0, 28),
@@ -2835,11 +2841,23 @@ function veltrolib:MakeWindow(Configs)
 		Name = "Title"
 	}), "ThemeText")
 
+	if WIcon then
+		InsertTheme(Create("ImageLabel", TopBar, {
+			Position = UDim2.new(0, 15, 0.5),
+			Size = UDim2.new(0, 16, 0, 16),
+			AnchorPoint = Vector2.new(0, 0.5),
+			Image = WIcon,
+			BackgroundTransparency = 1,
+			ImageTransparency = 0,
+			Name = "Icon"
+		}), "Text")
+	end
+
 	local SubTitle = InsertTheme(Create("TextLabel", TopBar, {
 		AutomaticSize = "X",
 		Size = UDim2.new(0, 0, 0, 28),
 		AnchorPoint = Vector2.new(0, 0.5),
-		Position = UDim2.new(0, 15 + TextService:GetTextSize(WTitle, 12, Enum.Font.GothamBold, Vector2.new(9999, 28)).X + 8, 0.5),
+		Position = UDim2.new(0, titleStartX + TextService:GetTextSize(WTitle, 12, Enum.Font.GothamBold, Vector2.new(9999, 28)).X + 8, 0.5),
 		Text = WMiniText,
 		TextColor3 = Theme["Color Dark Text"],
 		BackgroundTransparency = 1,
@@ -2852,7 +2870,7 @@ function veltrolib:MakeWindow(Configs)
 
 	local TagHolder = Create("Frame", TopBar, {
 		AnchorPoint = Vector2.new(0, 0.5),
-		Position = UDim2.new(0, 15 + TextService:GetTextSize(WTitle, 12, Enum.Font.GothamBold, Vector2.new(9999, 28)).X + 8 + TextService:GetTextSize(WMiniText, 8, Enum.Font.Gotham, Vector2.new(9999, 28)).X + 10, 0.5),
+		Position = UDim2.new(0, titleStartX + TextService:GetTextSize(WTitle, 12, Enum.Font.GothamBold, Vector2.new(9999, 28)).X + 8 + TextService:GetTextSize(WMiniText, 8, Enum.Font.Gotham, Vector2.new(9999, 28)).X + 10, 0.5),
 		Size = UDim2.new(0, 200, 0, 18),
 		BackgroundTransparency = 1,
 		Name = "TagHolder"
@@ -3508,11 +3526,42 @@ function veltrolib:MakeWindow(Configs)
 
 	local SearchBarHolder = nil
 
-	local function FilterTabs(query)
+	local function FilterAll(query)
 		query = query:lower()
+
+		if query == "" then
+			for _, T in ipairs(veltrolib.Tabs) do
+				if T.Button then T.Button.Visible = true end
+			end
+			for _, E in ipairs(veltrolib.SearchIndex) do
+				if E.Instance and E.Instance.Parent then E.Instance.Visible = true end
+			end
+			return
+		end
+
+		local tabHasElementMatch = {}
+		for _, E in ipairs(veltrolib.SearchIndex) do
+			if E.Instance and E.Instance.Parent then
+				if E.Title:lower():find(query, 1, true) then
+					tabHasElementMatch[E.Container] = true
+				end
+			end
+		end
+
+		for _, E in ipairs(veltrolib.SearchIndex) do
+			if E.Instance and E.Instance.Parent then
+				if tabHasElementMatch[E.Container] then
+					E.Instance.Visible = E.Title:lower():find(query, 1, true) ~= nil
+				else
+					E.Instance.Visible = true
+				end
+			end
+		end
+
 		for _, T in ipairs(veltrolib.Tabs) do
 			if T.Button then
-				T.Button.Visible = query == "" or T.TabInfo.Name:lower():find(query, 1, true) ~= nil
+				local nameMatch = T.TabInfo.Name:lower():find(query, 1, true) ~= nil
+				T.Button.Visible = nameMatch or tabHasElementMatch[T.Cont] == true
 			end
 		end
 	end
@@ -3522,7 +3571,7 @@ function veltrolib:MakeWindow(Configs)
 			if SearchBarHolder then
 				SearchBarHolder:Destroy()
 				SearchBarHolder = nil
-				FilterTabs("")
+				FilterAll("")
 			end
 			return
 		end
@@ -3560,7 +3609,7 @@ function veltrolib:MakeWindow(Configs)
 		}), "Text")
 
 		SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
-			FilterTabs(SearchInput.Text)
+			FilterAll(SearchInput.Text)
 		end)
 	end
 
@@ -4251,6 +4300,7 @@ function veltrolib:MakeWindow(Configs)
 				Name = "Option"
 			}), "Theme")
 			Make("Corner", outerFrame, UDim.new(0, 3))
+			table.insert(veltrolib.SearchIndex, {Instance = outerFrame, Title = PName, Container = Container})
 
 			local TITLE_HEIGHT = 14
 			local LINE_HEIGHT = 14
@@ -4388,7 +4438,7 @@ function veltrolib:MakeWindow(Configs)
 				Position = UDim2.new(1, -10, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundTransparency = 1,
-				Image = "rbxassetid://10734898194"
+				Image = "rbxassetid://90807822312318"
 			})
 
 			FButton.Activated:Connect(function()
@@ -5324,6 +5374,7 @@ function veltrolib:MakeWindow(Configs)
 					Position = UDim2.new(0, 0, 0, 0),
 					BackgroundTransparency = 1,
 					Image = Logo,
+					ImageTransparency = 0.1,
 					ScaleType = Enum.ScaleType.Crop
 				}, {
 					Create("UICorner", { CornerRadius = UDim.new(0, 5) })
