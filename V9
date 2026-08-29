@@ -1238,7 +1238,7 @@ local veltrolib = {
 		Transparency = 0.03,
 		MinimizeButtons = {},
 		MainImage = "",
-		Scale = 450
+		Scale = 465
 	},
 	Settings = {},
 	Connection = {},
@@ -2879,7 +2879,7 @@ function veltrolib:MakeWindow(Configs)
 			FillDirection = Enum.FillDirection.Horizontal,
 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
-			Padding = UDim.new(0, 7),
+			Padding = UDim.new(0, 8),
 			SortOrder = Enum.SortOrder.LayoutOrder
 		})
 	})
