@@ -2842,16 +2842,15 @@ function veltrolib:MakeWindow(Configs)
 	}), "ThemeText")
 
 	if WIcon then
-		Create("ImageLabel", TopBar, {
+		InsertTheme(Create("ImageLabel", TopBar, {
 			Position = UDim2.new(0, 15, 0.5),
 			Size = UDim2.new(0, 16, 0, 16),
 			AnchorPoint = Vector2.new(0, 0.5),
 			Image = WIcon,
-			ImageColor3 = Color3.new(1, 1, 1),
 			BackgroundTransparency = 1,
 			ImageTransparency = 0,
 			Name = "Icon"
-		})
+		}), "Text")
 	end
 
 	local SubTitle = InsertTheme(Create("TextLabel", TopBar, {
@@ -2880,7 +2879,10 @@ function veltrolib:MakeWindow(Configs)
 			FillDirection = Enum.FillDirection.Horizontal,
 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
-			Padding = UDim.new(0, 5),
+			Padding = UDim.new(0, 8),
+			SortOrder = Enum.SortOrder.LayoutOrder
+		})
+	})
 
 	local MainScroll = InsertTheme(Create("ScrollingFrame", Components, {
 		Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset),
@@ -3522,7 +3524,7 @@ function veltrolib:MakeWindow(Configs)
 		veltrolib:SetBackgroundImage(value)
 	end
 
-	local SearchToggle, SearchExpand, SearchInput = nil, nil, nil
+	local SearchBarHolder = nil
 
 	local function FilterAll(query)
 		query = query:lower()
@@ -3566,37 +3568,36 @@ function veltrolib:MakeWindow(Configs)
 
 	function Window:AddSearchbar(Bool)
 		if Bool == false then
-			if SearchToggle then
-				SearchToggle:Destroy()
-				SearchExpand:Destroy()
-				SearchToggle, SearchExpand, SearchInput = nil, nil, nil
+			if SearchBarHolder then
+				SearchBarHolder:Destroy()
+				SearchBarHolder = nil
 				FilterAll("")
 			end
 			return
 		end
 
-		if SearchToggle then return end
+		if SearchBarHolder then return end
 
-		local expanded = false
-		local EXPANDED_WIDTH = 150
-		local COLLAPSED_WIDTH = 0
-		local ICON_X = -60
-
-		SearchExpand = InsertTheme(Create("Frame", TopBar, {
-			Size = UDim2.new(0, COLLAPSED_WIDTH, 0, 20),
-			Position = UDim2.new(1, ICON_X - 6, 0.5, 0),
-			AnchorPoint = Vector2.new(1, 0.5),
+		SearchBarHolder = InsertTheme(Create("Frame", MainScroll, {
+			Size = UDim2.new(1, 0, 0, 23),
+			BackgroundTransparency = 0.9,
 			BackgroundColor3 = Theme["Color Theme"],
-			BackgroundTransparency = 0.85,
-			ClipsDescendants = true,
-			Visible = false,
-			Name = "SearchExpand"
-		}), "Theme")
-		Make("Corner", SearchExpand, UDim.new(0, 4))
+			LayoutOrder = -1,
+			Name = "SearchBar"
+		}), "TabBG")
+		Make("Corner", SearchBarHolder, UDim.new(0, 3))
 
-		SearchInput = InsertTheme(Create("TextBox", SearchExpand, {
-			Size = UDim2.new(1, -16, 1, 0),
-			Position = UDim2.fromOffset(8, 0),
+		InsertTheme(Create("ImageLabel", SearchBarHolder, {
+			Position = UDim2.new(0, 10, 0.5),
+			Size = UDim2.new(0, 14, 0, 14),
+			AnchorPoint = Vector2.new(0, 0.5),
+			Image = "rbxassetid://10734943674",
+			BackgroundTransparency = 1
+		}), "Text")
+
+		local SearchInput = InsertTheme(Create("TextBox", SearchBarHolder, {
+			Size = UDim2.new(1, -39, 1, 0),
+			Position = UDim2.fromOffset(31, 0),
 			BackgroundTransparency = 1,
 			Font = Enum.Font.GothamBold,
 			PlaceholderText = "Search",
@@ -3607,40 +3608,8 @@ function veltrolib:MakeWindow(Configs)
 			TextXAlignment = Enum.TextXAlignment.Left
 		}), "Text")
 
-		SearchToggle = SetProps(CloseButton:Clone(), {
-			Position = UDim2.new(1, ICON_X, 0.5),
-			Image = "rbxassetid://10734943674",
-			Name = "SearchToggle"
-		})
-		SearchToggle.Parent = ButtonsFolder
-
-		local function SetExpanded(value)
-			expanded = value
-			if expanded then
-				SearchExpand.Visible = true
-				CreateTween({SearchExpand, "Size", UDim2.new(0, EXPANDED_WIDTH, 0, 20), 0.2})
-				SearchInput:CaptureFocus()
-			else
-				local Tween = CreateTween({SearchExpand, "Size", UDim2.new(0, COLLAPSED_WIDTH, 0, 20), 0.2})
-				Tween.Completed:Wait()
-				SearchExpand.Visible = false
-				SearchInput.Text = ""
-				FilterAll("")
-			end
-		end
-
-		SearchToggle.Activated:Connect(function()
-			SetExpanded(not expanded)
-		end)
-
 		SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
 			FilterAll(SearchInput.Text)
-		end)
-
-		SearchInput.FocusLost:Connect(function()
-			if SearchInput.Text == "" then
-				SetExpanded(false)
-			end
 		end)
 	end
 
@@ -5405,7 +5374,6 @@ function veltrolib:MakeWindow(Configs)
 					Position = UDim2.new(0, 0, 0, 0),
 					BackgroundTransparency = 1,
 					Image = Logo,
-					ImageColor3 = Color3.new(1, 1, 1),
 					ImageTransparency = 0.1,
 					ScaleType = Enum.ScaleType.Crop
 				}, {
