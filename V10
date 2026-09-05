@@ -2881,6 +2881,12 @@ function veltrolib:MakeWindow(Configs)
 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 			Padding = UDim.new(0, 5),
+			SortOrder = Enum.SortOrder.LayoutOrder
+		})
+	})
+
+	local SEARCHBAR_HEIGHT = 23
+	local SEARCHBAR_GAP = 6
 
 	local MainScroll = InsertTheme(Create("ScrollingFrame", Components, {
 		Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset),
@@ -2905,6 +2911,14 @@ function veltrolib:MakeWindow(Configs)
 		Create("UIListLayout", { Padding = UDim.new(0, 5) })
 	}), "ScrollBar")
 
+	local SearchBarHolder = Create("Frame", Components, {
+		Size = UDim2.new(0, veltrolib.Save.TabSize, 0, SEARCHBAR_HEIGHT),
+		Position = UDim2.new(0, 0, 0, TopBar.Size.Y.Offset),
+		BackgroundTransparency = 1,
+		Visible = false,
+		Name = "SearchBarHolder"
+	})
+
 	local Containers = Create("Frame", Components, {
 		Size = UDim2.new(1, -MainScroll.Size.X.Offset, 1, -TopBar.Size.Y.Offset),
 		AnchorPoint = Vector2.new(1, 1),
@@ -2913,6 +2927,20 @@ function veltrolib:MakeWindow(Configs)
 		ClipsDescendants = true,
 		Name = "Containers"
 	})
+
+	local PAGE_TITLE_HEIGHT = 28
+
+	local PageTitleLabel = InsertTheme(Create("TextLabel", Containers, {
+		Size = UDim2.new(1, 0, 0, PAGE_TITLE_HEIGHT),
+		Position = UDim2.new(0, 0, 0, 0),
+		BackgroundTransparency = 1,
+		Font = Enum.Font.GothamBold,
+		Text = "",
+		TextColor3 = Theme["Color Text"],
+		TextSize = 20,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Name = "PageTitle"
+	}), "Text")
 
 	local TopBarDivider = Create("Frame", Components, {
 		Size = UDim2.new(0, 0, 0, 0),
@@ -3571,26 +3599,31 @@ function veltrolib:MakeWindow(Configs)
 		end
 	end
 
-	local SearchBarHolder = nil
+	local SearchBarBuilt = false
 
 	function Window:AddSearchbar(Bool)
 		if Bool == false then
-			if SearchBarHolder then
-				SearchBarHolder:Destroy()
-				SearchBarHolder = nil
+			if SearchBarBuilt then
+				SearchBarHolder.Visible = false
+				MainScroll.Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset)
+				MainScroll.Position = UDim2.new(0, 0, 1, 0)
 				FilterAll("")
 			end
 			return
 		end
 
-		if SearchBarHolder then return end
+		if SearchBarBuilt then
+			SearchBarHolder.Visible = true
+			MainScroll.Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset - SEARCHBAR_HEIGHT - SEARCHBAR_GAP)
+			MainScroll.Position = UDim2.new(0, 0, 1, 0)
+			return
+		end
+		SearchBarBuilt = true
 
-		SearchBarHolder = InsertTheme(Create("Frame", MainScroll, {
-			Size = UDim2.new(1, 0, 0, 23),
+		InsertTheme(SetProps(SearchBarHolder, {
 			BackgroundTransparency = 0.9,
 			BackgroundColor3 = Theme["Color Theme"],
-			LayoutOrder = -1,
-			Name = "SearchBar"
+			Visible = true
 		}), "TabBG")
 		Make("Corner", SearchBarHolder, UDim.new(0, 3))
 
@@ -3614,6 +3647,8 @@ function veltrolib:MakeWindow(Configs)
 			TextSize = 10,
 			TextXAlignment = Enum.TextXAlignment.Left
 		}), "Text")
+
+		MainScroll.Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset - SEARCHBAR_HEIGHT - SEARCHBAR_GAP)
 
 		SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
 			FilterAll(SearchInput.Text)
@@ -3907,7 +3942,7 @@ function veltrolib:MakeWindow(Configs)
 
 
 		local Container = InsertTheme(Create("ScrollingFrame", {
-			Size = UDim2.new(1, 0, 1, 0),
+			Size = UDim2.new(1, 0, 1, -PAGE_TITLE_HEIGHT - 6),
 			Position = UDim2.new(0, 0, 1),
 			AnchorPoint = Vector2.new(0, 1),
 			ScrollBarThickness = 1.5,
@@ -3929,20 +3964,11 @@ function veltrolib:MakeWindow(Configs)
 			Create("UIListLayout", { Padding = UDim.new(0, 5) })
 		}), "ScrollBar")
 
-		InsertTheme(Create("TextLabel", Container, {
-			Size = UDim2.new(1, 0, 0, 28),
-			BackgroundTransparency = 1,
-			Font = Enum.Font.GothamBold,
-			Text = TName,
-			TextColor3 = Theme["Color Text"],
-			TextSize = 20,
-			TextXAlignment = Enum.TextXAlignment.Left,
-			LayoutOrder = -1,
-			Name = "PageTitle"
-		}), "Text")
-
 		table.insert(ContainerList, Container)
-		if not FirstTab then Container.Parent = Containers end
+		if not FirstTab then
+			Container.Parent = Containers
+			PageTitleLabel.Text = TName
+		end
 
 		local function Tabs()
 			if Container.Parent then return end
@@ -3956,8 +3982,9 @@ function veltrolib:MakeWindow(Configs)
 					Frame.Parent = nil
 				end
 			end
-			Container.Size = UDim2.new(1, 0, 1, 0)
+			Container.Size = UDim2.new(1, 0, 1, -PAGE_TITLE_HEIGHT - 6)
 			Container.Parent = Containers
+			PageTitleLabel.Text = TName
 			TabSelect.BackgroundTransparency = 0.85
 			TabSelect.BackgroundColor3 = Theme["Color Theme"]
 			CreateTween({LabelTitle, "TextTransparency", 0, 0.25})
