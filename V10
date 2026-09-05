@@ -2885,8 +2885,12 @@ function veltrolib:MakeWindow(Configs)
 		})
 	})
 
+	local SIDEBAR_PAD_LEFT = 5
+	local SIDEBAR_PAD_RIGHT = 6
+	local SEARCHBAR_TOP_GAP = 6
 	local SEARCHBAR_HEIGHT = 23
-	local SEARCHBAR_GAP = 6
+	local SEARCHBAR_BOTTOM_GAP = 6
+	local SEARCHBAR_RESERVED = SEARCHBAR_TOP_GAP + SEARCHBAR_HEIGHT + SEARCHBAR_BOTTOM_GAP
 
 	local MainScroll = InsertTheme(Create("ScrollingFrame", Components, {
 		Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset),
@@ -2912,8 +2916,8 @@ function veltrolib:MakeWindow(Configs)
 	}), "ScrollBar")
 
 	local SearchBarHolder = Create("Frame", Components, {
-		Size = UDim2.new(0, veltrolib.Save.TabSize, 0, SEARCHBAR_HEIGHT),
-		Position = UDim2.new(0, 0, 0, TopBar.Size.Y.Offset),
+		Size = UDim2.new(0, veltrolib.Save.TabSize - SIDEBAR_PAD_LEFT - SIDEBAR_PAD_RIGHT, 0, SEARCHBAR_HEIGHT),
+		Position = UDim2.new(0, SIDEBAR_PAD_LEFT, 0, TopBar.Size.Y.Offset + SEARCHBAR_TOP_GAP),
 		BackgroundTransparency = 1,
 		Visible = false,
 		Name = "SearchBarHolder"
@@ -2928,7 +2932,7 @@ function veltrolib:MakeWindow(Configs)
 		Name = "Containers"
 	})
 
-	local PAGE_TITLE_HEIGHT = 28
+	local PAGE_TITLE_HEIGHT = 23
 
 	local PageTitleLabel = InsertTheme(Create("TextLabel", Containers, {
 		Size = UDim2.new(1, 0, 0, PAGE_TITLE_HEIGHT),
@@ -2941,6 +2945,9 @@ function veltrolib:MakeWindow(Configs)
 		TextXAlignment = Enum.TextXAlignment.Left,
 		Name = "PageTitle"
 	}), "Text")
+
+	local SearchBarBuilt = false
+	local SearchBarEnabled = false
 
 	local TopBarDivider = Create("Frame", Components, {
 		Size = UDim2.new(0, 0, 0, 0),
@@ -3034,6 +3041,8 @@ function veltrolib:MakeWindow(Configs)
 			ControlSize1.Visible = true
 			ControlSize2.Visible = true
 			TopBarDivider.Visible = true
+			SearchBarHolder.Visible = SearchBarEnabled
+			PageTitleLabel.Visible = true
 			Minimized = false
 		else
 			MinimizeButton.Image = MinimizeBtnCustomImage or "rbxassetid://10734924532"
@@ -3041,6 +3050,8 @@ function veltrolib:MakeWindow(Configs)
 			ControlSize1.Visible = false
 			ControlSize2.Visible = false
 			TopBarDivider.Visible = false
+			SearchBarHolder.Visible = false
+			PageTitleLabel.Visible = false
 			CreateTween({MainFrame, "Size", UDim2.fromOffset(MainFrame.Size.X.Offset, 28), 0.25, true})
 			Minimized = true
 		end
@@ -3599,10 +3610,9 @@ function veltrolib:MakeWindow(Configs)
 		end
 	end
 
-	local SearchBarBuilt = false
-
 	function Window:AddSearchbar(Bool)
 		if Bool == false then
+			SearchBarEnabled = false
 			if SearchBarBuilt then
 				SearchBarHolder.Visible = false
 				MainScroll.Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset)
@@ -3612,9 +3622,11 @@ function veltrolib:MakeWindow(Configs)
 			return
 		end
 
+		SearchBarEnabled = true
+
 		if SearchBarBuilt then
 			SearchBarHolder.Visible = true
-			MainScroll.Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset - SEARCHBAR_HEIGHT - SEARCHBAR_GAP)
+			MainScroll.Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset - SEARCHBAR_RESERVED)
 			MainScroll.Position = UDim2.new(0, 0, 1, 0)
 			return
 		end
@@ -3648,7 +3660,7 @@ function veltrolib:MakeWindow(Configs)
 			TextXAlignment = Enum.TextXAlignment.Left
 		}), "Text")
 
-		MainScroll.Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset - SEARCHBAR_HEIGHT - SEARCHBAR_GAP)
+		MainScroll.Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset - SEARCHBAR_RESERVED)
 
 		SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
 			FilterAll(SearchInput.Text)
