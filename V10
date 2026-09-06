@@ -2887,10 +2887,9 @@ function veltrolib:MakeWindow(Configs)
 
 	local SIDEBAR_PAD_LEFT = 5
 	local SIDEBAR_PAD_RIGHT = 6
-	local SEARCHBAR_TOP_GAP = 6
+	local SIDEBAR_GAP = 5
 	local SEARCHBAR_HEIGHT = 23
-	local SEARCHBAR_BOTTOM_GAP = 6
-	local SEARCHBAR_RESERVED = SEARCHBAR_TOP_GAP + SEARCHBAR_HEIGHT + SEARCHBAR_BOTTOM_GAP
+	local SEARCHBAR_RESERVED = SIDEBAR_GAP + SEARCHBAR_HEIGHT
 
 	local MainScroll = InsertTheme(Create("ScrollingFrame", Components, {
 		Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset),
@@ -2909,15 +2908,15 @@ function veltrolib:MakeWindow(Configs)
 		Create("UIPadding", {
 			PaddingLeft = UDim.new(0, 5),
 			PaddingRight = UDim.new(0, 6),
-			PaddingTop = UDim.new(0, 6),
+			PaddingTop = UDim.new(0, SIDEBAR_GAP),
 			PaddingBottom = UDim.new(0, 10)
 		}),
-		Create("UIListLayout", { Padding = UDim.new(0, 5) })
+		Create("UIListLayout", { Padding = UDim.new(0, SIDEBAR_GAP) })
 	}), "ScrollBar")
 
 	local SearchBarHolder = Create("Frame", Components, {
 		Size = UDim2.new(0, veltrolib.Save.TabSize - SIDEBAR_PAD_LEFT - SIDEBAR_PAD_RIGHT, 0, SEARCHBAR_HEIGHT),
-		Position = UDim2.new(0, SIDEBAR_PAD_LEFT, 0, TopBar.Size.Y.Offset + SEARCHBAR_TOP_GAP),
+		Position = UDim2.new(0, SIDEBAR_PAD_LEFT, 0, TopBar.Size.Y.Offset + SIDEBAR_GAP),
 		BackgroundTransparency = 1,
 		Visible = false,
 		Name = "SearchBarHolder"
@@ -2932,11 +2931,13 @@ function veltrolib:MakeWindow(Configs)
 		Name = "Containers"
 	})
 
+	local PAGE_TITLE_GAP = 5
 	local PAGE_TITLE_HEIGHT = 23
+	local PAGE_TITLE_RESERVED = PAGE_TITLE_GAP + PAGE_TITLE_HEIGHT
 
 	local PageTitleLabel = InsertTheme(Create("TextLabel", Containers, {
-		Size = UDim2.new(1, 0, 0, PAGE_TITLE_HEIGHT),
-		Position = UDim2.new(0, 0, 0, 0),
+		Size = UDim2.new(1, -5, 0, PAGE_TITLE_HEIGHT),
+		Position = UDim2.new(0, 0, 0, PAGE_TITLE_GAP),
 		BackgroundTransparency = 1,
 		Font = Enum.Font.GothamBold,
 		Text = "",
@@ -3954,7 +3955,7 @@ function veltrolib:MakeWindow(Configs)
 
 
 		local Container = InsertTheme(Create("ScrollingFrame", {
-			Size = UDim2.new(1, 0, 1, -PAGE_TITLE_HEIGHT - 6),
+			Size = UDim2.new(1, 0, 1, -PAGE_TITLE_RESERVED),
 			Position = UDim2.new(0, 0, 1),
 			AnchorPoint = Vector2.new(0, 1),
 			ScrollBarThickness = 1.5,
@@ -3970,7 +3971,7 @@ function veltrolib:MakeWindow(Configs)
 			Create("UIPadding", {
 				PaddingLeft = UDim.new(0, 0),
 				PaddingRight = UDim.new(0, 5),
-				PaddingTop = UDim.new(0, 6),
+				PaddingTop = UDim.new(0, 5),
 				PaddingBottom = UDim.new(0, 6)
 			}),
 			Create("UIListLayout", { Padding = UDim.new(0, 5) })
@@ -3994,7 +3995,7 @@ function veltrolib:MakeWindow(Configs)
 					Frame.Parent = nil
 				end
 			end
-			Container.Size = UDim2.new(1, 0, 1, -PAGE_TITLE_HEIGHT - 6)
+			Container.Size = UDim2.new(1, 0, 1, -PAGE_TITLE_RESERVED)
 			Container.Parent = Containers
 			PageTitleLabel.Text = TName
 			TabSelect.BackgroundTransparency = 0.85
