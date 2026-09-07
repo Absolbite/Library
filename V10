@@ -3033,6 +3033,34 @@ function veltrolib:MakeWindow(Configs)
 			}
 		})
 	end
+	local function SetSearchBarVisible(visible)
+		if visible and not SearchBarEnabled then return end
+		if visible then SearchBarHolder.Visible = true end
+		CreateTween({SearchBarHolder, "BackgroundTransparency", (visible and SearchBarBuilt) and 0.9 or 1, 0.25})
+		for _, part in ipairs(SearchBarHolder:GetChildren()) do
+			if part:IsA("TextBox") then
+				CreateTween({part, "TextTransparency", visible and 0 or 1, 0.25})
+			elseif part:IsA("ImageLabel") then
+				CreateTween({part, "ImageTransparency", visible and 0 or 1, 0.25})
+			end
+		end
+		if not visible then
+			task.delay(0.25, function()
+				SearchBarHolder.Visible = false
+			end)
+		end
+	end
+
+	local function SetTitleVisible(visible)
+		if visible then PageTitleLabel.Visible = true end
+		CreateTween({PageTitleLabel, "TextTransparency", visible and 0 or 1, 0.25})
+		if not visible then
+			task.delay(0.25, function()
+				PageTitleLabel.Visible = false
+			end)
+		end
+	end
+
 	function Window:MinimizeBtn()
 		if WaitClick then return end
 		WaitClick = true
@@ -3042,8 +3070,8 @@ function veltrolib:MakeWindow(Configs)
 			ControlSize1.Visible = true
 			ControlSize2.Visible = true
 			TopBarDivider.Visible = true
-			SearchBarHolder.Visible = SearchBarEnabled
-			PageTitleLabel.Visible = true
+			SetSearchBarVisible(true)
+			SetTitleVisible(true)
 			Minimized = false
 		else
 			MinimizeButton.Image = MinimizeBtnCustomImage or "rbxassetid://10734924532"
@@ -3051,8 +3079,8 @@ function veltrolib:MakeWindow(Configs)
 			ControlSize1.Visible = false
 			ControlSize2.Visible = false
 			TopBarDivider.Visible = false
-			SearchBarHolder.Visible = false
-			PageTitleLabel.Visible = false
+			SetSearchBarVisible(false)
+			SetTitleVisible(false)
 			CreateTween({MainFrame, "Size", UDim2.fromOffset(MainFrame.Size.X.Offset, 28), 0.25, true})
 			Minimized = true
 		end
