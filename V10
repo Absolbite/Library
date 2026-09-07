@@ -2914,9 +2914,18 @@ function veltrolib:MakeWindow(Configs)
 		Create("UIListLayout", { Padding = UDim.new(0, SIDEBAR_GAP) })
 	}), "ScrollBar")
 
-	local SearchBarHolder = Create("Frame", Components, {
+	local SearchBarClip = Create("Frame", Components, {
+		Size = UDim2.new(0, veltrolib.Save.TabSize, 1, -TopBar.Size.Y.Offset),
+		Position = UDim2.new(0, 0, 1, 0),
+		AnchorPoint = Vector2.new(0, 1),
+		BackgroundTransparency = 1,
+		ClipsDescendants = true,
+		Name = "SearchBarClip"
+	})
+
+	local SearchBarHolder = Create("Frame", SearchBarClip, {
 		Size = UDim2.new(0, veltrolib.Save.TabSize - SIDEBAR_PAD_LEFT - SIDEBAR_PAD_RIGHT, 0, SEARCHBAR_HEIGHT),
-		Position = UDim2.new(0, SIDEBAR_PAD_LEFT, 0, TopBar.Size.Y.Offset + SIDEBAR_GAP),
+		Position = UDim2.new(0, SIDEBAR_PAD_LEFT, 0, SIDEBAR_GAP),
 		BackgroundTransparency = 1,
 		Visible = false,
 		Name = "SearchBarHolder"
@@ -3033,34 +3042,6 @@ function veltrolib:MakeWindow(Configs)
 			}
 		})
 	end
-	local function SetSearchBarVisible(visible)
-		if visible and not SearchBarEnabled then return end
-		if visible then SearchBarHolder.Visible = true end
-		CreateTween({SearchBarHolder, "BackgroundTransparency", (visible and SearchBarBuilt) and 0.9 or 1, 0.25})
-		for _, part in ipairs(SearchBarHolder:GetChildren()) do
-			if part:IsA("TextBox") then
-				CreateTween({part, "TextTransparency", visible and 0 or 1, 0.25})
-			elseif part:IsA("ImageLabel") then
-				CreateTween({part, "ImageTransparency", visible and 0 or 1, 0.25})
-			end
-		end
-		if not visible then
-			task.delay(0.25, function()
-				SearchBarHolder.Visible = false
-			end)
-		end
-	end
-
-	local function SetTitleVisible(visible)
-		if visible then PageTitleLabel.Visible = true end
-		CreateTween({PageTitleLabel, "TextTransparency", visible and 0 or 1, 0.25})
-		if not visible then
-			task.delay(0.25, function()
-				PageTitleLabel.Visible = false
-			end)
-		end
-	end
-
 	function Window:MinimizeBtn()
 		if WaitClick then return end
 		WaitClick = true
@@ -3070,8 +3051,6 @@ function veltrolib:MakeWindow(Configs)
 			ControlSize1.Visible = true
 			ControlSize2.Visible = true
 			TopBarDivider.Visible = true
-			SetSearchBarVisible(true)
-			SetTitleVisible(true)
 			Minimized = false
 		else
 			MinimizeButton.Image = MinimizeBtnCustomImage or "rbxassetid://10734924532"
@@ -3079,8 +3058,6 @@ function veltrolib:MakeWindow(Configs)
 			ControlSize1.Visible = false
 			ControlSize2.Visible = false
 			TopBarDivider.Visible = false
-			SetSearchBarVisible(false)
-			SetTitleVisible(false)
 			CreateTween({MainFrame, "Size", UDim2.fromOffset(MainFrame.Size.X.Offset, 28), 0.25, true})
 			Minimized = true
 		end
