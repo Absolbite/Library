@@ -3570,12 +3570,20 @@ function veltrolib:MakeWindow(Configs)
 	local function FilterAll(query)
 		query = query:lower()
 
+		local allSections = {}
+		for _, E in ipairs(veltrolib.SearchIndex) do
+			if E.Section then allSections[E.Section] = true end
+		end
+
 		if query == "" then
 			for _, T in ipairs(veltrolib.Tabs) do
 				if T.Button then T.Button.Visible = true end
 			end
 			for _, E in ipairs(veltrolib.SearchIndex) do
 				if E.Instance and E.Instance.Parent then E.Instance.Visible = true end
+			end
+			for Section in pairs(allSections) do
+				Section:Open(false)
 			end
 			return
 		end
@@ -3596,7 +3604,9 @@ function veltrolib:MakeWindow(Configs)
 
 		for _, E in ipairs(veltrolib.SearchIndex) do
 			if E.Instance and E.Instance.Parent then
-				if groupHasMatch[E.Container] then
+				if E.Section and sectionsToOpen[E.Section] then
+					E.Instance.Visible = true
+				elseif groupHasMatch[E.Container] then
 					E.Instance.Visible = E.Title:lower():find(query, 1, true) ~= nil
 				else
 					E.Instance.Visible = true
@@ -3604,8 +3614,8 @@ function veltrolib:MakeWindow(Configs)
 			end
 		end
 
-		for Section in pairs(sectionsToOpen) do
-			Section:Open(true)
+		for Section in pairs(allSections) do
+			Section:Open(sectionsToOpen[Section] == true)
 		end
 
 		for _, T in ipairs(veltrolib.Tabs) do
