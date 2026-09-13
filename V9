@@ -2909,7 +2909,7 @@ function veltrolib:MakeWindow(Configs)
 		Font = Enum.Font.GothamBold,
 		Text = "",
 		TextColor3 = Theme["Color Text"],
-		TextSize = 20,
+		TextSize = 17,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		Name = "PageTitle"
 	}), "Text")
@@ -2944,7 +2944,7 @@ function veltrolib:MakeWindow(Configs)
 	}))
 
 	local SIDEBAR_WIDE = 135
-	local SIDEBAR_NARROW = 80
+	local SIDEBAR_NARROW = 45
 	local SIDEBAR_SNAP_POINT = (SIDEBAR_WIDE + SIDEBAR_NARROW) / 2
 
 	local function ControlSize()
