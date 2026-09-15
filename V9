@@ -2081,10 +2081,12 @@ local Flags = veltrolib.Flags
 
 local SetProps, SetChildren, InsertTheme, Create do
 	InsertTheme = function(Instance, Type)
-		table.insert(veltrolib.Instances, {
-			Instance = Instance,
-			Type = Type
-		})
+		local Entry = { Instance = Instance, Type = Type }
+		table.insert(veltrolib.Instances, Entry)
+		Instance.Destroying:Once(function()
+			local idx = table.find(veltrolib.Instances, Entry)
+			if idx then table.remove(veltrolib.Instances, idx) end
+		end)
 		return Instance
 	end
 
