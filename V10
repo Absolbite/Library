@@ -2789,7 +2789,7 @@ function veltrolib:MakeWindow(Configs)
 	_MainFrame = MainFrame
 
 	local NotificationHolder = Create("Frame", ScreenGui, {
-		Size = UDim2.new(0, 200, 1, -20),
+		Size = UDim2.new(0, 320, 1, -20),
 		Position = UDim2.new(1, -12, 1, -12),
 		AnchorPoint = Vector2.new(1, 1),
 		BackgroundTransparency = 1,
@@ -3038,6 +3038,28 @@ function veltrolib:MakeWindow(Configs)
 	end
 	function Window:Minimize()
 		MainFrame.Visible = not MainFrame.Visible
+	end
+
+	function Window:NewMinimizer(Configs)
+		local KeyCode = (type(Configs) == "table" and (Configs[1] or Configs.KeyCode)) or Configs
+		if typeof(KeyCode) ~= "EnumItem" then
+			error(("\"Window.NewMinimizer.KeyCode\". 'KeyCode' expected, got %s"):format(typeof(KeyCode)), 2)
+		end
+
+		local Minimizer = { KeyCode = KeyCode }
+
+		local Connection = UserInputService.InputBegan:Connect(function(Input, GameProcessed)
+			if GameProcessed then return end
+			if Input.KeyCode == Minimizer.KeyCode then
+				Window:MinimizeBtn()
+			end
+		end)
+
+		function Minimizer:Destroy()
+			Connection:Disconnect()
+		end
+
+		return Minimizer
 	end
 	function Window:AddMinimizeButton(Cfg)
 		Cfg = Cfg or {}
@@ -3540,151 +3562,149 @@ function veltrolib:MakeWindow(Configs)
 		veltrolib:SetBackgroundImage(value)
 	end
 
-	function Window:Notification(Configs)
+	function Window:Notify(Configs)
 		Configs = Configs or {}
-		local NTitle = Configs.Title or Configs[1] or "Notification"
-		local NText  = Configs.Text or Configs.Desc or Configs[2] or ""
+		local NTitle = Configs.Title or Configs.Name or Configs[1] or "Notification"
+		local NText  = Configs.Content or Configs.Text or Configs.Desc or Configs[2] or ""
 		local NImage = Configs.Image or Configs.Icon
 		if NImage then NImage = veltrolib:GetIcon(tostring(NImage)); if NImage == "" then NImage = nil end end
 
-		local ButtonConfigs = Configs.Buttons or (Configs.Button and {{Configs.Button}}) or {}
-		local Duration = tonumber(Configs.Duration)
-		if not Duration and #ButtonConfigs == 0 then Duration = 5 end
+		local Duration = tonumber(Configs.Duration) or 5
 		local Callback = Funcs:GetCallback(Configs, 3)
 
 		NotificationCount = NotificationCount + 1
 		local Notification = {}
-		local Dismissed = false
+		local Closed = false
+		local Paused = false
 
-		local PAD = 6
-		local CARD_WIDTH = 200
-		local CARD_HEIGHT = 48
-		local ICON_SIZE = CARD_HEIGHT - PAD * 2
-		local hasImage = NImage ~= nil
-		local textX = hasImage and (PAD + ICON_SIZE + PAD) or PAD
-		local SlideOffset = UDim2.new(0, CARD_WIDTH, 0, 0)
-
-		local Slot = Create("Frame", NotificationHolder, {
-			Size = UDim2.new(0, CARD_WIDTH, 0, CARD_HEIGHT),
+		local Card = Create("Frame", NotificationHolder, {
+			Size = UDim2.new(0.85, 0, 0, 60),
 			BackgroundTransparency = 1,
+			AutomaticSize = Enum.AutomaticSize.Y,
 			LayoutOrder = NotificationCount,
-			Name = "NotificationSlot"
+			Name = "Notification"
 		})
 
-		local Card = InsertTheme(Create("Frame", Slot, {
-			Size = UDim2.new(1, 0, 1, 0),
-			Position = SlideOffset,
-			BackgroundColor3 = Theme["Color Hub 2"],
-			Transparency = 1,
-			Name = "Notification"
-		}), "Main")
-		Make("Gradient", Card, { Rotation = 45 })
-		Make("Corner", Card, UDim.new(0, 8))
-		Make("ElementStroke", Card)
+		local Scale = Create("UIScale", Card, { Scale = 1 })
 
-		local IconLabel = nil
-		if hasImage then
-			IconLabel = Create("ImageLabel", Card, {
-				Size = UDim2.new(0, ICON_SIZE, 0, ICON_SIZE),
-				Position = UDim2.new(0, PAD, 0, PAD),
-				BackgroundTransparency = 1,
-				Image = NImage,
-				ScaleType = Enum.ScaleType.Fit,
-				Name = "Icon"
+		local Button = InsertTheme(Create("TextButton", Card, {
+			AutomaticSize = Enum.AutomaticSize.Y,
+			Size = UDim2.fromScale(1, 1),
+			Position = UDim2.fromScale(3, 0),
+			AutoButtonColor = false,
+			Text = "",
+			BackgroundColor3 = Theme["Color Theme"],
+			BackgroundTransparency = 0.1,
+			Name = "Card"
+		}), "Theme")
+		Make("Corner", Button, UDim.new(0, 9))
+		Make("Gradient", Button, { Rotation = 45 })
+
+		local Holder = Create("Frame", Button, {
+			AutomaticSize = Enum.AutomaticSize.Y,
+			BackgroundTransparency = 1,
+			Size = UDim2.fromScale(1, 1),
+			Name = "Holder"
+		}, {
+			Create("UIListLayout", {
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				VerticalAlignment = Enum.VerticalAlignment.Center,
+				Padding = UDim.new(0, 4)
+			}),
+			Create("UIPadding", {
+				PaddingTop = UDim.new(0, 8),
+				PaddingBottom = UDim.new(0, 8),
+				PaddingLeft = UDim.new(0, NImage and 40 or 15),
+				PaddingRight = UDim.new(0, 12)
 			})
-			Make("Corner", IconLabel, UDim.new(0, 6))
-		end
+		})
 
-		local TitleLabel = InsertTheme(Create("TextLabel", Card, {
+		local TitleLabel = InsertTheme(Create("TextLabel", Holder, {
+			Size = UDim2.new(1, 0, 0, 20),
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = Enum.TextYAlignment.Bottom,
+			BackgroundTransparency = 1,
+			TextSize = 14,
 			Font = Enum.Font.GothamBold,
 			TextColor3 = Theme["Color Text"],
-			Size = UDim2.new(1, -(textX + PAD), 0, 12),
-			Position = UDim2.new(0, textX, 0, 4),
-			BackgroundTransparency = 1,
-			TextTruncate = Enum.TextTruncate.AtEnd,
-			TextSize = 10,
-			TextXAlignment = Enum.TextXAlignment.Left,
 			RichText = NeedsRichText(NTitle),
 			Text = NTitle,
 			Name = "Title"
 		}), "Text")
 
-		local BodyLabel = nil
-		if NText ~= "" then
-			BodyLabel = InsertTheme(Create("TextLabel", Card, {
-				Font = Enum.Font.Gotham,
-				TextColor3 = Theme["Color Dark Text"],
-				Size = UDim2.new(1, -(textX + PAD), 0, 11),
-				Position = UDim2.new(0, textX, 0, 17),
+		local BodyLabel = InsertTheme(Create("TextLabel", Holder, {
+			Size = UDim2.new(1, 0, 0, 20),
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = Enum.TextYAlignment.Top,
+			AutomaticSize = Enum.AutomaticSize.Y,
+			BackgroundTransparency = 1,
+			TextWrapped = true,
+			TextSize = 12,
+			Font = Enum.Font.Gotham,
+			TextColor3 = Theme["Color Dark Text"],
+			RichText = NeedsRichText(NText),
+			Text = NText,
+			Name = "Body"
+		}), "DarkText")
+
+		if NImage then
+			InsertTheme(Create("ImageLabel", Button, {
+				Size = UDim2.fromOffset(24, 24),
+				Position = UDim2.new(0, 8, 0.5, 0),
+				AnchorPoint = Vector2.new(0, 0.5),
 				BackgroundTransparency = 1,
-				TextTruncate = Enum.TextTruncate.AtEnd,
-				TextSize = 8,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				RichText = NeedsRichText(NText),
-				Text = NText,
-				Name = "Body"
-			}), "DarkText")
+				ImageColor3 = Color3.new(1, 1, 1),
+				Image = NImage,
+				Name = "Icon"
+			}), "Text")
 		end
 
-		local ButtonsHolder = Create("Frame", Card, {
-			Size = UDim2.new(1, -(textX + PAD), 0, 14),
-			Position = UDim2.new(0, textX, 0, 30),
+		local CountdownLabel = InsertTheme(Create("TextLabel", Button, {
+			Size = UDim2.new(0, 40, 0, 16),
+			Position = UDim2.new(1, -10, 0, 8),
+			AnchorPoint = Vector2.new(1, 0),
 			BackgroundTransparency = 1,
-			Name = "ButtonsHolder"
-		}, {
-			Create("UIListLayout", {
-				Padding = UDim.new(0, 4),
-				FillDirection = Enum.FillDirection.Horizontal,
-				HorizontalAlignment = Enum.HorizontalAlignment.Left,
-				VerticalAlignment = Enum.VerticalAlignment.Center
-			})
-		})
+			TextXAlignment = Enum.TextXAlignment.Right,
+			TextSize = 10,
+			Font = Enum.Font.Gotham,
+			TextColor3 = Theme["Color Dark Text"],
+			Text = "",
+			Name = "Countdown"
+		}), "DarkText")
 
-		local function Dismiss()
-			if Dismissed then return end
-			Dismissed = true
-			local Tween = CreateTween({Card, "Position", SlideOffset, 0.3})
+		function Notification:Close()
+			if Closed then return end
+			Closed = true
+			local Tween = CreateTween({Button, "Position", UDim2.fromScale(3, 0), 0.8})
 			Tween.Completed:Wait()
-			Slot:Destroy()
+			Card:Destroy()
 			Funcs:FireCallback(Callback)
 		end
 
-		local ButtonCount = 0
-		function Notification:Button(Cfg)
-			Cfg = Cfg or {}
-			local Name = Cfg[1] or Cfg.Name or Cfg.Title or ""
-			local BtnCallback = Cfg[2] or Cfg.Callback or function() end
-			local BtnColor = Cfg.Color
-			ButtonCount = ButtonCount + 1
-			local Btn = InsertTheme(Create("TextButton", ButtonsHolder, {
-				BackgroundColor3 = BtnColor or Theme["Color Theme"],
-				BackgroundTransparency = BtnColor and 0 or 0.65,
-				Text = Name,
-				Font = Enum.Font.GothamBold,
-				TextColor3 = Theme["Color Text"],
-				TextSize = 9,
-				AutoButtonColor = false
-			}), BtnColor and "Stroke" or "Theme")
-			Make("Corner", Btn, UDim.new(0, 4))
-			for _, B in pairs(ButtonsHolder:GetChildren()) do
-				if B:IsA("TextButton") then
-					B.Size = UDim2.new(1 / ButtonCount, -(((ButtonCount - 1) * 4) / ButtonCount), 1, 0)
+		CreateTween({Button, "Position", UDim2.fromScale(0, 0), 0.35})
+
+		Button.MouseButton1Down:Connect(function()
+			Paused = true
+			CreateTween({Scale, "Scale", 1.22, 0.35})
+		end)
+		Button.MouseLeave:Connect(function()
+			Paused = false
+			CreateTween({Scale, "Scale", 1, 0.35})
+		end)
+
+		task.spawn(function()
+			local Remaining = Duration
+			while Remaining > 0 and not Closed do
+				CountdownLabel.Text = tostring(math.ceil(Remaining))
+				local dt = task.wait()
+				if not Paused then
+					Remaining -= dt
 				end
 			end
-			Btn.Activated:Connect(Dismiss)
-			Btn.Activated:Connect(BtnCallback)
-		end
+			Notification:Close()
+		end)
 
-		table.foreach(ButtonConfigs, function(_, B) Notification:Button(B) end)
-
-		CreateTween({Card, "Position", UDim2.new(0, 0, 0, 0), 0.3})
-		CreateTween({Card, "Transparency", CurrentTransparency, 0.3})
-
-		if Duration then
-			task.delay(Duration, Dismiss)
-		end
-
-		function Notification:Dismiss() Dismiss() end
 		return Notification
 	end
 
