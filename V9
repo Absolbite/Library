@@ -4554,10 +4554,9 @@ function veltrolib:MakeWindow(Configs)
 			local SearchHolder = InsertTheme(Create("Frame", DropFrame, {
 				Size = UDim2.new(1, -10, 0, 22),
 				Position = UDim2.new(0, 5, 0, 4),
-				BackgroundColor3 = Theme["Color Theme"],
-				BackgroundTransparency = 0.85,
+				BackgroundColor3 = Theme["Color Stroke"],
 				Name = "SearchHolder"
-			}), "Theme")
+			}), "Stroke")
 			Make("Corner", SearchHolder, UDim.new(0, 4))
 
 			local SearchIcon = Create("ImageLabel", SearchHolder, {
@@ -4737,7 +4736,6 @@ function veltrolib:MakeWindow(Configs)
 						for _,v in pairs(Options) do
 							local nodes = v.nodes
 							local on = Selected[v.Name] == true
-							CreateTween({nodes[1], "BackgroundTransparency", on and 0.85 or (Theme["Panel Transparency"] or math.clamp(CurrentTransparency + 0.55, 0, 0.95)), 0.35})
 							CreateTween({nodes[2], "BackgroundTransparency", on and 0 or 0.8, 0.35})
 							CreateTween({nodes[2], "Size", on and UDim2.fromOffset(4, 12) or UDim2.fromOffset(4, 4), 0.35})
 							CreateTween({nodes[3], "TextTransparency", on and 0 or 0.4, 0.35})
@@ -4746,7 +4744,6 @@ function veltrolib:MakeWindow(Configs)
 						for _,v in pairs(Options) do
 							local on = v.Value == Selected
 							local nodes = v.nodes
-							CreateTween({nodes[1], "BackgroundTransparency", on and 0.85 or (Theme["Panel Transparency"] or math.clamp(CurrentTransparency + 0.55, 0, 0.95)), 0.35})
 							CreateTween({nodes[2], "BackgroundTransparency", on and 0 or 1, 0.35})
 							CreateTween({nodes[2], "Size", on and UDim2.fromOffset(4, 14) or UDim2.fromOffset(4, 4), 0.35})
 							CreateTween({nodes[3], "TextTransparency", on and 0 or 0.4, 0.35})
@@ -4809,7 +4806,7 @@ function veltrolib:MakeWindow(Configs)
 
 					local OptLabel = InsertTheme(Create("TextLabel", Btn, {
 						Size = UDim2.new(1, 0, 1),
-						Position = UDim2.new(0, 4),
+						Position = UDim2.new(0, 10),
 						Text = Name,
 						TextColor3 = Theme["Color Text"],
 						Font = Enum.Font.GothamBold,
